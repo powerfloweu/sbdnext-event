@@ -2,8 +2,13 @@
 const nextConfig = {
   async redirects() {
     return [
-      { source: '/', destination: '/verseny', permanent: true },
+      {
+        source: '/',
+        destination: '/verseny',
+        permanent: false, // 307 – ne cache-elje örökre
+      },
     ];
   },
 };
+
 export default nextConfig;
