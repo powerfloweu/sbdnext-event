@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -16,8 +16,9 @@ import {
   ExternalLink,
   CheckCircle2,
   AlertCircle,
-  Link as LinkIcon
+  Link as LinkIcon,
 } from "lucide-react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,14 +26,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
-/* ===== KAPACITÁS / ENV ===== */
+/* ===== Kapacitás (env) ===== */
 const CAP_LIMIT = 220;
 const CAP_USED = Number(process.env.NEXT_PUBLIC_CAP_USED ?? "0");
 const CAP_FULL_FLAG = (process.env.NEXT_PUBLIC_CAP_FULL ?? "").toLowerCase() === "true";
 const CAP_REMAINING = Math.max(0, CAP_LIMIT - CAP_USED);
 const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
 
-/* ===== ESEMÉNY ===== */
+/* ===== Esemény adatok ===== */
 const EVENT = {
   title: "SBD Next — Új Belépők Versenye (2 nap, 2 platform)",
   date: "2026. február 14–15.",
@@ -71,22 +72,26 @@ const EVENT = {
     ig: "@powerfloweu",
     web: "https://power-flow.eu",
   },
-  divisions: ["Újonc", "Versenyző"],     // nincsenek súlycsoportok
+  divisions: ["Újonc", "Versenyző"], // nincsenek súlycsoportok
   scoring: "Eredményhirdetés IPF pontszám alapján (nincsenek súlycsoportok).",
   eventType: "Háromfogásos, full power (SBD) verseny.",
   streams: {
-    platformA: "#", // később cseréld
-    platformB: "#", // később cseréld
+    platformA: "#", // később cseréld valós linkre
+    platformB: "#",
   },
   cap: CAP_LIMIT,
+  seo: {
+    description:
+      "SBD Next — szabadidős, 2 napos powerlifting esemény a Thor Gymben újoncoknak és versenyzőknek. Nevezés, időrend, IPF szabályok, díjak, helyszín és GYIK. Media csomag + egyedi SBD póló a nevezési díjban.",
+  },
 };
 
-/* ===== SEGÉD UI ===== */
+/* ===== UI segéd ===== */
 function Section({ id, icon: Icon, title, children }: any) {
   return (
     <section id={id} className="scroll-mt-24 py-10">
       <div className="flex items-center gap-2 mb-4">
-        {Icon && <Icon className="h-5 w-5" />}
+        {Icon && <Icon className="h-5 w-5 text-[hsl(var(--primary))]" />}
         <h2 className="text-xl font-semibold">{title}</h2>
       </div>
       <div className="grid gap-4">{children}</div>
@@ -96,9 +101,9 @@ function Section({ id, icon: Icon, title, children }: any) {
 
 function Stat({ label, value, Icon }: any) {
   return (
-    <Card className="rounded-2xl">
+    <Card className="rounded-2xl border border-[hsl(var(--primary))]/20">
       <CardContent className="p-4 flex items-center gap-3">
-        {Icon && <Icon className="h-5 w-5" />}
+        {Icon && <Icon className="h-5 w-5 text-[hsl(var(--primary))]" />}
         <div>
           <div className="text-sm text-muted-foreground">{label}</div>
           <div className="text-lg font-semibold">{value}</div>
@@ -120,10 +125,10 @@ function PriceRow({ label, value, note }: { label: string; value: string; note?:
   );
 }
 
-/* ===== REGISZTRÁCIÓ / STRIPE ===== */
+/* ===== Regisztráció + Stripe ===== */
 function RegistrationForm() {
-  const PAYMENT_LINK_BASE = "https://buy.stripe.com/8x26oG6az4yg8AQ89DdfG0m";    // 33 990 Ft
-  const PAYMENT_LINK_PREMIUM = "https://buy.stripe.com/bJe7sK0Qf7Ks9EU1LfdfG0n"; // +24 990 Ft
+  const PAYMENT_LINK_BASE = "https://buy.stripe.com/8x26oG6az4yg8AQ89DdfG0m";     // 33 990 Ft
+  const PAYMENT_LINK_PREMIUM = "https://buy.stripe.com/bJe7sK0Qf7Ks9EU1LfdfG0n";  // +24 990 Ft
   const WEBHOOK_URL = "https://hook.eu1.make.com/6vbe2dxien274ohy91ew22lp9bbfzrl3";
 
   const [data, setData] = useState<any>({
@@ -133,14 +138,14 @@ function RegistrationForm() {
     club: "",
     sex: "",
     division: "",
-    event: "Teljes verseny (SBD)",
+    event: "Teljes verseny (SBD)", // fix
     equipment: "RAW",
     preferredDay: "",
     bestTotal: "",
     consent: false,
     notes: "",
-    premium: false,
-    honeypot: "",
+    premium: false,  // prémium választás
+    honeypot: "",    // bot csapda
   });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -179,12 +184,12 @@ function RegistrationForm() {
         stripeLink: target,
         submittedAt: new Date().toISOString(),
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
-        page: "/verseny",
+        page: "/",
         utm,
         cap: { limit: CAP_LIMIT, used: CAP_USED, remaining: CAP_REMAINING, full: CAP_FULL },
       };
 
-      /* webhook: beacon + fetch fallback */
+      // Webhook (beacon + fetch fallback)
       const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
       const beaconOk =
         typeof navigator !== "undefined" && "sendBeacon" in navigator
@@ -200,13 +205,13 @@ function RegistrationForm() {
         }).catch(() => {});
       }
 
-      /* Stripe redirect (email előtöltés) */
+      // Stripe redirect (email előtöltés)
       const url = new URL(target);
       if (data.email) url.searchParams.set("prefilled_email", data.email);
       window.location.href = url.toString();
 
       setDone(true);
-    } catch (err) {
+    } catch (err: any) {
       setError("A jelentkezés nem sikerült. Próbáld újra, vagy írj nekünk e-mailt.");
     } finally {
       setSubmitting(false);
@@ -215,7 +220,7 @@ function RegistrationForm() {
 
   if (CAP_FULL) {
     return (
-      <div className="rounded-2xl border p-6">
+      <div className="rounded-2xl border border-[hsl(var(--primary))]/20 p-6">
         <div className="flex items-center gap-2 text-amber-700">
           <AlertCircle className="h-5 w-5" />
           <b>Betelt a nevezés ({CAP_LIMIT} fő).</b>
@@ -229,12 +234,12 @@ function RegistrationForm() {
 
   if (done) {
     return (
-      <div className="rounded-2xl border p-6 text-center">
-        <CheckCircle2 className="mx-auto h-10 w-10" />
+      <div className="rounded-2xl border border-[hsl(var(--primary))]/20 p-6 text-center">
+        <CheckCircle2 className="mx-auto h-10 w-10 text-[hsl(var(--primary))]" />
         <h3 className="mt-4 text-lg font-semibold">Átirányítás a fizetéshez…</h3>
         <p className="text-sm text-muted-foreground mt-1">
           Ha nem történik meg automatikusan,{" "}
-          <a className="underline" href={data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE}>
+          <a className="underline text-[hsl(var(--primary))]" href={data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE}>
             kattints ide
           </a>{" "}
           a fizetéshez.
@@ -303,6 +308,8 @@ function RegistrationForm() {
           </Select>
         </div>
 
+        {/* Súlycsoport nincs */}
+
         <div>
           <label className="text-sm">Szám (Esemény)</label>
           <Input value={data.event} readOnly />
@@ -366,7 +373,7 @@ function RegistrationForm() {
         <Button
           type="submit"
           disabled={!valid || submitting}
-          className="rounded-2xl px-6 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary))]/90 focus-visible:ring-[hsl(var(--ring))]"
+          className="rounded-2xl px-6 bg-[hsl(var(--primary))] text-white hover:bg-[hsl(var(--primary))]/90"
         >
           {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
         </Button>
@@ -378,7 +385,7 @@ function RegistrationForm() {
   );
 }
 
-/* ===== OLDAL ===== */
+/* ===== Oldal ===== */
 export default function EventLanding() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -386,76 +393,73 @@ export default function EventLanding() {
   const priceEntry = new Intl.NumberFormat("hu-HU").format(EVENT.fees.entry);
   const priceSpectator = new Intl.NumberFormat("hu-HU").format(EVENT.fees.spectator);
   const pricePremium = new Intl.NumberFormat("hu-HU").format(EVENT.fees.premium);
-  const year = new Date().getUTCFullYear();
+  const year = new Date().getUTCFullYear(); // hydration-safe
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* NAV (fekete háttér, piros akcentus) */}
-<nav className="sticky top-0 z-40 backdrop-blur bg-black/90 border-b border-[hsl(var(--border))] text-white">
-  <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div className="flex items-center gap-3">
-      <Dumbbell className="h-5 w-5 text-[hsl(var(--primary))]" />
-      <span className="font-semibold">SBD Next</span>
-    </div>
-    <div className="hidden sm:flex items-center gap-4 text-sm [&_a]:text-zinc-300 [&_a:hover]:text-white">
-      <a href="#info" className="hover:underline">Infók</a>
-      <a href="#schedule" className="hover:underline">Időrend</a>
-      <a href="#rules" className="hover:underline">Szabályok</a>
-      <a href="#fees" className="hover:underline">Díjak</a>
-      <a href="#faq" className="hover:underline">GYIK</a>
-    </div>
-    <a href="#register" className="inline-flex items-center gap-1 text-sm font-medium hover:text-[hsl(var(--primary))]">
-      Nevezés <ChevronRight className="h-4 w-4" />
-    </a>
-  </div>
-</nav>
+      {/* NAV */}
+      <nav className="sticky top-0 z-40 backdrop-blur border-b bg-white/80">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Dumbbell className="h-5 w-5 text-[hsl(var(--primary))]" />
+            <span className="font-semibold">SBD Next</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-4 text-sm">
+            <a href="#info" className="hover:text-[hsl(var(--primary))]">Infók</a>
+            <a href="#schedule" className="hover:text-[hsl(var(--primary))]">Időrend</a>
+            <a href="#rules" className="hover:text-[hsl(var(--primary))]">Szabályok</a>
+            <a href="#fees" className="hover:text-[hsl(var(--primary))]">Díjak</a>
+            <a href="#faq" className="hover:text-[hsl(var(--primary))]">GYIK</a>
+          </div>
+          <a href="#register" className="inline-flex items-center gap-1 text-sm font-medium text-[hsl(var(--primary))]">
+            Nevezés <ChevronRight className="h-4 w-4"/>
+          </a>
+        </div>
+      </nav>
 
-{/* HERO szekció (piros CTA gombbal) */}
-<header className="relative bg-white text-gray-900">
-  <div className="max-w-5xl mx-auto px-4 py-12">
-    <motion.h1
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="text-3xl sm:text-4xl font-bold tracking-tight"
-    >
-      {EVENT.title}
-    </motion.h1>
+      {/* HERO — fekete/piros brand */}
+      <header className="relative bg-gradient-to-b from-black to-neutral-900 text-white">
+        <div className="max-w-5xl mx-auto px-4 py-12">
+          <motion.h1
+            initial={{opacity:0,y:10}}
+            animate={{opacity:1,y:0}}
+            transition={{duration:0.5}}
+            className="text-3xl sm:text-4xl font-extrabold tracking-tight"
+          >
+            {EVENT.title}
+          </motion.h1>
 
-    <div className="mt-4 grid sm:grid-cols-3 gap-3">
-      <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
-      <Stat label="Idő" value={EVENT.time} Icon={Timer} />
-      <Stat label="Helyszín" value={`${EVENT.location.name} — ${EVENT.location.address}`} Icon={MapPin} />
-    </div>
+          <div className="mt-4 grid sm:grid-cols-3 gap-3">
+            <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
+            <Stat label="Idő" value={EVENT.time} Icon={Timer} />
+            <Stat label="Helyszín" value={`${EVENT.location.name} — ${EVENT.location.address}`} Icon={MapPin} />
+          </div>
 
-    <div className="mt-3 text-sm">{EVENT.concept}</div>
-    <div className="mt-1 text-sm text-muted-foreground">
-      {EVENT.layout} • {EVENT.eventType}
-    </div>
+          <div className="mt-3 text-sm">{EVENT.concept}</div>
+          <div className="mt-1 text-sm text-neutral-300">{EVENT.layout} • {EVENT.eventType}</div>
 
-    <div className="mt-6 flex flex-wrap items-center gap-3">
-      <a href="#register">
-        <Button
-          className="rounded-2xl px-6 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary))]/90 focus-visible:ring-[hsl(var(--ring))]"
-        >
-          Nevezek most
-        </Button>
-      </a>
-      <a href="#fees" className="inline-flex items-center gap-1 text-sm hover:text-[hsl(var(--primary))]">
-        Nevezési díjak <ChevronRight className="h-4 w-4" />
-      </a>
-    </div>
-  </div>
-</header>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <a href="#register">
+              <Button className="rounded-2xl px-6 bg-[hsl(var(--primary))] text-white hover:bg-[hsl(var(--primary))]/90">
+                Nevezek most
+              </Button>
+            </a>
+            <a href="#fees" className="inline-flex items-center gap-1 text-sm hover:text-[hsl(var(--primary))]">
+              Nevezési díjak <ChevronRight className="h-4 w-4"/>
+            </a>
+          </div>
+        </div>
+      </header>
 
-<main className="max-w-5xl mx-auto px-4 pb-20">
+      <main className="max-w-5xl mx-auto px-4 pb-20">
         <Section id="info" icon={Info} title="Versenyinformációk">
-          <Card className="rounded-2xl">
+          <Card className="rounded-2xl border border-[hsl(var(--primary))]/20">
             <CardContent className="p-6 grid gap-3">
               <div><span className="font-medium">Koncepció:</span> {EVENT.concept}</div>
               <div><span className="font-medium">Elrendezés:</span> {EVENT.layout}</div>
               <div><span className="font-medium">Nevezői limit:</span> {EVENT.cap} fő (kapacitás függvényében). Jelentkezés zárása után flight-beosztás.</div>
               <div><span className="font-medium">Felszerelés:</span> {EVENT.equipmentNote}</div>
+
               <div className="grid sm:grid-cols-2 gap-2">
                 <div>
                   <div className="text-sm text-muted-foreground">Divíziók</div>
@@ -466,22 +470,24 @@ export default function EventLanding() {
                   <div className="font-medium">{EVENT.scoring}</div>
                 </div>
               </div>
+
               <div className="grid sm:grid-cols-3 gap-4 mt-2">
-                <Card className="rounded-xl"><CardContent className="p-4">
+                <Card className="rounded-xl border border-[hsl(var(--primary))]/20"><CardContent className="p-4">
                   <div className="text-sm text-muted-foreground">Jelentkezés kezdete</div>
                   <div className="font-semibold">{EVENT.deadlines.regOpen}</div>
                 </CardContent></Card>
-                <Card className="rounded-xl"><CardContent className="p-4">
+                <Card className="rounded-xl border border-[hsl(var(--primary))]/20"><CardContent className="p-4">
                   <div className="text-sm text-muted-foreground">Nevezés határideje</div>
                   <div className="font-semibold">{EVENT.deadlines.regClose}</div>
                 </CardContent></Card>
-                <Card className="rounded-xl"><CardContent className="p-4">
+                <Card className="rounded-xl border border-[hsl(var(--primary))]/20"><CardContent className="p-4">
                   <div className="text-sm text-muted-foreground">Lemondás</div>
                   <div className="font-semibold">
                     {EVENT.deadlines.refundFull} • {EVENT.deadlines.refundHalf} • {EVENT.deadlines.refundNone}
                   </div>
                 </CardContent></Card>
               </div>
+
               <div className="rounded-xl bg-neutral-50 p-4 text-sm">
                 A nevezési díj <b>tartalmazza</b>: Media package (1 fotó + 1 videó), <b>egyedi SBD versenypóló</b>. Opcionálisan <b>Prémium media package</b> vásárolható (3 fotó + 3 videó).
               </div>
@@ -490,7 +496,7 @@ export default function EventLanding() {
         </Section>
 
         <Section id="schedule" icon={CalendarDays} title="Időrend (terv)">
-          <Card className="rounded-2xl">
+          <Card className="rounded-2xl border border-[hsl(var(--primary))]/20">
             <CardContent className="p-6 grid gap-3 text-sm">
               <div className="font-medium">Február 14. (péntek) — 2 platform</div>
               <div>07:00–08:30 — Mérlegelés (hullámokban)</div>
@@ -507,8 +513,8 @@ export default function EventLanding() {
               <div>19:00 — Napi eredményhirdetés</div>
 
               <div className="mt-4 grid sm:grid-cols-2 gap-2">
-                <a href={EVENT.streams.platformA} className="inline-flex items-center gap-2 text-sm underline"><LinkIcon className="h-4 w-4" /> Stream — Platform A</a>
-                <a href={EVENT.streams.platformB} className="inline-flex items-center gap-2 text-sm underline"><LinkIcon className="h-4 w-4" /> Stream — Platform B</a>
+                <a href={EVENT.streams.platformA} className="inline-flex items-center gap-2 text-sm underline hover:text-[hsl(var(--primary))]"><LinkIcon className="h-4 w-4" /> Stream — Platform A</a>
+                <a href={EVENT.streams.platformB} className="inline-flex items-center gap-2 text-sm underline hover:text-[hsl(var(--primary))]"><LinkIcon className="h-4 w-4" /> Stream — Platform B</a>
               </div>
 
               <div className="text-xs text-muted-foreground mt-2">
@@ -519,7 +525,7 @@ export default function EventLanding() {
         </Section>
 
         <Section id="rules" icon={ShieldCheck} title="Szabályok & felszerelés">
-          <Card className="rounded-2xl">
+          <Card className="rounded-2xl border border-[hsl(var(--primary))]/20">
             <CardContent className="p-6 grid gap-3">
               <div>• IPF szabályrendszer (hamarosan belinkeljük a hivatalos magyar IPF szabálykönyvet).</div>
               <div>• Újoncoknak <b>nem kell</b> klubtagság és sportorvosi engedély.</div>
@@ -529,7 +535,7 @@ export default function EventLanding() {
         </Section>
 
         <Section id="fees" icon={TicketCheck} title="Nevezési és nézői díjak">
-          <Card className="rounded-2xl">
+          <Card className="rounded-2xl border border-[hsl(var(--primary))]/20">
             <CardContent className="p-6">
               <PriceRow label="Nevezési díj" value={`${priceEntry} ${EVENT.fees.currency}`} note="Tartalmazza a media csomagot (1 fotó + 1 videó) és az egyedi SBD pólót." />
               <PriceRow label="Nézői jegy" value={`${priceSpectator} ${EVENT.fees.currency}`} note="A helyszínen készpénzben vagy kártyával" />
@@ -538,10 +544,10 @@ export default function EventLanding() {
           </Card>
         </Section>
 
-        {/* ===== HELYSZÍN (iframe csak kliensen) ===== */}
+        {/* ===== Helyszín (stabil iframe) ===== */}
         <Section id="venue" icon={MapPin} title="Helyszín">
           <div className="grid lg:grid-cols-2 gap-4">
-            <Card className="rounded-2xl">
+            <Card className="rounded-2xl border border-[hsl(var(--primary))]/20">
               <CardContent className="p-6 grid gap-2">
                 <div className="font-medium">{EVENT.location.name}</div>
                 <div className="text-sm text-muted-foreground">{EVENT.location.address}</div>
@@ -555,7 +561,7 @@ export default function EventLanding() {
               const mapSrc = raw.includes("<iframe") ? (raw.match(/src="([^"]+)"/)?.[1] ?? "") : raw;
 
               return (
-                <div className="w-full h-[360px] md:h-[420px] rounded-2xl overflow-hidden border">
+                <div className="w-full h-[360px] md:h-[420px] rounded-2xl overflow-hidden border border-[hsl(var(--primary))]/20">
                   {mounted ? (
                     <iframe
                       key="map-mounted"
@@ -585,7 +591,7 @@ export default function EventLanding() {
         </Section>
 
         <Section id="faq" icon={Info} title="GYIK">
-          <Card className="rounded-2xl">
+          <Card className="rounded-2xl border border-[hsl(var(--primary))]/20">
             <CardContent className="p-6 grid gap-3 text-sm">
               <div>
                 <div className="font-medium">Kell sportorvosi vagy szövetségi engedély?</div>
