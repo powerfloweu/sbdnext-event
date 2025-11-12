@@ -66,14 +66,16 @@
 
 /* Alap reset a brand változókra */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  /* NINCS többé: @apply border-border outline-ring/50;  */
+  *, ::before, ::after {
+    /* Ha szeretnél halvány fókusz-keretet, megadhatod sima CSS-sel: */
+    outline-color: hsl(var(--ring) / 0.5);
   }
-  html, body {
-    height: 100%;
-  }
+
   body {
-    @apply bg-background text-foreground antialiased;
+    /* Ezek a CSS-változóidra támaszkodnak (amit már definiáltál fentebb): */
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
