@@ -390,53 +390,65 @@ export default function EventLanding() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* NAV (piros top stripe) */}
-      <nav className="sticky top-0 z-40 backdrop-blur bg-white/70 border-b relative before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-[hsl(var(--primary))]">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Dumbbell className="h-5 w-5 text-[hsl(var(--primary))]" />
-            <span className="font-semibold">SBD Next</span>
-          </div>
-          <div className="hidden sm:flex items-center gap-4 text-sm">
-            <a href="#info" className="hover:underline">Infók</a>
-            <a href="#schedule" className="hover:underline">Időrend</a>
-            <a href="#rules" className="hover:underline">Szabályok</a>
-            <a href="#fees" className="hover:underline">Díjak</a>
-            <a href="#faq" className="hover:underline">GYIK</a>
-          </div>
-          <a href="#register" className="inline-flex items-center gap-1 text-sm font-medium">
-            Nevezés <ChevronRight className="h-4 w-4"/>
-          </a>
-        </div>
-      </nav>
+      {/* NAV (fekete háttér, piros akcentus) */}
+<nav className="sticky top-0 z-40 backdrop-blur bg-black/90 border-b border-[hsl(var(--border))] text-white">
+  <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <Dumbbell className="h-5 w-5 text-[hsl(var(--primary))]" />
+      <span className="font-semibold">SBD Next</span>
+    </div>
+    <div className="hidden sm:flex items-center gap-4 text-sm [&_a]:text-zinc-300 [&_a:hover]:text-white">
+      <a href="#info" className="hover:underline">Infók</a>
+      <a href="#schedule" className="hover:underline">Időrend</a>
+      <a href="#rules" className="hover:underline">Szabályok</a>
+      <a href="#fees" className="hover:underline">Díjak</a>
+      <a href="#faq" className="hover:underline">GYIK</a>
+    </div>
+    <a href="#register" className="inline-flex items-center gap-1 text-sm font-medium hover:text-[hsl(var(--primary))]">
+      Nevezés <ChevronRight className="h-4 w-4" />
+    </a>
+  </div>
+</nav>
 
-      {/* HERO */}
-      <header className="relative">
-        <div className="max-w-5xl mx-auto px-4 py-12">
-          <motion.h1 initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{duration:0.5}} className="text-3xl sm:text-4xl font-bold tracking-tight">
-            {EVENT.title}
-          </motion.h1>
-          <div className="mt-4 grid sm:grid-cols-3 gap-3">
-            <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
-            <Stat label="Idő" value={EVENT.time} Icon={Timer} />
-            <Stat label="Helyszín" value={`${EVENT.location.name} — ${EVENT.location.address}`} Icon={MapPin} />
-          </div>
-          <div className="mt-3 text-sm">{EVENT.concept}</div>
-          <div className="mt-1 text-sm text-muted-foreground">{EVENT.layout} • {EVENT.eventType}</div>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <a href="#register">
-              <Button className="rounded-2xl px-6 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary))]/90 focus-visible:ring-[hsl(var(--ring))]">
-                Nevezek most
-              </Button>
-            </a>
-            <a href="#fees" className="inline-flex items-center gap-1 text-sm">
-              Nevezési díjak <ChevronRight className="h-4 w-4"/>
-            </a>
-          </div>
-        </div>
-      </header>
+{/* HERO szekció (piros CTA gombbal) */}
+<header className="relative bg-white text-gray-900">
+  <div className="max-w-5xl mx-auto px-4 py-12">
+    <motion.h1
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="text-3xl sm:text-4xl font-bold tracking-tight"
+    >
+      {EVENT.title}
+    </motion.h1>
 
-      <main className="max-w-5xl mx-auto px-4 pb-20">
+    <div className="mt-4 grid sm:grid-cols-3 gap-3">
+      <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
+      <Stat label="Idő" value={EVENT.time} Icon={Timer} />
+      <Stat label="Helyszín" value={`${EVENT.location.name} — ${EVENT.location.address}`} Icon={MapPin} />
+    </div>
+
+    <div className="mt-3 text-sm">{EVENT.concept}</div>
+    <div className="mt-1 text-sm text-muted-foreground">
+      {EVENT.layout} • {EVENT.eventType}
+    </div>
+
+    <div className="mt-6 flex flex-wrap items-center gap-3">
+      <a href="#register">
+        <Button
+          className="rounded-2xl px-6 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary))]/90 focus-visible:ring-[hsl(var(--ring))]"
+        >
+          Nevezek most
+        </Button>
+      </a>
+      <a href="#fees" className="inline-flex items-center gap-1 text-sm hover:text-[hsl(var(--primary))]">
+        Nevezési díjak <ChevronRight className="h-4 w-4" />
+      </a>
+    </div>
+  </div>
+</header>
+
+<main className="max-w-5xl mx-auto px-4 pb-20">
         <Section id="info" icon={Info} title="Versenyinformációk">
           <Card className="rounded-2xl">
             <CardContent className="p-6 grid gap-3">
