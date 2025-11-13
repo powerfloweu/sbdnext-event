@@ -151,8 +151,6 @@ function RegistrationForm() {
     club: "",
     sex: "",
     division: "",
-    equipment: "RAW",
-    preferredDay: "",
     bestTotal: "",
     consent: false,
     notes: "",
@@ -167,14 +165,12 @@ function RegistrationForm() {
     if (CAP_FULL) return false;
     if (data.honeypot && data.honeypot.trim().length > 0) return false;
 
-    // Kötelező mezők – NINCS "Szám (esemény)" mező
+    // Kötelező mezők – Felszerelés és Preferált nap NINCS
     if (
       !data.name ||
       !data.email ||
       !data.sex ||
       !data.division ||
-      !data.equipment ||
-      !data.preferredDay ||
       !data.consent
     ) {
       return false;
@@ -361,39 +357,6 @@ function RegistrationForm() {
                   {d}
                 </SelectItem>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Súlycsoport NINCS */}
-
-        <div>
-          <label className="text-sm">Felszerelés</label>
-          <Select
-            defaultValue="RAW"
-            onValueChange={(v) => setData({ ...data, equipment: v })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="RAW">RAW</SelectItem>
-              <SelectItem value="Classic RAW">Classic RAW</SelectItem>
-              <SelectItem value="Egyéb IPF-konform">Egyéb IPF-konform</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <label className="text-sm">Preferált nap</label>
-          <Select onValueChange={(v) => setData({ ...data, preferredDay: v })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Feb 14 (péntek)">Feb 14 (péntek)</SelectItem>
-              <SelectItem value="Feb 15 (szombat)">Feb 15 (szombat)</SelectItem>
-              <SelectItem value="Bármelyik">Bármelyik</SelectItem>
             </SelectContent>
           </Select>
         </div>
