@@ -424,39 +424,48 @@ export default function EventLanding() {
         </div>
       </nav>
 
-      {/* HERO — fekete/piros brand */}
-      <header className="relative bg-gradient-to-b from-black to-neutral-900 text-white">
-        <div className="max-w-5xl mx-auto px-4 py-12">
-          <motion.h1
-            initial={{opacity:0,y:10}}
-            animate={{opacity:1,y:0}}
-            transition={{duration:0.5}}
-            className="text-3xl sm:text-4xl font-extrabold tracking-tight"
-          >
-            {EVENT.title}
-          </motion.h1>
+ {/* HERO — háttérképpel */}
+<header className="relative overflow-hidden border-b bg-[url('/hero-bg.jpg')] bg-cover bg-center text-white">
+  {/* Sötét overlay, hogy olvasható maradjon a szöveg */}
+  <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/40" />
 
-          <div className="mt-4 grid sm:grid-cols-3 gap-3">
-            <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
-            <Stat label="Idő" value={EVENT.time} Icon={Timer} />
-            <Stat label="Helyszín" value={`${EVENT.location.name} — ${EVENT.location.address}`} Icon={MapPin} />
-          </div>
+  <div className="relative max-w-5xl mx-auto px-4 py-16">
+    <motion.h1
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="text-3xl sm:text-5xl font-extrabold tracking-tight drop-shadow-lg"
+    >
+      {EVENT.title}
+    </motion.h1>
 
-          <div className="mt-3 text-sm">{EVENT.concept}</div>
-          <div className="mt-1 text-sm text-neutral-300">{EVENT.layout} • {EVENT.eventType}</div>
+    <div className="mt-6 grid sm:grid-cols-3 gap-3">
+      <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
+      <Stat label="Idő" value={EVENT.time} Icon={Timer} />
+      <Stat label="Helyszín" value={`${EVENT.location.name} — ${EVENT.location.address}`} Icon={MapPin} />
+    </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <a href="#register">
-              <Button className="rounded-2xl px-6 bg-[hsl(var(--primary))] text-white hover:bg-[hsl(var(--primary))]/90">
-                Nevezek most
-              </Button>
-            </a>
-            <a href="#fees" className="inline-flex items-center gap-1 text-sm hover:text-[hsl(var(--primary))]">
-              Nevezési díjak <ChevronRight className="h-4 w-4"/>
-            </a>
-          </div>
-        </div>
-      </header>
+    <div className="mt-4 text-base text-neutral-200 max-w-2xl drop-shadow">
+      {EVENT.concept}
+    </div>
+
+    <div className="mt-1 text-sm text-neutral-300 max-w-2xl drop-shadow">
+      {EVENT.layout} • {EVENT.eventType}
+    </div>
+
+    <div className="mt-8 flex flex-wrap items-center gap-3">
+      <a href="#register">
+        <Button className="rounded-full px-7 py-2 text-sm font-semibold shadow-lg shadow-primary/40 bg-primary hover:bg-primary/80">
+          Nevezek most
+        </Button>
+      </a>
+
+      <a href="#fees" className="inline-flex items-center gap-1 text-sm text-neutral-200 hover:text-white drop-shadow">
+        Nevezési díjak <ChevronRight className="h-4 w-4" />
+      </a>
+    </div>
+  </div>
+</header>
 
       <main className="max-w-5xl mx-auto px-4 pb-20">
         <Section id="info" icon={Info} title="Versenyinformációk">
