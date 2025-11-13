@@ -1,14 +1,23 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* dark variant tailwind v4-hez */
+/* Dark variant támogatás */
 @custom-variant dark (&:is(.dark *));
 
+/* Tailwind v4 inline theme → a color-* utilok ezekre épülnek */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -16,129 +25,76 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
 
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* --- BRAND THEME: fekete alap, piros + enyhén lilás accent --- */
+/* === SBD piros-fekete téma (alap mód) === */
 :root {
   /* háttér / szöveg */
-  --background: 0 0% 4%;      /* közel fekete */
-  --foreground: 0 0% 96%;
+  --background: 0 0% 3%;    /* majdnem fekete */
+  --foreground: 0 0% 98%;   /* majdnem fehér */
 
-  /* fő accent – SBD-hez passzoló piros-lila */
-  /* ha “túl lilás”, ezt egy 0 100% 50% körüli pirosra cserélheted */
-  --primary: 338 92% 55%;          /* kb. #e11d48 – deep magenta-red */
+  /* SBD piros */
+  --primary: 0 92% 50%;     /* #e10600 környéke */
   --primary-foreground: 0 0% 100%;
 
-  /* másodlagos/neutral */
-  --secondary: 0 0% 10%;
-  --secondary-foreground: 0 0% 96%;
+  /* neutrális felületek */
+  --muted: 0 0% 16%;
+  --muted-foreground: 0 0% 72%;
 
-  --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 70%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 100%;
 
   --accent: 0 0% 16%;
   --accent-foreground: 0 0% 96%;
 
-  /* hiba/piros */
+  /* hibák / figyelmeztetés */
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  /* keretek, input */
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 338 92% 55%;
+  /* keretek, inputok, fókuszgyűrű */
+  --border: 0 0% 24%;
+  --input: 0 0% 24%;
+  --ring: 0 92% 50%;
 
   /* kártyák */
-  --card: 0 0% 8%;
+  --card: 0 0% 6%;
   --card-foreground: 0 0% 96%;
 
-  /* általános radius (shadcn) */
-  --radius: 0.75rem;
+  --radius: 1rem;
 }
 
-/* opcionális .dark – ha később kapcsolót akarsz, már kész */
+/* Opcionális .dark override – ha később lesz külön dark mód */
 .dark {
-  --background: 0 0% 2%;
-  --foreground: 0 0% 96%;
-
-  --primary: 338 92% 60%;
-  --primary-foreground: 0 0% 100%;
-
-  --secondary: 0 0% 10%;
-  --secondary-foreground: 0 0% 96%;
-
-  --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 70%;
-
-  --accent: 0 0% 18%;
-  --accent-foreground: 0 0% 96%;
-
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-
-  --border: 0 0% 22%;
-  --input: 0 0% 22%;
-  --ring: 338 92% 60%;
-
-  --card: 0 0% 8%;
-  --card-foreground: 0 0% 96%;
+  --background: 0 0% 3%;
+  --foreground: 0 0% 98%;
 }
 
-/* Alap Tailwind base layer */
+/* === Alap reset + body === */
 @layer base {
   * {
     box-sizing: border-box;
   }
 
   body {
-    margin: 0;
-    min-height: 100vh;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: var(--font-geist-sans), system-ui, -apple-system,
-      BlinkMacSystemFont, "Segoe UI", sans-serif;
+    @apply bg-background text-foreground antialiased;
   }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-/* ---- iOS Safari Select text visibility fix (Radix + shadcn) ---- */
-
-/* Trigger icon + text */
-button[data-state],
-button[data-state] * {
-  color: #ffffff !important;
 }
 
-/* Dropdown container + items */
+/* === iOS / Safari Select bug fix — Radix Select === */
 [data-radix-select-content],
 [data-radix-select-content] * {
-  color: #ffffff !important;
+  color: white !important;
 }
 
-/* List items in menu */
 [data-radix-collection-item],
 [data-radix-collection-item] * {
-  color: #ffffff !important;
+  color: white !important;
 }
