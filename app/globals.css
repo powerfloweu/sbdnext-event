@@ -1,95 +1,144 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Tailwind v4: a .dark variáns */
+/* dark variant tailwind v4-hez */
 @custom-variant dark (&:is(.dark *));
 
-/* ---------------------------
-   SBD brand (világos + sötét)
----------------------------- */
-:root {
-  /* Alap (világos mód) */
-  --background: 0 0% 100%;
-  --foreground: 0 0% 10%;
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 
-  /* SBD vörös (#ED1C24 környéke HSL-ben) */
-  --primary: 0 100% 55%;
-  --primary-foreground: 0 0% 100%;
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
 
-  /* Kiegészítők (szürkék, keretek) */
-  --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 40%;
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 
-  --secondary: 0 0% 98%;
-  --secondary-foreground: 0 0% 12%;
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
-  --accent: 0 0% 96%;
-  --accent-foreground: 0 0% 12%;
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
-  --border: 0 0% 88%;
-  --input: 0 0% 88%;
-  --ring: 0 100% 55%;
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 10%;
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-.dark {
-  --background: 0 0% 6%;
+/* --- BRAND THEME: fekete alap, piros + enyhén lilás accent --- */
+:root {
+  /* háttér / szöveg */
+  --background: 0 0% 4%;      /* közel fekete */
   --foreground: 0 0% 96%;
 
-  --primary: 0 100% 55%;
+  /* fő accent – SBD-hez passzoló piros-lila */
+  /* ha “túl lilás”, ezt egy 0 100% 50% körüli pirosra cserélheted */
+  --primary: 338 92% 55%;          /* kb. #e11d48 – deep magenta-red */
   --primary-foreground: 0 0% 100%;
 
-  --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 72%;
-
-  --secondary: 0 0% 12%;
+  /* másodlagos/neutral */
+  --secondary: 0 0% 10%;
   --secondary-foreground: 0 0% 96%;
+
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 70%;
 
   --accent: 0 0% 16%;
   --accent-foreground: 0 0% 96%;
 
+  /* hiba/piros */
   --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 96%;
+  --destructive-foreground: 0 0% 100%;
 
+  /* keretek, input */
   --border: 0 0% 20%;
   --input: 0 0% 20%;
-  --ring: 0 100% 55%;
+  --ring: 338 92% 55%;
+
+  /* kártyák */
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 96%;
+
+  /* általános radius (shadcn) */
+  --radius: 0.75rem;
+}
+
+/* opcionális .dark – ha később kapcsolót akarsz, már kész */
+.dark {
+  --background: 0 0% 2%;
+  --foreground: 0 0% 96%;
+
+  --primary: 338 92% 60%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 96%;
+
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 70%;
+
+  --accent: 0 0% 18%;
+  --accent-foreground: 0 0% 96%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 22%;
+  --input: 0 0% 22%;
+  --ring: 338 92% 60%;
 
   --card: 0 0% 8%;
   --card-foreground: 0 0% 96%;
 }
 
-/* Alap reset a brand változókra */
+/* Alap Tailwind base layer */
 @layer base {
-  /* NINCS többé: @apply border-border outline-ring/50;  */
-  *, ::before, ::after {
-    /* Ha szeretnél halvány fókusz-keretet, megadhatod sima CSS-sel: */
-    outline-color: hsl(var(--ring) / 0.5);
+  * {
+    box-sizing: border-box;
   }
 
   body {
-    /* Ezek a CSS-változóidra támaszkodnak (amit már definiáltál fentebb): */
+    margin: 0;
+    min-height: 100vh;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-family: var(--font-geist-sans), system-ui, -apple-system,
+      BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+/* ---- iOS Safari Select text visibility fix (Radix + shadcn) ---- */
+
+/* Trigger icon + text */
+button[data-state],
+button[data-state] * {
+  color: #ffffff !important;
 }
 
-/* Helper: piros CTA gomb (nem kötelező, csak könnyíti a használatot)
-   Példa használat: class="btn-primary"
-*/
-.btn-primary {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+/* Dropdown container + items */
+[data-radix-select-content],
+[data-radix-select-content] * {
+  color: #ffffff !important;
 }
-.btn-primary:hover {
-  background-color: color-mix(in oklab, hsl(var(--primary)) 90%, black);
-}
-.btn-primary:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+
+/* List items in menu */
+[data-radix-collection-item],
+[data-radix-collection-item] * {
+  color: #ffffff !important;
 }
