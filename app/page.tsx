@@ -150,12 +150,12 @@ function PriceRow({
   note?: string;
 }) {
   return (
-    <div className="flex items-start justify-between border-b border-neutral-800 py-2">
-      <div className="font-medium text-sm">{label}</div>
+    <div className="flex items-start justify-between border-b border-red-900/40 py-2">
+      <div className="font-medium text-neutral-100">{label}</div>
       <div className="text-right">
-        <div className="font-semibold text-sm text-red-300">{value}</div>
+        <div className="font-semibold text-primary">{value}</div>
         {note && (
-          <div className="text-xs text-neutral-400 max-w-xs ml-auto">
+          <div className="text-xs text-neutral-400">
             {note}
           </div>
         )}
@@ -545,61 +545,57 @@ export default function EventLanding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50">
-      {/* NAV */}
-      <nav className="sticky top-0 z-40 backdrop-blur bg-black/70 border-b border-red-900/50">
+           {/* NAV – logók + SBD NEXT */}
+      <nav className="sticky top-0 z-40 backdrop-blur bg-black/80 border-b border-red-900/60">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Bal oldal: logók + cím */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <Image
+              <img
                 src="/sbd_logo.jpg"
                 alt="SBD Hungary"
-                width={40}
-                height={40}
-                className="rounded-sm border border-red-900/70 bg-black object-contain"
+                className="h-7 w-auto rounded-md border border-red-800 bg-black/80"
               />
-              <Image
+              <img
                 src="/powerflow_logo.png"
                 alt="PowerFlow"
-                width={40}
-                height={40}
-                className="rounded-sm bg-black object-contain"
+                className="h-7 w-auto opacity-80"
               />
             </div>
-            <div className="hidden sm:flex flex-col">
-              <span className="text-xs uppercase tracking-[0.25em] text-red-300">
-                SBD Next
-              </span>
-              <span className="text-sm font-medium text-neutral-100">
-                Új belépők powerlifting versenye
-              </span>
+            <div className="leading-tight hidden sm:block">
+              <div className="text-xs uppercase tracking-[0.3em] text-primary">
+                SBD NEXT
+              </div>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-xs">
-            <a href="#info" className="hover:text-red-300">
-              Infók
-            </a>
-            <a href="#schedule" className="hover:text-red-300">
-              Időrend
-            </a>
-            <a href="#rules" className="hover:text-red-300">
-              Szabályok
-            </a>
-            <a href="#fees" className="hover:text-red-300">
-              Díjak
-            </a>
-            <a href="#faq" className="hover:text-red-300">
-              GYIK
+
+          {/* Jobb oldal: menü + gomb */}
+          <div className="flex items-center gap-4 text-sm">
+            <div className="hidden md:flex items-center gap-4">
+              <a href="#info" className="hover:text-primary transition-colors">
+                Infók
+              </a>
+              <a href="#schedule" className="hover:text-primary transition-colors">
+                Időrend
+              </a>
+              <a href="#rules" className="hover:text-primary transition-colors">
+                Szabályok
+              </a>
+              <a href="#fees" className="hover:text-primary transition-colors">
+                Díjak
+              </a>
+              <a href="#faq" className="hover:text-primary transition-colors">
+                GYIK
+              </a>
+            </div>
+            <a href="#register">
+              <Button className="rounded-2xl px-5 bg-primary hover:bg-primary/90 text-sm">
+                Nevezés
+              </Button>
             </a>
           </div>
-          <a
-            href="#register"
-            className="inline-flex items-center gap-1 text-xs font-medium text-red-200"
-          >
-            Nevezés <ChevronRight className="h-4 w-4" />
-          </a>
         </div>
       </nav>
-
  {/* HERO – SBD fekete/piros + hero_bg */}
 <header className="relative text-white">
   {/* háttérkép */}
@@ -760,18 +756,20 @@ export default function EventLanding() {
               <div>15:30–18:30 — Felhúzás (Platform A &amp; B)</div>
               <div>19:00 — Napi eredményhirdetés</div>
 
-              <div className="mt-4 grid sm:grid-cols-2 gap-2">
+                            <div className="mt-4 grid sm:grid-cols-2 gap-2">
                 <a
                   href={EVENT.streams.platformA}
-                  className="inline-flex items-center gap-2 text-xs text-red-300 underline underline-offset-4"
+                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
                 >
-                  <LinkIcon className="h-4 w-4" /> Stream — Platform A
+                  <LinkIcon className="h-4 w-4" />
+                  Stream — Platform A
                 </a>
                 <a
                   href={EVENT.streams.platformB}
-                  className="inline-flex items-center gap-2 text-xs text-red-300 underline underline-offset-4"
+                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
                 >
-                  <LinkIcon className="h-4 w-4" /> Stream — Platform B
+                  <LinkIcon className="h-4 w-4" />
+                  Stream — Platform B
                 </a>
               </div>
 
