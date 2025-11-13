@@ -600,78 +600,61 @@ export default function EventLanding() {
         </div>
       </nav>
 
-      {/* HERO — fekete/piros SBD brand */}
-<header
-  className="
-    relative
-    bg-[url('/hero_bg.jpg')]
-    bg-cover bg-center bg-no-repeat
-    text-white
-  "
->
-  {/* Black-to-transparent overlay */}
-  <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85" />
+ {/* HERO – SBD fekete/piros + hero_bg */}
+<header className="relative text-white">
+  {/* háttérkép */}
+  <div className="absolute inset-0 bg-[url('/hero_bg.jpg')] bg-cover bg-center opacity-40" />
 
-  <div className="relative max-w-5xl mx-auto px-4 py-12 sm:py-20">
-    {/* HERO TITLE */}
+  {/* fekete/piros overlay */}
+  <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/75 to-black/90" />
+
+  {/* Tartalom */}
+  <div className="relative max-w-5xl mx-auto px-4 py-12">
+    {/* Főcím */}
     <motion.h1
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white"
+      className="text-4xl sm:text-5xl font-extrabold tracking-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]"
     >
-      SBD Next
+      SBD NEXT
     </motion.h1>
 
-    {/* PULSING RED BADGE — “A következő szint” */}
-    <div className="mt-4 inline-flex items-center gap-2 rounded-full
-      border border-red-900/70 bg-red-900/30
-      shadow-[0_0_25px_rgba(255,0,0,0.6)]
-      px-3 py-1 text-xs sm:text-sm text-red-200">
-      <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
-      <span>A következő szint</span>
+    {/* Alcím */}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className="mt-2 text-xl sm:text-2xl font-semibold text-red-400"
+    >
+      A következő szint
+    </motion.div>
+
+    {/* Logók */}
+    <div className="mt-6 flex items-center gap-4">
+      <img src="/sbd_logo.jpg" alt="SBD" className="h-10 opacity-90" />
+      <img src="/powerflow_logo.png" alt="PowerFlow" className="h-10 opacity-80" />
     </div>
 
-    {/* SUBTEXT (no orange) */}
-    <p className="mt-4 text-sm sm:text-base text-neutral-300 max-w-xl leading-relaxed">
-      Első versenyeseknek is. IPF-szabályos full power esemény – két nap, két platform, profi lebonyolítással.
-    </p>
+    {/* Pulzáló chip */}
+    <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-200 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
+      <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+      <span>IPF-szabályos full power esemény — első versenyeseknek is</span>
+    </div>
 
-    {/* CTA BUTTONS */}
-    <div className="mt-6 flex flex-wrap items-center gap-4">
+    {/* Gombok */}
+    <div className="mt-8 flex flex-wrap items-center gap-6">
       <a href="#register">
-        <Button className="rounded-2xl px-6 bg-primary hover:bg-primary/90">
+        <Button className="rounded-2xl px-6 bg-red-700 hover:bg-red-800 shadow-lg shadow-red-900/50">
           Nevezek most
         </Button>
       </a>
 
       <a
         href="#fees"
-        className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80"
+        className="inline-flex items-center gap-1 text-sm text-red-400 hover:text-red-300"
       >
         Nevezési díjak <ChevronRight className="h-4 w-4" />
-      </a>
-    </div>
-
-    {/* INSTAGRAM LINKS */}
-    <div className="mt-4 text-sm text-neutral-300 flex flex-wrap items-center gap-2">
-      <span>Kövess minket Instagramon:</span>
-      <a
-        href="https://instagram.com/sbdhungary"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-primary underline hover:text-primary/80"
-      >
-        @sbdhungary
-      </a>
-      <span>&</span>
-      <a
-        href="https://instagram.com/powerfloweu"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-primary underline hover:text-primary/80"
-      >
-        @powerfloweu
       </a>
     </div>
   </div>
