@@ -137,8 +137,11 @@ function PriceRow({ label, value, note }: { label: string; value: string; note?:
 
 // ====== REGISZTRÁCIÓ + STRIPE ======
 function RegistrationForm() {
-  const PAYMENT_LINK_BASE = "https://buy.stripe.com/8x26oG6az4yg8AQ89DdfG0m";
-  const PAYMENT_LINK_PREMIUM = "https://buy.stripe.com/bJe7sK0Qf7Ks9EU1LfdfG0n";
+  // Stripe Payment Linkek
+  const PAYMENT_LINK_BASE = "https://buy.stripe.com/8x26oG6az4yg8AQ89DdfG0m";      // Nevezés (33 990 Ft)
+  const PAYMENT_LINK_PREMIUM = "https://buy.stripe.com/bJe7sK0Qf7Ks9EU1LfdfG0n";   // Prémium (+24 990 Ft)
+
+  // Make.com webhook
   const WEBHOOK_URL = "https://hook.eu1.make.com/6vbe2dxien274ohy91ew22lp9bbfzrl3";
 
   const [data, setData] = useState<any>({
@@ -148,14 +151,13 @@ function RegistrationForm() {
     club: "",
     sex: "",
     division: "",
-    event: "Teljes verseny (SBD)",
     equipment: "RAW",
     preferredDay: "",
     bestTotal: "",
     consent: false,
     notes: "",
-    premium: false,
-    honeypot: "",
+    premium: false,  // prémium választás
+    honeypot: "",    // bot csapda
   });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -164,18 +166,20 @@ function RegistrationForm() {
   const valid = useMemo(() => {
     if (CAP_FULL) return false;
     if (data.honeypot && data.honeypot.trim().length > 0) return false;
+
+    // Kötelező mezők – NINCS "Szám (esemény)" mező
     if (
       !data.name ||
       !data.email ||
       !data.sex ||
       !data.division ||
-      !data.event ||
       !data.equipment ||
       !data.preferredDay ||
       !data.consent
     ) {
       return false;
     }
+
     return /.+@.+\..+/.test(data.email);
   }, [data]);
 
@@ -194,7 +198,9 @@ function RegistrationForm() {
           : `reg_${Date.now()}`;
 
       const target = data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE;
-      const utm = typeof window !== "undefined" ? window.location.search || "" : "";
+
+      // UTM
+      const utm = typeof window !== "undefined" ? (window.location.search || "") : "";
 
       const payload = {
         registrationId,
@@ -203,7 +209,7 @@ function RegistrationForm() {
         stripeLink: target,
         submittedAt: new Date().toISOString(),
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
-        page: "/",
+        page: "/", // jelenlegi oldal
         utm,
         cap: {
           limit: CAP_LIMIT,
@@ -213,14 +219,11 @@ function RegistrationForm() {
         },
       };
 
-      const blob = new Blob([JSON.stringify(payload)], {
-        type: "application/json",
-      });
-
-      const beaconOk =
-        typeof navigator !== "undefined" && "sendBeacon" in navigator
-          ? navigator.sendBeacon(WEBHOOK_URL, blob)
-          : false;
+      // Webhook küldés (beacon + fetch fallback)
+      const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+      const beaconOk = typeof navigator !== "undefined" && "sendBeacon" in navigator
+        ? navigator.sendBeacon(WEBHOOK_URL, blob)
+        : false;
 
       if (!beaconOk) {
         await fetch(WEBHOOK_URL, {
@@ -231,6 +234,7 @@ function RegistrationForm() {
         }).catch(() => {});
       }
 
+      // Stripe redirect (email előtöltés)
       const url = new URL(target);
       if (data.email) url.searchParams.set("prefilled_email", data.email);
       window.location.href = url.toString();
@@ -245,12 +249,12 @@ function RegistrationForm() {
 
   if (CAP_FULL) {
     return (
-      <div className="rounded-2xl border border-red-900/60 bg-black/70 p-6">
-        <div className="flex items-center gap-2 text-amber-300">
+      <div className="rounded-2xl border border-border bg-black/40 p-6">
+        <div className="flex items-center gap-2 text-amber-400">
           <AlertCircle className="h-5 w-5" />
           <b>Betelt a nevezés ({CAP_LIMIT} fő).</b>
         </div>
-        <div className="text-sm text-neutral-300 mt-2">
+        <div className="text-sm text-muted-foreground mt-2">
           Kövesd az Instagramot ({EVENT.social.ig}) és a hírlevelet a lemondott helyekért / várólistáért.
         </div>
       </div>
@@ -259,13 +263,13 @@ function RegistrationForm() {
 
   if (done) {
     return (
-      <div className="rounded-2xl border border-red-900/80 bg-black/70 p-6 text-center">
-        <CheckCircle2 className="mx-auto h-10 w-10 text-red-300" />
+      <div className="rounded-2xl border border-border bg-black/40 p-6 text-center">
+        <CheckCircle2 className="mx-auto h-10 w-10 text-green-400" />
         <h3 className="mt-4 text-lg font-semibold">Átirányítás a fizetéshez…</h3>
-        <p className="text-sm text-neutral-300 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Ha nem történik meg automatikusan,{" "}
           <a
-            className="underline text-red-300"
+            className="underline text-primary"
             href={data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE}
           >
             kattints ide
@@ -279,7 +283,7 @@ function RegistrationForm() {
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       {error && (
-        <div className="flex items-center gap-2 text-red-300 text-sm">
+        <div className="flex items-center gap-2 text-red-400 text-sm">
           <AlertCircle className="h-4 w-4" /> {error}
         </div>
       )}
@@ -361,12 +365,7 @@ function RegistrationForm() {
           </Select>
         </div>
 
-        {/* Súlycsoport nincs */}
-
-        <div>
-          <label className="text-sm">Szám (Esemény)</label>
-          <Input value={data.event} readOnly />
-        </div>
+        {/* Súlycsoport NINCS */}
 
         <div>
           <label className="text-sm">Felszerelés</label>
@@ -387,9 +386,7 @@ function RegistrationForm() {
 
         <div>
           <label className="text-sm">Preferált nap</label>
-          <Select
-            onValueChange={(v) => setData({ ...data, preferredDay: v })}
-          >
+          <Select onValueChange={(v) => setData({ ...data, preferredDay: v })}>
             <SelectTrigger>
               <SelectValue placeholder="Válassz" />
             </SelectTrigger>
@@ -432,12 +429,12 @@ function RegistrationForm() {
           }
         />
         <label htmlFor="consent" className="text-sm">
-          Hozzájárulok az adataim kezeléséhez és elfogadom a verseny
-          szabályzatát. Tudomásul veszem, hogy a nevezés a{" "}
-          <b>fizetéssel</b> válik véglegessé.
+          Hozzájárulok az adataim kezeléséhez és elfogadom a verseny szabályzatát.
+          Tudomásul veszem, hogy a nevezés a <b>fizetéssel</b> válik véglegessé.
         </label>
       </div>
 
+      {/* Prémium opció */}
       <div className="flex items-start gap-3">
         <Checkbox
           id="premium"
@@ -447,24 +444,20 @@ function RegistrationForm() {
           }
         />
         <label htmlFor="premium" className="text-sm">
-          Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt
-          válogatás.
+          Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt válogatás.
         </label>
       </div>
 
       <div className="flex items-center gap-3">
-        <Button
-          type="submit"
-          disabled={!valid || submitting}
-          className="rounded-full bg-red-600 hover:bg-red-500 text-white px-6 shadow-[0_0_25px_rgba(127,29,29,0.9)]"
-        >
+        <Button type="submit" disabled={!valid || submitting}>
           {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
         </Button>
-        <div className="text-xs text-neutral-300">
-          A nevezési díj: 33 990 Ft — tartalmazza a{" "}
-          <b>media csomagot (1 fotó + 1 videó)</b> és az{" "}
-          <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó +
-          3 videó).
+        <div className="text-xs text-muted-foreground">
+          A nevezési díj: 33 990 Ft — tartalmazza a
+          {" "}
+          <b>media csomagot (1 fotó + 1 videó)</b> és az
+          {" "}
+          <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó + 3 videó).
         </div>
       </div>
     </form>
