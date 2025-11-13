@@ -32,6 +32,7 @@ const CAP_USED = Number(process.env.NEXT_PUBLIC_CAP_USED ?? "0");
 const CAP_FULL_FLAG = (process.env.NEXT_PUBLIC_CAP_FULL ?? "").toLowerCase() === "true";
 const CAP_REMAINING = Math.max(0, CAP_LIMIT - CAP_USED);
 const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
+const REG_OPEN = (process.env.NEXT_PUBLIC_REG_OPEN ?? "false").toLowerCase() === "true";
 
 /* ===== Esemény adatok ===== */
 const EVENT = {
@@ -127,6 +128,9 @@ function PriceRow({ label, value, note }: { label: string; value: string; note?:
 
 /* ===== Regisztráció + Stripe ===== */
 function RegistrationForm() {
+    if (!REG_OPEN) {
+  return null; // extra biztonság: ha valahol mégis megjelenne, ne renderelje
+}
   const PAYMENT_LINK_BASE = "https://buy.stripe.com/8x26oG6az4yg8AQ89DdfG0m";     // 33 990 Ft
   const PAYMENT_LINK_PREMIUM = "https://buy.stripe.com/bJe7sK0Qf7Ks9EU1LfdfG0n";  // +24 990 Ft
   const WEBHOOK_URL = "https://hook.eu1.make.com/6vbe2dxien274ohy91ew22lp9bbfzrl3";
@@ -404,16 +408,19 @@ export default function EventLanding() {
             <Dumbbell className="h-5 w-5 text-[hsl(var(--primary))]" />
             <span className="font-semibold">SBD Next</span>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-sm">
-            <a href="#info" className="hover:text-[hsl(var(--primary))]">Infók</a>
-            <a href="#schedule" className="hover:text-[hsl(var(--primary))]">Időrend</a>
-            <a href="#rules" className="hover:text-[hsl(var(--primary))]">Szabályok</a>
-            <a href="#fees" className="hover:text-[hsl(var(--primary))]">Díjak</a>
-            <a href="#faq" className="hover:text-[hsl(var(--primary))]">GYIK</a>
-          </div>
-          <a href="#register" className="inline-flex items-center gap-1 text-sm font-medium text-[hsl(var(--primary))]">
-            Nevezés <ChevronRight className="h-4 w-4"/>
-          </a>
+<div className="hidden sm:flex items-center gap-4 text-sm">
+  <a href="#info" className="hover:underline">Infók</a>
+  <a href="#schedule" className="hover:underline">Időrend</a>
+  <a href="#rules" className="hover:underline">Szabályok</a>
+  <a href="#fees" className="hover:underline">Díjak</a>
+  <a href="#faq" className="hover:underline">GYIK</a>
+  {REG_OPEN && <a href="#register" className="hover:underline">Nevezés</a>}
+</div>
+          {REG_OPEN && (
+  <a href="#register" className="inline-flex items-center gap-1 text-sm font-medium">
+    Nevezés <ChevronRight className="h-4 w-4" />
+  </a>
+)}
         </div>
       </nav>
 
@@ -584,11 +591,26 @@ export default function EventLanding() {
         </Section>
 
         <Section id="register" icon={Dumbbell} title="Nevezés">
-          <RegistrationForm />
-          <div className="mt-3 text-xs text-muted-foreground">
-            A nevezés elküldése nem garantál rajtszámot. A helyed a nevezési díj beérkezése után válik véglegessé.
-          </div>
-        </Section>
+  {REG_OPEN ? (
+    <>
+      <RegistrationForm />
+      <div className="mt-3 text-xs text-muted-foreground">
+        A nevezés elküldése nem garantál rajtszámot. A helyed a nevezési díj beérkezése után válik véglegessé.
+      </div>
+    </>
+  ) : (
+    <Card className="rounded-2xl border border-dashed border-red-300 bg-red-50/60">
+      <CardContent className="p-6">
+        <div className="text-sm font-semibold text-red-800">
+          A nevezés még nem nyílt meg.
+        </div>
+        <div className="text-xs text-red-900/80 mt-1">
+          Kövesd az Instagramot ({EVENT.social.ig}) és a hírlevelet, ott jelentjük be a nevezés indítását.
+        </div>
+      </CardContent>
+    </Card>
+  )}
+</Section>
 
         <Section id="faq" icon={Info} title="GYIK">
           <Card className="rounded-2xl border border-[hsl(var(--primary))]/20">
