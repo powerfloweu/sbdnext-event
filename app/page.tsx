@@ -600,141 +600,82 @@ export default function EventLanding() {
         </div>
       </nav>
 
-      {/* HERO */}
-      <header
-        className="relative bg-black text-white"
-        style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.95)), url('/hero_bg.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
+      {/* HERO — fekete/piros SBD brand */}
+<header
+  className="
+    relative
+    bg-[url('/hero_bg.jpg')]
+    bg-cover bg-center bg-no-repeat
+    text-white
+  "
+>
+  {/* Black-to-transparent overlay */}
+  <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/85" />
+
+  <div className="relative max-w-5xl mx-auto px-4 py-12 sm:py-20">
+    {/* HERO TITLE */}
+    <motion.h1
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white"
+    >
+      SBD Next
+    </motion.h1>
+
+    {/* PULSING RED BADGE — “A következő szint” */}
+    <div className="mt-4 inline-flex items-center gap-2 rounded-full
+      border border-red-900/70 bg-red-900/30
+      shadow-[0_0_25px_rgba(255,0,0,0.6)]
+      px-3 py-1 text-xs sm:text-sm text-red-200">
+      <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
+      <span>A következő szint</span>
+    </div>
+
+    {/* SUBTEXT (no orange) */}
+    <p className="mt-4 text-sm sm:text-base text-neutral-300 max-w-xl leading-relaxed">
+      Első versenyeseknek is. IPF-szabályos full power esemény – két nap, két platform, profi lebonyolítással.
+    </p>
+
+    {/* CTA BUTTONS */}
+    <div className="mt-6 flex flex-wrap items-center gap-4">
+      <a href="#register">
+        <Button className="rounded-2xl px-6 bg-primary hover:bg-primary/90">
+          Nevezek most
+        </Button>
+      </a>
+
+      <a
+        href="#fees"
+        className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80"
       >
-        <div className="max-w-5xl mx-auto px-4 py-10 sm:py-14 relative">
-          <div className="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-8 items-start">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-red-900/80 px-3 py-1 text-xs font-medium text-red-100 shadow-[0_0_25px_rgba(127,29,29,0.9)] mb-4">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-300" />
-                <span>{EVENT.subtitle}</span>
-              </div>
+        Nevezési díjak <ChevronRight className="h-4 w-4" />
+      </a>
+    </div>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-3xl sm:text-4xl font-extrabold tracking-tight"
-              >
-                SBD Next – Új belépők powerlifting versenye
-              </motion.h1>
-
-              <p className="mt-3 text-sm sm:text-base text-neutral-200 max-w-xl">
-                {EVENT.concept}
-              </p>
-              <p className="mt-1 text-xs sm:text-sm text-neutral-300">
-                {EVENT.layout} • {EVENT.eventType}
-              </p>
-
-              <div className="mt-5 grid sm:grid-cols-3 gap-3">
-                <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
-                <Stat label="Idő" value={EVENT.time} Icon={Timer} />
-                <Stat
-                  label="Helyszín"
-                  value={EVENT.location.name}
-                  Icon={MapPin}
-                />
-              </div>
-
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <a href="#register">
-                  <Button className="rounded-2xl px-6 bg-primary hover:bg-primary/90">
-                    Nevezek most
-                  </Button>
-                </a>
-                <a
-                  href="#fees"
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80"
-                >
-                  Nevezési díjak <ChevronRight className="h-4 w-4" />
-                </a>
-              </div>
-
-              <div className="mt-3 text-sm text-muted-foreground flex flex-wrap items-center gap-2">
-                <span>Kövess minket Instagramon:</span>
-                <a
-                  href={EVENT.social.igSbd}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline hover:text-primary/80"
-                >
-                  @sbdhungary
-                </a>
-                <span>&</span>
-                <a
-                  href={EVENT.social.igPowerflow}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline hover:text-primary/80"
-                >
-                  @powerfloweu
-                </a>
-              </div>
-
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-200 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
-                <span className="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
-                <span>
-                  Első versenyeseknek is, IPF-szabályos full power esemény.
-                </span>
-              </div>
-            </div>
-
-            <Card className="rounded-2xl border border-red-900/60 bg-black/75 shadow-[0_0_45px_rgba(0,0,0,0.9)]">
-              <CardContent className="p-5 space-y-4 text-sm">
-                <div className="text-xs uppercase tracking-[0.2em] text-red-300">
-                  Verseny röviden
-                </div>
-                <div className="text-sm text-neutral-100">
-                  {EVENT.concept}
-                </div>
-                <div className="text-xs text-neutral-300">
-                  {EVENT.layout}
-                  <br />
-                  {EVENT.eventType}
-                </div>
-                <div className="text-xs text-neutral-400">
-                  Eredményhirdetés IPF pontszám alapján, súlycsoportok nélkül.
-                </div>
-                <div className="h-px bg-gradient-to-r from-transparent via-red-700/70 to-transparent" />
-                <div className="grid gap-2 text-xs text-neutral-300">
-                  <div>
-                    <span className="font-semibold text-neutral-100">
-                      Jelentkezés:
-                    </span>{" "}
-                    {EVENT.deadlines.regOpen} – {EVENT.deadlines.regClose}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-neutral-100">
-                      Lemondás:
-                    </span>{" "}
-                    {EVENT.deadlines.refundFull} • {EVENT.deadlines.refundHalf} •{" "}
-                    {EVENT.deadlines.refundNone}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-neutral-100">
-                      Divíziók:
-                    </span>{" "}
-                    Újonc / Versenyző • Női / Férfi
-                  </div>
-                </div>
-                <div className="mt-3 text-xs text-yellow-200 bg-yellow-950/40 border border-yellow-700/60 rounded-xl px-3 py-2">
-                  A nevezés még nem indult el. Jelentkezés:{" "}
-                  <b>{EVENT.deadlines.regOpen}</b> –{" "}
-                  <b>{EVENT.deadlines.regClose}</b>.
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </header>
+    {/* INSTAGRAM LINKS */}
+    <div className="mt-4 text-sm text-neutral-300 flex flex-wrap items-center gap-2">
+      <span>Kövess minket Instagramon:</span>
+      <a
+        href="https://instagram.com/sbdhungary"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary underline hover:text-primary/80"
+      >
+        @sbdhungary
+      </a>
+      <span>&</span>
+      <a
+        href="https://instagram.com/powerfloweu"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary underline hover:text-primary/80"
+      >
+        @powerfloweu
+      </a>
+    </div>
+  </div>
+</header>
 
       {/* TARTALOM */}
       <main className="max-w-5xl mx-auto px-4 pb-20">
