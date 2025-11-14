@@ -545,116 +545,189 @@ export default function EventLanding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50">
-           {/* NAV – logók + SBD NEXT */}
-      <nav className="sticky top-0 z-40 backdrop-blur bg-black/80 border-b border-red-900/60">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Bal oldal: logók + cím */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+                    {/* NAV – SBD Hungary + PowerFlow */}
+      <nav className="sticky top-0 z-40 border-b border-red-900/70 bg-black/85 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+          {/* Bal oldal: logók */}
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.sbdhungary.hu/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <img
                 src="/sbd_logo.jpg"
                 alt="SBD Hungary"
-                className="h-7 w-auto rounded-md border border-red-800 bg-black/80"
+                className="h-9 w-auto sm:h-10 drop-shadow-[0_0_22px_rgba(248,113,113,0.7)]"
               />
+            </a>
+
+            <a
+              href="https://power-flow.eu/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <img
                 src="/powerflow_logo.png"
                 alt="PowerFlow"
-                className="h-7 w-auto opacity-80"
+                className="h-7 w-auto sm:h-8 opacity-95"
               />
-            </div>
-            <div className="leading-tight hidden sm:block">
-              <div className="text-xs uppercase tracking-[0.3em] text-primary">
-                SBD NEXT
-              </div>
-            </div>
+            </a>
           </div>
 
-          {/* Jobb oldal: menü + gomb */}
+          {/* Jobb oldal: menü + CTA */}
           <div className="flex items-center gap-4 text-sm">
-            <div className="hidden md:flex items-center gap-4">
-              <a href="#info" className="hover:text-primary transition-colors">
-                Infók
-              </a>
-              <a href="#schedule" className="hover:text-primary transition-colors">
-                Időrend
-              </a>
-              <a href="#rules" className="hover:text-primary transition-colors">
-                Szabályok
-              </a>
-              <a href="#fees" className="hover:text-primary transition-colors">
-                Díjak
-              </a>
-              <a href="#faq" className="hover:text-primary transition-colors">
-                GYIK
-              </a>
+            <div className="hidden sm:flex items-center gap-4 text-xs sm:text-sm">
+              <a href="#info" className="text-neutral-200 hover:text-red-300">Infók</a>
+              <a href="#schedule" className="text-neutral-200 hover:text-red-300">Időrend</a>
+              <a href="#rules" className="text-neutral-200 hover:text-red-300">Szabályok</a>
+              <a href="#fees" className="text-neutral-200 hover:text-red-300">Díjak</a>
+              <a href="#faq" className="text-neutral-200 hover:text-red-300">GYIK</a>
             </div>
+
             <a href="#register">
-              <Button className="rounded-2xl px-5 bg-primary hover:bg-primary/90 text-sm">
-                Nevezés
-              </Button>
+              <button className="rounded-full border border-red-500/70 bg-red-600/90 px-4 py-1 text-xs sm:text-sm font-semibold text-white shadow-[0_0_20px_rgba(248,113,113,0.55)] hover:bg-red-500">
+                Nevezés <ChevronRight className="ml-1 h-3 w-3" />
+              </button>
             </a>
           </div>
         </div>
       </nav>
- {/* HERO – SBD fekete/piros + hero_bg */}
-<header className="relative text-white">
-  {/* háttérkép */}
-  <div className="absolute inset-0 bg-[url('/hero_bg.jpg')] bg-cover bg-center opacity-40" />
+           {/* HERO – nagy SBD Next logó + új cím */}
+      <header className="relative text-white">
+        {/* Háttér */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-[url('/hero_bg.jpg')] bg-cover bg-center opacity-40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/90 to-black" />
+        </div>
 
-  {/* fekete/piros overlay */}
-  <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/75 to-black/90" />
+        {/* Tartalom */}
+        <div className="relative mx-auto flex max-w-5xl flex-col gap-10 px-4 py-12 lg:flex-row lg:items-start">
 
-  {/* Tartalom */}
-  <div className="relative max-w-5xl mx-auto px-4 py-12">
-    {/* Főcím */}
-    <motion.h1
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="text-4xl sm:text-5xl font-extrabold tracking-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]"
-    >
-      SBD NEXT
-    </motion.h1>
+          {/* Bal oldal */}
+          <div className="flex-1">
 
-    {/* Alcím */}
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-      className="mt-2 text-xl sm:text-2xl font-semibold text-red-400"
-    >
-      A következő szint
-    </motion.div>
+            {/* 🔥 MASSZÍV SBD NEXT LOGÓ */}
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-6"
+            >
+              <img
+                src="/sbd_next_logo.png"
+                alt="SBD Next"
+                className="
+                  w-[260px]
+                  sm:w-[320px]
+                  md:w-[360px]
+                  drop-shadow-[0_0_45px_rgba(248,113,113,0.85)]
+                "
+              />
+            </motion.div>
 
-    {/* Logók */}
-    <div className="mt-6 flex items-center gap-4">
-      <img src="/sbd_logo.jpg" alt="SBD" className="h-10 opacity-90" />
-      <img src="/powerflow_logo.png" alt="PowerFlow" className="h-10 opacity-80" />
-    </div>
+            {/* 🔥 Új cím – A következő szint */}
+            <motion.h1
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              className="text-3xl font-extrabold tracking-tight drop-shadow-[0_0_20px_rgba(0,0,0,0.9)] sm:text-4xl"
+            >
+              A következő szint
+            </motion.h1>
 
-    {/* Pulzáló chip */}
-    <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-200 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
-      <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-      <span>IPF-szabályos full power esemény — első versenyeseknek is</span>
-    </div>
+            {/* Alapinfók */}
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
+              <Stat label="Idő" value={EVENT.time} Icon={Timer} />
+              <Stat
+                label="Helyszín"
+                value={`${EVENT.location.name} — ${EVENT.location.address}`}
+                Icon={MapPin}
+              />
+            </div>
 
-    {/* Gombok */}
-    <div className="mt-8 flex flex-wrap items-center gap-6">
-      <a href="#register">
-        <Button className="rounded-2xl px-6 bg-red-700 hover:bg-red-800 shadow-lg shadow-red-900/50">
-          Nevezek most
-        </Button>
-      </a>
+            {/* Leírás */}
+            <div className="mt-4 text-sm text-neutral-100">
+              {EVENT.concept}
+            </div>
+            <div className="mt-1 text-sm text-neutral-300">
+              {EVENT.layout} • {EVENT.eventType}
+            </div>
 
-      <a
-        href="#fees"
-        className="inline-flex items-center gap-1 text-sm text-red-400 hover:text-red-300"
-      >
-        Nevezési díjak <ChevronRight className="h-4 w-4" />
-      </a>
-    </div>
-  </div>
-</header>
+            {/* CTA */}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <a href="#register">
+                <Button className="rounded-2xl bg-red-600 px-6 font-semibold shadow-[0_0_28px_rgba(248,113,113,0.7)] hover:bg-red-500">
+                  Nevezek most
+                </Button>
+              </a>
+              <a
+                href="#fees"
+                className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
+              >
+                Nevezési díjak <ChevronRight className="h-4 w-4" />
+              </a>
+            </div>
+
+            {/* Pulse chip */}
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-200 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
+              <span className="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
+              <span>Első versenyeseknek is, IPF-szabályos full power esemény.</span>
+            </div>
+          </div>
+
+          {/* Jobb oldali kártya – SBD Next logó kicsiben */}
+          <Card className="mt-4 flex-1 rounded-2xl border border-red-900/60 bg-black/80 shadow-[0_0_45px_rgba(0,0,0,0.9)] lg:mt-0">
+            <CardContent className="space-y-4 p-5 text-sm">
+              <div className="flex items-center justify-between gap-3">
+
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-red-300">
+                    Verseny röviden
+                  </div>
+                  <div className="text-xs text-neutral-400">
+                    A következő szint – SBD Next új belépők powerlifting versenye.
+                  </div>
+                </div>
+
+                <img
+                  src="/sbd_next_logo.png"
+                  alt="SBD Next"
+                  className="h-10 w-auto opacity-90"
+                />
+              </div>
+
+              <div className="text-sm text-neutral-100">{EVENT.concept}</div>
+
+              <div className="text-xs text-neutral-300">
+                {EVENT.layout}
+                <br />
+                {EVENT.eventType}
+              </div>
+
+              <div className="text-xs text-neutral-400">
+                Eredményhirdetés IPF pontszám alapján, súlycsoportok nélkül.
+              </div>
+
+              <div className="h-px bg-gradient-to-r from-transparent via-red-700/70 to-transparent" />
+
+              <div className="grid gap-2 text-xs text-neutral-300">
+                <div>
+                  <span className="font-semibold text-neutral-100">Jelentkezés:</span>{" "}
+                  {EVENT.deadlines.regOpen} – {EVENT.deadlines.regClose}
+                </div>
+
+                <div>
+                  <span className="font-semibold text-neutral-100">Lemondás:</span>{" "}
+                  {EVENT.deadlines.refundFull} • {EVENT.deadlines.refundHalf} •{" "}
+                  {EVENT.deadlines.refundNone}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </header>
 
       {/* TARTALOM */}
       <main className="max-w-5xl mx-auto px-4 pb-20">
@@ -946,61 +1019,86 @@ export default function EventLanding() {
         </Section>
 
         <Section id="contact" icon={Mail} title="Kapcsolat">
-          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6 grid sm:grid-cols-2 gap-4 text-sm text-neutral-100">
-              <div className="space-y-2">
-                <div className="font-medium">Szervezés</div>
-                <div className="flex items-center gap-2 text-neutral-300">
-                  <Mail className="h-4 w-4 text-red-400" />
-                  <a
-                    href={`mailto:${EVENT.contact.email}`}
-                    className="underline underline-offset-4 hover:text-red-200"
-                  >
-                    {EVENT.contact.email}
-                  </a>
-                </div>
-                <div className="flex items-center gap-2 text-neutral-300">
-                  <Phone className="h-4 w-4 text-red-400" />
-                  <a
-                    href="tel:+36304660011"
-                    className="hover:text-red-200 underline underline-offset-4"
-                  >
-                    {EVENT.contact.phone}
-                  </a>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="font-medium">Közösségi média</div>
-                <div className="flex flex-col gap-1 text-neutral-300">
-                  <a
-                    href={EVENT.social.igSbd}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 hover:text-red-200 underline underline-offset-4"
-                  >
-                    <ExternalLink className="h-4 w-4 text-red-400" />
-                    @sbdhungary
-                  </a>
-                  <a
-                    href={EVENT.social.igPowerflow}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 hover:text-red-200 underline underline-offset-4"
-                  >
-                    <ExternalLink className="h-4 w-4 text-red-400" />
-                    @powerfloweu
-                  </a>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Section>
+  <Card className="rounded-2xl">
+    <CardContent className="p-6 grid gap-3 text-sm">
+
+      <div className="flex items-start gap-3">
+        <Mail className="h-5 w-5 text-red-500" />
+        <div>
+          <div className="font-medium">E-mail</div>
+          <a
+            href="mailto:david@power-flow.eu"
+            className="text-red-400 underline hover:text-red-300"
+          >
+            david@power-flow.eu
+          </a>
+        </div>
+      </div>
+
+      <div className="text-xs text-neutral-400">
+        Kérdésed van a nevezéssel, szabályokkal vagy a részletekkel kapcsolatban?  
+        Írj nekünk, válaszolunk!
+      </div>
+      
+    </CardContent>
+  </Card>
+</Section>
       </main>
 
-      <footer className="border-t border-neutral-900 bg-black/90">
-        <div className="max-w-5xl mx-auto px-4 py-6 text-xs text-neutral-500">
-          © {year} SBD Hungary × PowerFlow — Adatkezelési tájékoztató •
-          Házirend • Versenyszabályzat
+              <footer className="border-t border-red-900/70 bg-black">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6 text-xs text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
+          {/* Logók nagyobban + linkkel */}
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.sbdhungary.hu/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/sbd_logo.jpg"
+                alt="SBD Hungary"
+                className="h-8 w-auto sm:h-9"
+              />
+            </a>
+
+            <a
+              href="https://power-flow.eu/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/powerflow_logo.png"
+                alt="PowerFlow"
+                className="h-7 w-auto sm:h-8 opacity-95"
+              />
+            </a>
+          </div>
+
+          {/* Szöveg + kontakt */}
+          <div className="space-y-1 text-right sm:text-left sm:ml-auto">
+            <div className="text-neutral-200">
+              SBD Next – a következő szint.
+            </div>
+            <div>
+              Kapcsolat:{" "}
+              <a
+                href="mailto:david@power-flow.eu"
+                className="text-red-400 hover:text-red-300"
+              >
+                david@power-flow.eu
+              </a>{" "}
+              •{" "}
+              <a
+                href="tel:+36304660011"
+                className="text-red-400 hover:text-red-300"
+              >
+                +36 30 466 0011
+              </a>
+            </div>
+            <div className="text-[11px] text-neutral-500">
+              © {year} SBD Hungary &amp; PowerFlow
+            </div>
+          </div>
         </div>
       </footer>
     </div>

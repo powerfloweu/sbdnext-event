@@ -42,7 +42,7 @@
   --foreground: 0 0% 98%;   /* majdnem fehér */
 
   /* SBD piros */
-  --primary: 0 92% 50%;     /* #e10600 környéke */
+  --primary: 0 100% 52%;
   --primary-foreground: 0 0% 100%;
 
   /* neutrális felületek */
@@ -97,4 +97,37 @@
 [data-radix-collection-item],
 [data-radix-collection-item] * {
   color: white !important;
+}/* Minden narancs kiszedése – egységes SBD piros fekete dizájn */
+:root {
+  --primary: 0 100% 50%; /* SBD piros */
+}
+
+/* Ha valahol még maradna narancs, azt lenyomjuk */
+[class*="text-orange"],
+[class*="text-amber"],
+[class*="text-yellow"],
+[class*="text-orange"] *,
+[class*="text-amber"] *,
+[class*="text-yellow"] * {
+  color: hsl(0 100% 50%) !important;
+}/* SBD: Narancs eltávolítása – egységes SBD piros (ED1C24) */
+
+:root {
+  --primary: 0 100% 50% !important; /* SBD piros */
+}
+
+/* Minden narancs/amber/yellow override */
+[class*="text-orange"],
+[class*="text-amber"],
+[class*="text-yellow"],
+[class*="text-orange"] *,
+[class*="text-amber"] *,
+[class*="text-yellow"] * {
+  color: hsl(0 100% 50%) !important;
+}
+
+[class*="border-orange"],
+[class*="border-amber"],
+[class*="border-yellow"] {
+  border-color: hsl(0 100% 50%) !important;
 }
