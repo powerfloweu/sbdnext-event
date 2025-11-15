@@ -733,11 +733,6 @@ export default function EventLanding() {
                   <div className="text-xs uppercase tracking-[0.2em] text-red-300">
                     Verseny röviden
                   </div>
-<div className="text-xs text-neutral-400">
-  A következő szint – SBD Next nyílt erőemelő verseny.
-  Szabadidős esemény újoncoknak kötöttségek nélkül,
-  erőemelő versenyzőknek pedig gyakorlásképp!
-</div>
                 </div>
 
                 <img
