@@ -68,7 +68,7 @@ const EVENT = {
   federation:
     "IPF szabályrendszer (hamarosan belinkeljük a hivatalos IPF/MERSZ szabálykönyvet). Nem kell klubtagság és sportorvosi engedély.",
   equipmentNote:
-    "Kezdőknek nem szükséges semmilyen felszerelés. Versenyzők mindent használhatnak az IPF szabályrendszerén belül.",
+    "Nincs kötelező felszerelés, minden használható az IPF szabályrendszerén belül.",
   deadlines: {
     regOpen: "Nov. 20",
     regClose: "Dec. 1",
@@ -77,7 +77,7 @@ const EVENT = {
     refundNone: "Később nincs visszatérítés",
   },
   fees: {
-    entry: 33990,
+    entry: 29990,
     spectator: 1000,
     premium: 24990,
     currency: "HUF",
@@ -548,7 +548,7 @@ function RegistrationForm() {
           {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
         </Button>
         <div className="text-xs text-muted-foreground">
-          A nevezési díj: 33 990 Ft — tartalmazza a{" "}
+          A nevezési díj: 29 990 Ft — tartalmazza a{" "}
           <b>media csomagot (profi fotók rólad)</b> és az{" "}
           <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó + 3
           videó).
@@ -873,7 +873,7 @@ export default function EventLanding() {
         <Section id="rules" icon={ShieldCheck} title="Szabályok & felszerelés">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="grid gap-4 p-6 text-sm text-neutral-100">
-              <div>• IPF szabályrendszer szerint zajlik a verseny.</div>
+              <div>• MERSZ szabályok szerint zajlik a verseny.</div>
               <div>• Nem kell klubtagság és sportorvosi engedély.</div>
               <div>
                 • Tiltott szerek és eszközök nem engedélyezettek. Versenyzők
@@ -978,7 +978,7 @@ export default function EventLanding() {
                   {EVENT.location.address}
                 </div>
                 <div>
-                  Parkolás: utcán, fizetős övezet (szombat délelőtt). Öltöző és
+                  Parkolás: a gyárépület területlén belül (festékbolt előtt), illetve a Nándorfejérvári utcán ingyenesen. Öltöző és
                   zuhany elérhető.
                 </div>
                 <div>
