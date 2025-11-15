@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sbdnext-event.vercel.app"),
-  title: "SBD Next – Új belépők powerlifting versenye | Thor Gym, 2026. február 14–15.",
+  title: "SBD Next – Nyílt Erőemelő Verseny | Thor Gym, 2026. február 14–15.",
   description:
     "SBD Next – 2 napos, IPF szabályrendszer szerinti powerlifting esemény újoncoknak és versenyzőknek a XI. kerületi Thor Gymben. Háromfogásos SBD verseny, media csomaggal és egyedi SBD versenypólóval.",
   openGraph: {
-    title: "SBD Next – Új belépők powerlifting versenye",
+    title: "SBD Next – Nyílt Erőemelő Verseny",
     description:
       "2 nap, 2 platform, IPF szabályrendszer szerinti SBD verseny újoncoknak és versenyzőknek a Thor Gymben.",
     url: "https://sbdnext-event.vercel.app",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "SBD Next – Új belépők powerlifting versenye",
+    title: "SBD Next – Nyílt Erőemelő Verseny",
     description:
       "Háromfogásos SBD verseny újoncoknak és versenyzőknek, media csomaggal és egyedi SBD pólóval.",
     images: ["/hero_bg.jpg"],

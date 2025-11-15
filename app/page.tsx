@@ -57,7 +57,7 @@ const EVENT = {
   date: "2026. február 14–15.",
   time: "7:00–19:00 (mindkét nap)",
   location: {
-    name: "Thor Gym (XI. kerület)",
+    name: "Thor Gym (Újbuda)",
     address: "Budapest, Nándorfejérvári út 40, 1116",
     mapEmbedSrc:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4748.762520334373!2d19.04355177770303!3d47.46025827117686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4741dda23e15b409%3A0x59fe623bd00aa0be!2sThor%20Gym!5e1!3m2!1shu!2shu!4v1762941118132!5m2!1shu!2shu",
@@ -539,8 +539,7 @@ function RegistrationForm() {
           }
         />
         <label htmlFor="premium" className="text-sm">
-          Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt
-          válogatás.
+          Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó
         </label>
       </div>
 
@@ -550,7 +549,7 @@ function RegistrationForm() {
         </Button>
         <div className="text-xs text-muted-foreground">
           A nevezési díj: 33 990 Ft — tartalmazza a{" "}
-          <b>media csomagot (1 fotó + 1 videó)</b> és az{" "}
+          <b>media csomagot (profi fotók rólad)</b> és az{" "}
           <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó + 3
           videó).
         </div>
@@ -688,14 +687,6 @@ export default function EventLanding() {
               />
             </div>
 
-            {/* Leírás */}
-            <div className="mt-4 text-sm text-neutral-100">
-              {EVENT.concept}
-            </div>
-            <div className="mt-1 text-sm text-neutral-300">
-              {EVENT.layout} • {EVENT.eventType}
-            </div>
-
             {/* Versenykiírás – nagy gomb */}
             <div className="mt-5">
               <a
@@ -742,10 +733,11 @@ export default function EventLanding() {
                   <div className="text-xs uppercase tracking-[0.2em] text-red-300">
                     Verseny röviden
                   </div>
-                  <div className="text-xs text-neutral-400">
-                    A következő szint – SBD Next új belépők powerlifting
-                    versenye.
-                  </div>
+<div className="text-xs text-neutral-400">
+  A következő szint – SBD Next nyílt erőemelő verseny.
+  Szabadidős esemény újoncoknak kötöttségek nélkül,
+  erőemelő versenyzőknek pedig gyakorlásképp!
+</div>
                 </div>
 
                 <img
@@ -787,14 +779,6 @@ export default function EventLanding() {
         <Section id="info" icon={Info} title="Versenyinformációk">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
-              <div>
-                <span className="font-medium">Koncepció:</span>{" "}
-                {EVENT.concept}
-              </div>
-              <div>
-                <span className="font-medium">Elrendezés:</span>{" "}
-                {EVENT.layout} – 2 nap, 2 platform.
-              </div>
               <div>
                 <span className="font-medium">Nevezői limit:</span>{" "}
                 {EVENT.cap} fő (kapacitás függvényében). A helyek a sikeres{" "}
@@ -841,7 +825,7 @@ export default function EventLanding() {
               <div className="mt-2 rounded-xl border border-red-900/70 bg-red-950/50 p-4 text-xs text-red-100">
                 A nevezési díj{" "}
                 <b>
-                  tartalmazza a media csomagot (1 fotó + 1 videó) és az egyedi
+                  tartalmazza a media csomagot (menő fotók rólad) és az egyedi
                   SBD versenypólót
                 </b>
                 . Opcionálisan{" "}
@@ -851,7 +835,7 @@ export default function EventLanding() {
           </Card>
         </Section>
 
-        <Section id="schedule" icon={CalendarDays} title="Időrend (terv)">
+        <Section id="schedule" icon={CalendarDays} title="Időrend">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
               <div>
@@ -969,30 +953,34 @@ export default function EventLanding() {
           </Card>
         </Section>
 
-        <Section id="fees" icon={TicketCheck} title="Nevezési és nézői díjak">
-          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6">
-              <PriceRow
-                label="Nevezési díj"
-                value={`${priceEntry} ${EVENT.fees.currency}`}
-                note="Tartalmazza a media csomagot (1 fotó + 1 videó) és az egyedi SBD versenypólót."
-              />
-              <PriceRow
-                label="Nézői jegy"
-                value={`${priceSpectator} ${EVENT.fees.currency}`}
-                note="A helyszínen készpénzben vagy kártyával."
-              />
-              <PriceRow
-                label="Prémium média csomag (opcionális)"
-                value={`${pricePremium} ${EVENT.fees.currency}`}
-                note="3 fotó + 3 videó."
-              />
-            </CardContent>
-          </Card>
-        </Section>
+<Section id="fees" icon={TicketCheck} title="Nevezési és nézői díjak">
+  <Card className="rounded-2xl border border-neutral-800 bg-black/70">
+    <CardContent className="p-6">
 
-        <Section id="venue" icon={MapPin} title="Helyszín">
-          <div className="grid gap-4 lg:grid-cols-2">
+      <PriceRow
+        label="Nevezési díj"
+        value={`${priceEntry} ${EVENT.fees.currency}`}
+        note="Tartalmazza a media csomagot (menő fotók rólad) és az egyedi SBD pólót. A profi fotókról és videókról 5 fős csapat gondoskodik."
+      />
+
+      <PriceRow
+        label="Nézői jegy"
+        value={`${priceSpectator} ${EVENT.fees.currency}`}
+        note="A helyszínen készpénzben vagy kártyával."
+      />
+
+      <PriceRow
+        label="Prémium média csomag (opcionális)"
+        value={`${pricePremium} ${EVENT.fees.currency}`}
+        note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
+      />
+
+    </CardContent>
+  </Card>
+</Section>
+
+<Section id="venue" icon={MapPin} title="Helyszín">
+  <div className="grid gap-4 lg:grid-cols-2">
             <Card className="rounded-2xl border border-neutral-800 bg-black/70">
               <CardContent className="grid gap-2 p-6 text-sm text-neutral-100">
                 <div className="font-medium">{EVENT.location.name}</div>
@@ -1064,7 +1052,7 @@ export default function EventLanding() {
               <div>
                 <div className="font-medium">Mi van a nevezési díjban?</div>
                 <div className="text-neutral-300">
-                  Media csomag (1 fotó + 1 videó), egyedi SBD versenypóló.
+                  Media csomag (menő fotók rólad), egyedi SBD versenypóló.
                   Prémium csomag külön vásárolható (3 fotó + 3 videó).
                 </div>
               </div>
@@ -1142,7 +1130,7 @@ export default function EventLanding() {
 
           <div className="space-y-1 text-right sm:ml-auto sm:text-left">
             <div className="text-neutral-200">
-              SBD Next – a következő szint.
+              SBD Next – A következő szint.
             </div>
             <div>
               Kapcsolat:{" "}
