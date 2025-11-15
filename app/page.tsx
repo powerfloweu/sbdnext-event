@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   CalendarDays,
@@ -9,7 +8,6 @@ import {
   Timer,
   Info,
   Mail,
-  Phone,
   Dumbbell,
   TicketCheck,
   ShieldCheck,
@@ -60,7 +58,7 @@ const EVENT = {
     "Szabadidős esemény újoncoknak kötöttségek nélkül, erőemelő versenyzőknek pedig gyakorlásképp!",
   layout: "2 nap, 2 platform",
   federation:
-    "IPF szabályrendszer (hamarosan belinkeljük a hivatalos magyar IPF szabálykönyvet). Újoncoknak nem kell klubtagság és sportorvosi engedély.",
+    "IPF szabályrendszer (hamarosan belinkeljük a hivatalos IPF/MERSZ szabálykönyvet). Nem kell klubtagság és sportorvosi engedély.",
   equipmentNote:
     "Kezdőknek nem szükséges semmilyen felszerelés. Versenyzők mindent használhatnak az IPF szabályrendszerén belül.",
   deadlines: {
@@ -88,8 +86,10 @@ const EVENT = {
   scoring: "Eredményhirdetés IPF pontszám alapján (nincsenek súlycsoportok).",
   eventType: "Háromfogásos, full power (SBD) verseny.",
   streams: {
-    platformA: "#", // később cserélhető
-    platformB: "#",
+    saturdayA: "#",
+    saturdayB: "#",
+    sundayA: "#",
+    sundayB: "#",
   },
   cap: CAP_LIMIT,
 };
@@ -107,7 +107,7 @@ function Section({
 }) {
   return (
     <section id={id} className="scroll-mt-24 py-10">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="mb-4 flex items-center gap-2">
         {Icon && <Icon className="h-5 w-5 text-red-500" />}
         <h2 className="text-xl font-semibold">{title}</h2>
       </div>
@@ -127,7 +127,7 @@ function Stat({
 }) {
   return (
     <Card className="rounded-2xl border border-red-900/50 bg-black/40 text-red-50">
-      <CardContent className="p-4 flex items-center gap-3">
+      <CardContent className="flex items-center gap-3 p-4">
         {Icon && <Icon className="h-5 w-5 text-red-400" />}
         <div>
           <div className="text-xs uppercase tracking-widest text-red-200/80">
@@ -154,11 +154,7 @@ function PriceRow({
       <div className="font-medium text-neutral-100">{label}</div>
       <div className="text-right">
         <div className="font-semibold text-primary">{value}</div>
-        {note && (
-          <div className="text-xs text-neutral-400">
-            {note}
-          </div>
-        )}
+        {note && <div className="text-xs text-neutral-400">{note}</div>}
       </div>
     </div>
   );
@@ -166,7 +162,6 @@ function PriceRow({
 
 // ====== REGISZTRÁCIÓ ======
 function RegistrationForm() {
-  // Stripe Payment Linkek (később aktiválod, ha REG_OPEN = true)
   const PAYMENT_LINK_BASE =
     "https://buy.stripe.com/8x26oG6az4yg8AQ89DdfG0m"; // Nevezés (33 990 Ft)
   const PAYMENT_LINK_PREMIUM =
@@ -280,12 +275,16 @@ function RegistrationForm() {
 
   if (CAP_FULL) {
     return (
-      <div className="rounded-2xl border border-amber-500/40 bg-amber-950/40 p-6 text-sm">
-        <div className="flex items-center gap-2 text-amber-300 font-semibold">
+      <div className="rounded-2xl border border-red-500/40 bg-red-950/40 p-6 text-sm">
+        <div className="flex items-center gap-2 font-semibold text-red-200">
           <AlertCircle className="h-5 w-5" />
           Betelt a nevezés ({CAP_LIMIT} fő).
         </div>
-        <p className="mt-2 text-amber-100/90">
+        <p className="mt-2 text-red-100/90">
+          Jelentkezés betelése után lemondás esetén várólista alapján egyénileg
+          értesítünk.
+        </p>
+        <p className="mt-2 text-red-100/90">
           Kövesd az Instagramot (
           <a
             href={EVENT.social.igPowerflow}
@@ -312,8 +311,8 @@ function RegistrationForm() {
 
   if (!REG_OPEN) {
     return (
-      <div className="rounded-2xl border border-yellow-500/50 bg-yellow-950/40 p-6 text-sm space-y-3">
-        <div className="flex items-center gap-2 text-yellow-200 font-semibold">
+      <div className="space-y-3 rounded-2xl border border-yellow-500/50 bg-yellow-950/40 p-6 text-sm">
+        <div className="flex items-center gap-2 font-semibold text-yellow-200">
           <AlertCircle className="h-5 w-5" />
           A nevezés még nem indult el.
         </div>
@@ -355,7 +354,7 @@ function RegistrationForm() {
         <h3 className="mt-4 text-lg font-semibold text-green-100">
           Átirányítás a fizetéshez…
         </h3>
-        <p className="text-sm text-green-100/80 mt-1">
+        <p className="mt-1 text-sm text-green-100/80">
           Ha nem történik meg automatikusan,{" "}
           <a
             className="underline"
@@ -372,7 +371,7 @@ function RegistrationForm() {
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       {error && (
-        <div className="flex items-center gap-2 text-red-400 text-sm">
+        <div className="flex items-center gap-2 text-sm text-red-400">
           <AlertCircle className="h-4 w-4" /> {error}
         </div>
       )}
@@ -389,7 +388,7 @@ function RegistrationForm() {
         />
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="text-sm">Teljes név</label>
           <Input
@@ -545,7 +544,7 @@ export default function EventLanding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50">
-                    {/* NAV – SBD Hungary + PowerFlow */}
+      {/* NAV – SBD Hungary + PowerFlow */}
       <nav className="sticky top-0 z-40 border-b border-red-900/70 bg-black/85 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           {/* Bal oldal: logók */}
@@ -577,23 +576,34 @@ export default function EventLanding() {
 
           {/* Jobb oldal: menü + CTA */}
           <div className="flex items-center gap-4 text-sm">
-            <div className="hidden sm:flex items-center gap-4 text-xs sm:text-sm">
-              <a href="#info" className="text-neutral-200 hover:text-red-300">Infók</a>
-              <a href="#schedule" className="text-neutral-200 hover:text-red-300">Időrend</a>
-              <a href="#rules" className="text-neutral-200 hover:text-red-300">Szabályok</a>
-              <a href="#fees" className="text-neutral-200 hover:text-red-300">Díjak</a>
-              <a href="#faq" className="text-neutral-200 hover:text-red-300">GYIK</a>
+            <div className="hidden items-center gap-4 text-xs text-neutral-200 sm:flex sm:text-sm">
+              <a href="#info" className="hover:text-red-300">
+                Infók
+              </a>
+              <a href="#schedule" className="hover:text-red-300">
+                Időrend
+              </a>
+              <a href="#rules" className="hover:text-red-300">
+                Szabályok
+              </a>
+              <a href="#fees" className="hover:text-red-300">
+                Díjak
+              </a>
+              <a href="#faq" className="hover:text-red-300">
+                GYIK
+              </a>
             </div>
 
             <a href="#register">
-              <button className="rounded-full border border-red-500/70 bg-red-600/90 px-4 py-1 text-xs sm:text-sm font-semibold text-white shadow-[0_0_20px_rgba(248,113,113,0.55)] hover:bg-red-500">
+              <button className="flex items-center rounded-full border border-red-500/70 bg-red-600/90 px-4 py-1 text-xs font-semibold text-white shadow-[0_0_20px_rgba(248,113,113,0.55)] hover:bg-red-500 sm:text-sm">
                 Nevezés <ChevronRight className="ml-1 h-3 w-3" />
               </button>
             </a>
           </div>
         </div>
       </nav>
-           {/* HERO – nagy SBD Next logó + új cím */}
+
+      {/* HERO */}
       <header className="relative text-white">
         {/* Háttér */}
         <div className="pointer-events-none absolute inset-0">
@@ -603,11 +613,9 @@ export default function EventLanding() {
 
         {/* Tartalom */}
         <div className="relative mx-auto flex max-w-5xl flex-col gap-10 px-4 py-12 lg:flex-row lg:items-start">
-
           {/* Bal oldal */}
           <div className="flex-1">
-
-            {/* 🔥 MASSZÍV SBD NEXT LOGÓ */}
+            {/* SBD NEXT LOGÓ */}
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -617,24 +625,25 @@ export default function EventLanding() {
               <img
                 src="/sbd_next_logo.png"
                 alt="SBD Next"
-                className="
-                  w-[260px]
-                  sm:w-[320px]
-                  md:w-[360px]
-                  drop-shadow-[0_0_45px_rgba(248,113,113,0.85)]
-                "
+                className="w-[260px] drop-shadow-[0_0_45px_rgba(248,113,113,0.85)] sm:w-[320px] md:w-[360px]"
               />
             </motion.div>
 
-            {/* 🔥 Új cím – A következő szint */}
-            <motion.h1
+            {/* Cím + chevron fadeout */}
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className="text-3xl font-extrabold tracking-tight drop-shadow-[0_0_20px_rgba(0,0,0,0.9)] sm:text-4xl"
+              className="flex items-center gap-3"
             >
-              A következő szint
-            </motion.h1>
+              <h1 className="text-3xl font-extrabold tracking-tight drop-shadow-[0_0_20px_rgba(0,0,0,0.9)] sm:text-4xl">
+                A következő szint
+              </h1>
+              <div className="hidden items-center gap-1 text-red-400/70 sm:flex">
+                <ChevronRight className="h-4 w-4" />
+                <div className="h-[2px] w-24 bg-gradient-to-r from-red-500/80 via-red-500/30 to-transparent" />
+              </div>
+            </motion.div>
 
             {/* Alapinfók */}
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -655,6 +664,20 @@ export default function EventLanding() {
               {EVENT.layout} • {EVENT.eventType}
             </div>
 
+            {/* Versenykiírás – nagy gomb */}
+            <div className="mt-5">
+              <a
+                href="/docs/SBD_Next_versenykiiras.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-200 shadow-[0_0_24px_rgba(248,113,113,0.6)] hover:bg-red-600 hover:text-white sm:w-auto">
+                  Versenykiírás (PDF)
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+
             {/* CTA */}
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a href="#register">
@@ -672,22 +695,24 @@ export default function EventLanding() {
 
             {/* Pulse chip */}
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-200 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
-              <span className="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
-              <span>Első versenyeseknek is, IPF-szabályos full power esemény.</span>
+              <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
+              <span>
+                Első versenyeseknek is, IPF-szabályos full power esemény.
+              </span>
             </div>
           </div>
 
-          {/* Jobb oldali kártya – SBD Next logó kicsiben */}
+          {/* Jobb oldali kártya */}
           <Card className="mt-4 flex-1 rounded-2xl border border-red-900/60 bg-black/80 shadow-[0_0_45px_rgba(0,0,0,0.9)] lg:mt-0">
             <CardContent className="space-y-4 p-5 text-sm">
               <div className="flex items-center justify-between gap-3">
-
                 <div>
                   <div className="text-xs uppercase tracking-[0.2em] text-red-300">
                     Verseny röviden
                   </div>
                   <div className="text-xs text-neutral-400">
-                    A következő szint – SBD Next új belépők powerlifting versenye.
+                    A következő szint – SBD Next új belépők powerlifting
+                    versenye.
                   </div>
                 </div>
 
@@ -714,14 +739,10 @@ export default function EventLanding() {
 
               <div className="grid gap-2 text-xs text-neutral-300">
                 <div>
-                  <span className="font-semibold text-neutral-100">Jelentkezés:</span>{" "}
+                  <span className="font-semibold text-neutral-100">
+                    Jelentkezés:
+                  </span>{" "}
                   {EVENT.deadlines.regOpen} – {EVENT.deadlines.regClose}
-                </div>
-
-                <div>
-                  <span className="font-semibold text-neutral-100">Lemondás:</span>{" "}
-                  {EVENT.deadlines.refundFull} • {EVENT.deadlines.refundHalf} •{" "}
-                  {EVENT.deadlines.refundNone}
                 </div>
               </div>
             </CardContent>
@@ -730,10 +751,10 @@ export default function EventLanding() {
       </header>
 
       {/* TARTALOM */}
-      <main className="max-w-5xl mx-auto px-4 pb-20">
+      <main className="mx-auto max-w-5xl px-4 pb-20">
         <Section id="info" icon={Info} title="Versenyinformációk">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6 grid gap-3 text-sm text-neutral-100">
+            <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
               <div>
                 <span className="font-medium">Koncepció:</span>{" "}
                 {EVENT.concept}
@@ -751,7 +772,7 @@ export default function EventLanding() {
                 <span className="font-medium">Felszerelés:</span>{" "}
                 {EVENT.equipmentNote}
               </div>
-              <div className="grid sm:grid-cols-2 gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div>
                   <div className="text-xs text-neutral-400">Divíziók</div>
                   <div className="font-medium">
@@ -763,7 +784,7 @@ export default function EventLanding() {
                   <div className="font-medium">{EVENT.scoring}</div>
                 </div>
               </div>
-              <div className="grid sm:grid-cols-3 gap-4 mt-2">
+              <div className="mt-2 grid gap-4 sm:grid-cols-2">
                 <Card className="rounded-xl border border-neutral-800 bg-black/60">
                   <CardContent className="p-4">
                     <div className="text-xs text-neutral-400">
@@ -784,18 +805,8 @@ export default function EventLanding() {
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="rounded-xl border border-neutral-800 bg-black/60">
-                  <CardContent className="p-4">
-                    <div className="text-xs text-neutral-400">Lemondás</div>
-                    <div className="font-semibold">
-                      {EVENT.deadlines.refundFull} •{" "}
-                      {EVENT.deadlines.refundHalf} •{" "}
-                      {EVENT.deadlines.refundNone}
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
-              <div className="rounded-xl bg-red-950/50 border border-red-900/70 p-4 text-xs text-red-100">
+              <div className="mt-2 rounded-xl border border-red-900/70 bg-red-950/50 p-4 text-xs text-red-100">
                 A nevezési díj{" "}
                 <b>
                   tartalmazza a media csomagot (1 fotó + 1 videó) és az egyedi
@@ -810,45 +821,44 @@ export default function EventLanding() {
 
         <Section id="schedule" icon={CalendarDays} title="Időrend (terv)">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6 grid gap-3 text-sm text-neutral-100">
-              <div className="font-medium">
-                Február 14. (péntek) — 2 platform
+            <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
+              <div>
+                Mindkét versenynap 7:00 és 19:00 között zajlik a két platformon.
               </div>
-              <div>07:00–08:30 — Mérlegelés (hullámokban)</div>
-              <div>09:00–12:00 — Guggolás (Platform A &amp; B)</div>
-              <div>12:30–15:00 — Fekvenyomás (Platform A &amp; B)</div>
-              <div>15:30–18:30 — Felhúzás (Platform A &amp; B)</div>
-              <div>19:00 — Napi eredményhirdetés</div>
-
-              <div className="font-medium mt-4">
-                Február 15. (szombat) — 2 platform
+              <div className="text-xs text-neutral-400">
+                A pontos flight- és platformbeosztást a nevezés lezárása után
+                tesszük közzé.
               </div>
-              <div>07:00–08:30 — Mérlegelés (hullámokban)</div>
-              <div>09:00–12:00 — Guggolás (Platform A &amp; B)</div>
-              <div>12:30–15:00 — Fekvenyomás (Platform A &amp; B)</div>
-              <div>15:30–18:30 — Felhúzás (Platform A &amp; B)</div>
-              <div>19:00 — Napi eredményhirdetés</div>
 
-                            <div className="mt-4 grid sm:grid-cols-2 gap-2">
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 <a
-                  href={EVENT.streams.platformA}
+                  href={EVENT.streams.saturdayA}
                   className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
                 >
                   <LinkIcon className="h-4 w-4" />
-                  Stream — Platform A
+                  Stream — Szombat, A platform
                 </a>
                 <a
-                  href={EVENT.streams.platformB}
+                  href={EVENT.streams.saturdayB}
                   className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
                 >
                   <LinkIcon className="h-4 w-4" />
-                  Stream — Platform B
+                  Stream — Szombat, B platform
                 </a>
-              </div>
-
-              <div className="text-xs text-neutral-400 mt-2">
-                A részletes flight-beosztást a nevezés lezárása után tesszük
-                közzé.
+                <a
+                  href={EVENT.streams.sundayA}
+                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+                >
+                  <LinkIcon className="h-4 w-4" />
+                  Stream — Vasárnap, A platform
+                </a>
+                <a
+                  href={EVENT.streams.sundayB}
+                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+                >
+                  <LinkIcon className="h-4 w-4" />
+                  Stream — Vasárnap, B platform
+                </a>
               </div>
             </CardContent>
           </Card>
@@ -856,24 +866,23 @@ export default function EventLanding() {
 
         <Section id="rules" icon={ShieldCheck} title="Szabályok & felszerelés">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6 grid gap-4 text-sm text-neutral-100">
+            <CardContent className="grid gap-4 p-6 text-sm text-neutral-100">
               <div>• IPF szabályrendszer szerint zajlik a verseny.</div>
-              <div>• Újoncoknak nem kell klubtagság és sportorvosi engedély.</div>
+              <div>• Nem kell klubtagság és sportorvosi engedély.</div>
               <div>
-                • Felszerelés-ellenőrzés a mérlegeléskor. Tiltott szerek és
-                eszközök nem engedélyezettek. Versenyzők mindent használhatnak
-                az IPF szabályain belül.
+                • Tiltott szerek és eszközök nem engedélyezettek. Versenyzők
+                mindent használhatnak az IPF szabályain belül.
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-3 mt-2">
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
                 <a
-                  href="/docs/IPF_versenyszabalyzat_2025.pdf"
+                  href="/docs/IPF_MERSZ_szabalyzat_2025.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs hover:border-red-700 hover:bg-red-950/30 transition"
+                  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30"
                 >
                   <span>
-                    IPF versenyszabályzat (PDF)
+                    IPF/MERSZ szabályzat (PDF)
                     <br />
                     <span className="text-neutral-400">
                       Hivatalos szabálykönyv (2025)
@@ -885,13 +894,28 @@ export default function EventLanding() {
                   href="/docs/SBD_Next_versenykiiras.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs hover:border-red-700 hover:bg-red-950/30 transition"
+                  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30"
                 >
                   <span>
                     SBD Next versenykiírás (PDF)
                     <br />
                     <span className="text-neutral-400">
                       Hivatalos kiírás, részletes infók
+                    </span>
+                  </span>
+                  <ExternalLink className="h-4 w-4 text-red-400" />
+                </a>
+                <a
+                  href="/docs/MERSZ_minositesi_szintek_open.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30 sm:col-span-2"
+                >
+                  <span>
+                    MERSZ minősítési szintek (PDF)
+                    <br />
+                    <span className="text-neutral-400">
+                      Open szintek kiemelve (női + férfi egy PDF-ben)
                     </span>
                   </span>
                   <ExternalLink className="h-4 w-4 text-red-400" />
@@ -907,7 +931,7 @@ export default function EventLanding() {
               <PriceRow
                 label="Nevezési díj"
                 value={`${priceEntry} ${EVENT.fees.currency}`}
-                note="Tartalmazza a media csomagot (1 fotó + 1 videó) és az egyedi SBD pólót."
+                note="Tartalmazza a media csomagot (1 fotó + 1 videó) és az egyedi SBD versenypólót."
               />
               <PriceRow
                 label="Nézői jegy"
@@ -924,9 +948,9 @@ export default function EventLanding() {
         </Section>
 
         <Section id="venue" icon={MapPin} title="Helyszín">
-          <div className="grid lg:grid-cols-2 gap-4">
+          <div className="grid gap-4 lg:grid-cols-2">
             <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-              <CardContent className="p-6 grid gap-2 text-sm text-neutral-100">
+              <CardContent className="grid gap-2 p-6 text-sm text-neutral-100">
                 <div className="font-medium">{EVENT.location.name}</div>
                 <div className="text-neutral-300">
                   {EVENT.location.address}
@@ -949,13 +973,13 @@ export default function EventLanding() {
                 : raw;
 
               return (
-                <div className="w-full h-[340px] md:h-[400px] rounded-2xl overflow-hidden border border-neutral-800 bg-black/70">
+                <div className="h-[340px] w-full overflow-hidden rounded-2xl border border-neutral-800 bg-black/70 md:h-[400px]">
                   {mounted && mapSrc ? (
                     <iframe
                       key="map-mounted"
                       title="Térkép"
                       src={mapSrc}
-                      className="w-full h-full"
+                      className="h-full w-full"
                       style={{ border: 0 }}
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
@@ -963,7 +987,7 @@ export default function EventLanding() {
                       suppressHydrationWarning
                     />
                   ) : (
-                    <div className="w-full h-full bg-neutral-900" />
+                    <div className="h-full w-full bg-neutral-900" />
                   )}
                 </div>
               );
@@ -977,13 +1001,13 @@ export default function EventLanding() {
 
         <Section id="faq" icon={Info} title="GYIK">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6 grid gap-3 text-sm text-neutral-100">
+            <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
               <div>
                 <div className="font-medium">
                   Kell sportorvosi vagy szövetségi engedély?
                 </div>
                 <div className="text-neutral-300">
-                  Újoncoknak nem; versenyzőknek az IPF szabályrend szerint.
+                  Nem kell klubtagság és sportorvosi engedély.
                 </div>
               </div>
               <div>
@@ -1010,7 +1034,7 @@ export default function EventLanding() {
               <div>
                 <div className="font-medium">Lesz stream?</div>
                 <div className="text-neutral-300">
-                  Igen, a két platform külön linken nézhető (lásd az Időrend
+                  Igen, a két nap négy streamlinken követhető (lásd az Időrend
                   szekció alján).
                 </div>
               </div>
@@ -1019,35 +1043,33 @@ export default function EventLanding() {
         </Section>
 
         <Section id="contact" icon={Mail} title="Kapcsolat">
-  <Card className="rounded-2xl">
-    <CardContent className="p-6 grid gap-3 text-sm">
+          <Card className="rounded-2xl">
+            <CardContent className="grid gap-3 p-6 text-sm">
+              <div className="flex items-start gap-3">
+                <Mail className="h-5 w-5 text-red-500" />
+                <div>
+                  <div className="font-medium">E-mail</div>
+                  <a
+                    href="mailto:david@power-flow.eu"
+                    className="text-red-400 underline hover:text-red-300"
+                  >
+                    david@power-flow.eu
+                  </a>
+                </div>
+              </div>
 
-      <div className="flex items-start gap-3">
-        <Mail className="h-5 w-5 text-red-500" />
-        <div>
-          <div className="font-medium">E-mail</div>
-          <a
-            href="mailto:david@power-flow.eu"
-            className="text-red-400 underline hover:text-red-300"
-          >
-            david@power-flow.eu
-          </a>
-        </div>
-      </div>
-
-      <div className="text-xs text-neutral-400">
-        Kérdésed van a nevezéssel, szabályokkal vagy a részletekkel kapcsolatban?  
-        Írj nekünk, válaszolunk!
-      </div>
-      
-    </CardContent>
-  </Card>
-</Section>
+              <div className="text-xs text-neutral-400">
+                Kérdésed van a nevezéssel, szabályokkal vagy a részletekkel
+                kapcsolatban? Írj nekünk, válaszolunk!
+              </div>
+            </CardContent>
+          </Card>
+        </Section>
       </main>
 
-              <footer className="border-t border-red-900/70 bg-black">
+      <footer className="border-t border-red-900/70 bg-black">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6 text-xs text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
-          {/* Logók nagyobban + linkkel */}
+          {/* Logók */}
           <div className="flex items-center gap-4">
             <a
               href="https://www.sbdhungary.hu/"
@@ -1069,16 +1091,13 @@ export default function EventLanding() {
               <img
                 src="/powerflow_logo.png"
                 alt="PowerFlow"
-                className="h-7 w-auto sm:h-8 opacity-95"
+                className="h-7 w-auto opacity-95 sm:h-8"
               />
             </a>
           </div>
 
-          {/* Szöveg + kontakt */}
-          <div className="space-y-1 text-right sm:text-left sm:ml-auto">
-            <div className="text-neutral-200">
-              SBD Next – a következő szint.
-            </div>
+          <div className="space-y-1 text-right sm:ml-auto sm:text-left">
+            <div className="text-neutral-200">SBD Next – a következő szint.</div>
             <div>
               Kapcsolat:{" "}
               <a
