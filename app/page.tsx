@@ -920,18 +920,14 @@ export default function EventLanding() {
                     </span>
                   </span>
                   <div className="mt-2 flex flex-wrap gap-3 text-[13px]">
-                    <a
+                   <a
   href="/docs/MERSZ_Open_Minositesi_Szintek_2025.pdf"
   target="_blank"
   rel="noopener noreferrer"
   className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs hover:border-red-700 hover:bg-red-950/30 transition"
 >
-  <span>
-    MERSZ minősítési szintek (2025 – Open)
-    <br />
-    <span className="text-neutral-400">
-      Női & férfi open szintek egy PDF-ben
-    </span>
+  <span className="text-neutral-200">
+    MERSZ_Open_Minositesi_Szintek_2025.pdf
   </span>
   <ExternalLink className="h-4 w-4 text-red-400" />
 </a>
@@ -1016,8 +1012,17 @@ export default function EventLanding() {
           </div>
         </Section>
 
-        <Section id="register" icon={Dumbbell} title="Nevezés">
+                <Section id="register" icon={Dumbbell} title="Nevezés">
           <RegistrationForm />
+
+          <p className="mt-4 text-xs text-neutral-400">
+            A nevezők maximális létszámának elérése után minden új jelentkező
+            automatikusan várólistára kerül. A felszabaduló helyeket a
+            várólistán szereplők jelentkezési sorrendben kapják meg, a
+            szervezők egyéni e-mailes értesítése alapján. A várólistáról való
+            bekerülés a visszaigazolás és a nevezési díj befizetése után válik
+            érvényessé.
+          </p>
         </Section>
 
         <Section id="faq" icon={Info} title="GYIK">
