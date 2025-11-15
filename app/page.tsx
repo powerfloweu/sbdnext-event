@@ -817,15 +817,10 @@ export default function EventLanding() {
                   </CardContent>
                 </Card>
               </div>
-              <div className="mt-2 rounded-xl border border-red-900/70 bg-red-950/50 p-4 text-xs text-red-100">
-                A nevezési díj{" "}
-                <b>
-                  tartalmazza a media csomagot (menő fotók rólad) és az egyedi
-                  SBD versenypólót
-                </b>
-                . Opcionálisan{" "}
-                <b>Prémium media package</b> vásárolható (3 fotó + 3 videó).
-              </div>
+<div className="mt-2 rounded-xl border border-red-900/70 bg-red-950/50 p-4 text-xs text-red-100">
+  A nevezési díj{" "}
+  <b>tartalmazza a media csomagot és az egyedi SBD versenypólót.</b>
+</div>
             </CardContent>
           </Card>
         </Section>
@@ -838,7 +833,7 @@ export default function EventLanding() {
               </div>
               <div className="text-xs text-neutral-400">
                 A pontos flight- és platformbeosztást a nevezés lezárása után
-                tesszük közzé.
+                tesszük közzé és itt is megtalálhatod majd!
               </div>
 
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
