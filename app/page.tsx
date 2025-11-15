@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+  type ChangeEvent,
+} from "react";
 import { motion } from "framer-motion";
 import {
   CalendarDays,
@@ -17,6 +23,8 @@ import {
   AlertCircle,
   Link as LinkIcon,
 } from "lucide-react";
+
+import type { ComponentType } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -76,7 +84,6 @@ const EVENT = {
   },
   contact: {
     email: "david@power-flow.eu",
-    phone: "+36 30 466 0011",
   },
   social: {
     igSbd: "https://instagram.com/sbdhungary",
@@ -101,9 +108,9 @@ function Section({
   children,
 }: {
   id: string;
-  icon?: any;
+  icon?: ComponentType<{ className?: string }>;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section id={id} className="scroll-mt-24 py-10">
@@ -123,7 +130,7 @@ function Stat({
 }: {
   label: string;
   value: string;
-  Icon: any;
+  Icon: ComponentType<{ className?: string }>;
 }) {
   return (
     <Card className="rounded-2xl border border-red-900/50 bg-black/40 text-red-50">
@@ -160,6 +167,20 @@ function PriceRow({
   );
 }
 
+interface RegistrationData {
+  name: string;
+  email: string;
+  birthdate: string;
+  club: string;
+  sex: string;
+  division: string;
+  bestTotal: string;
+  notes: string;
+  consent: boolean;
+  premium: boolean;
+  honeypot: string;
+}
+
 // ====== REGISZTRÁCIÓ ======
 function RegistrationForm() {
   const PAYMENT_LINK_BASE =
@@ -170,7 +191,7 @@ function RegistrationForm() {
   const WEBHOOK_URL =
     "https://hook.eu1.make.com/6vbe2dxien274ohy91ew22lp9bbfzrl3";
 
-  const [data, setData] = useState<any>({
+  const [data, setData] = useState<RegistrationData>({
     name: "",
     email: "",
     birthdate: "",
@@ -383,7 +404,9 @@ function RegistrationForm() {
           tabIndex={-1}
           autoComplete="off"
           value={data.honeypot}
-          onChange={(e) => setData({ ...data, honeypot: e.target.value })}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setData({ ...data, honeypot: e.target.value })
+          }
           placeholder="Hagyja üresen"
         />
       </div>
@@ -393,7 +416,9 @@ function RegistrationForm() {
           <label className="text-sm">Teljes név</label>
           <Input
             value={data.name}
-            onChange={(e) => setData({ ...data, name: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setData({ ...data, name: e.target.value })
+            }
             placeholder="Vezetéknév Keresztnév"
             required
           />
@@ -403,7 +428,9 @@ function RegistrationForm() {
           <Input
             type="email"
             value={data.email}
-            onChange={(e) => setData({ ...data, email: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setData({ ...data, email: e.target.value })
+            }
             placeholder="nev@email.hu"
             required
           />
@@ -413,8 +440,8 @@ function RegistrationForm() {
           <Input
             type="date"
             value={data.birthdate}
-            onChange={(e) =>
-              setData({ ...data, birthdate: (e.target as any).value })
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setData({ ...data, birthdate: e.target.value })
             }
           />
         </div>
@@ -422,7 +449,9 @@ function RegistrationForm() {
           <label className="text-sm">Egyesület / Klub (opcionális)</label>
           <Input
             value={data.club}
-            onChange={(e) => setData({ ...data, club: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setData({ ...data, club: e.target.value })
+            }
             placeholder="—"
           />
         </div>
@@ -466,8 +495,8 @@ function RegistrationForm() {
             inputMode="numeric"
             placeholder="pl. 495 kg"
             value={data.bestTotal}
-            onChange={(e) =>
-              setData({ ...data, bestTotal: (e.target as any).value })
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setData({ ...data, bestTotal: e.target.value })
             }
           />
         </div>
@@ -479,7 +508,9 @@ function RegistrationForm() {
         </label>
         <Textarea
           value={data.notes}
-          onChange={(e) => setData({ ...data, notes: e.target.value })}
+          onChange={(e) =>
+            setData({ ...data, notes: e.target.value })
+          }
           placeholder="—"
         />
       </div>
@@ -488,8 +519,8 @@ function RegistrationForm() {
         <Checkbox
           id="consent"
           checked={data.consent}
-          onCheckedChange={(v: any) =>
-            setData({ ...data, consent: Boolean(v) })
+          onCheckedChange={(checked: boolean | "indeterminate") =>
+            setData({ ...data, consent: checked === true })
           }
         />
         <label htmlFor="consent" className="text-sm">
@@ -503,8 +534,8 @@ function RegistrationForm() {
         <Checkbox
           id="premium"
           checked={data.premium}
-          onCheckedChange={(v: any) =>
-            setData({ ...data, premium: Boolean(v) })
+          onCheckedChange={(checked: boolean | "indeterminate") =>
+            setData({ ...data, premium: checked === true })
           }
         />
         <label htmlFor="premium" className="text-sm">
@@ -531,6 +562,7 @@ function RegistrationForm() {
 // ====== OLDAL ======
 export default function EventLanding() {
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   const priceEntry = new Intl.NumberFormat("hu-HU").format(EVENT.fees.entry);
@@ -905,21 +937,33 @@ export default function EventLanding() {
                   </span>
                   <ExternalLink className="h-4 w-4 text-red-400" />
                 </a>
-                <a
-                  href="/docs/MERSZ_minositesi_szintek_open.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30 sm:col-span-2"
-                >
+                <div className="flex flex-col justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs sm:col-span-2">
                   <span>
-                    MERSZ minősítési szintek (PDF)
+                    MERSZ minősítési szintek (2025 – Open)
                     <br />
                     <span className="text-neutral-400">
-                      Open szintek kiemelve (női + férfi egy PDF-ben)
+                      Férfi és női open szintek külön PDF-ben
                     </span>
                   </span>
-                  <ExternalLink className="h-4 w-4 text-red-400" />
-                </a>
+                  <div className="mt-2 flex flex-wrap gap-3 text-[13px]">
+                    <a
+                      href="https://hunpower.hu/wp-content/uploads/2024/12/2025FMSZ-1.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-red-300"
+                    >
+                      Férfi open minősítési szintek (PDF)
+                    </a>
+                    <a
+                      href="https://hunpower.hu/wp-content/uploads/2025/01/2025NMSZ.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-red-300"
+                    >
+                      Női open minősítési szintek (PDF)
+                    </a>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1050,10 +1094,10 @@ export default function EventLanding() {
                 <div>
                   <div className="font-medium">E-mail</div>
                   <a
-                    href="mailto:david@power-flow.eu"
+                    href={`mailto:${EVENT.contact.email}`}
                     className="text-red-400 underline hover:text-red-300"
                   >
-                    david@power-flow.eu
+                    {EVENT.contact.email}
                   </a>
                 </div>
               </div>
@@ -1097,21 +1141,16 @@ export default function EventLanding() {
           </div>
 
           <div className="space-y-1 text-right sm:ml-auto sm:text-left">
-            <div className="text-neutral-200">SBD Next – a következő szint.</div>
+            <div className="text-neutral-200">
+              SBD Next – a következő szint.
+            </div>
             <div>
               Kapcsolat:{" "}
               <a
-                href="mailto:david@power-flow.eu"
+                href={`mailto:${EVENT.contact.email}`}
                 className="text-red-400 hover:text-red-300"
               >
-                david@power-flow.eu
-              </a>{" "}
-              •{" "}
-              <a
-                href="tel:+36304660011"
-                className="text-red-400 hover:text-red-300"
-              >
-                +36 30 466 0011
+                {EVENT.contact.email}
               </a>
             </div>
             <div className="text-[11px] text-neutral-500">
