@@ -921,21 +921,20 @@ export default function EventLanding() {
                   </span>
                   <div className="mt-2 flex flex-wrap gap-3 text-[13px]">
                     <a
-                      href="https://hunpower.hu/wp-content/uploads/2024/12/2025FMSZ-1.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-red-300"
-                    >
-                      Férfi open minősítési szintek (PDF)
-                    </a>
-                    <a
-                      href="https://hunpower.hu/wp-content/uploads/2025/01/2025NMSZ.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-red-300"
-                    >
-                      Női open minősítési szintek (PDF)
-                    </a>
+  href="/docs/MERSZ_Open_Minositesi_Szintek_2025.pdf"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs hover:border-red-700 hover:bg-red-950/30 transition"
+>
+  <span>
+    MERSZ minősítési szintek (2025 – Open)
+    <br />
+    <span className="text-neutral-400">
+      Női & férfi open szintek egy PDF-ben
+    </span>
+  </span>
+  <ExternalLink className="h-4 w-4 text-red-400" />
+</a>
                   </div>
                 </div>
               </div>
