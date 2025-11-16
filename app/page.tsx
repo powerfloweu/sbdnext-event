@@ -188,8 +188,7 @@ function RegistrationForm() {
   const PAYMENT_LINK_PREMIUM =
     "https://buy.stripe.com/bJe7sK0Qf7Ks9EU1LfdfG0n"; // Prémium (+24 990 Ft)
 
-  const WEBHOOK_URL =
-    "https://hook.eu1.make.com/6vbe2dxien274ohy91ew22lp9bbfzrl3";
+   const WEBHOOK_URL = "/api/registration-webhook";
 
   const [data, setData] = useState<RegistrationData>({
     name: "",
@@ -244,40 +243,39 @@ function RegistrationForm() {
       const target = data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE;
       const utm =
         typeof window !== "undefined" ? window.location.search || "" : "";
+const payload = {
+  timestamp: new Date().toISOString(),
+  name: data.name,
+  email: data.email,
+  club: data.club,
+  sex: data.sex,
+  division: data.division,
+  bestTotal: data.bestTotal,
+  premium: data.premium,
+};
 
-      const payload = {
-        registrationId,
-        ...data,
-        paymentOption: data.premium ? "premium" : "base",
-        stripeLink: target,
-        submittedAt: new Date().toISOString(),
-        userAgent:
-          typeof navigator !== "undefined" ? navigator.userAgent : "",
-        page: "/",
-        utm,
-        cap: {
-          limit: CAP_LIMIT,
-          used: CAP_USED,
-          remaining: CAP_REMAINING,
-          full: CAP_FULL,
-        },
-      };
+      const blob = new Blob([JSON.stringify(payload)], {
+        type: "application/json",
+      });
 
-      // --- Webhook hívás Make felé (tisztán fetch-csel) ---
-      console.log("SBD Next – webhook payload:", payload);
+      // 1) próbáljuk sendBeacon-nel
+      const beaconOk =
+        typeof navigator !== "undefined" && "sendBeacon" in navigator
+          ? navigator.sendBeacon(WEBHOOK_URL, blob)
+          : false;
 
-      try {
-        const res = await fetch(WEBHOOK_URL, {
+      // 2) ha a beacon nem oké, fallback fetch (keepalive)
+      if (!beaconOk) {
+        fetch(WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          keepalive: true,
+        }).catch(() => {
+          // ide most nem kell hibaüzent, mert a fő flow a Stripe redirect
         });
-        console.log("Webhook response status:", res.status);
-      } catch (err) {
-        console.error("Webhook hiba:", err);
       }
 
-      // --- Stripe átirányítás ---
       const url = new URL(target);
       if (data.email) url.searchParams.set("prefilled_email", data.email);
       window.location.href = url.toString();
