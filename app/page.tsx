@@ -254,28 +254,14 @@ const payload = {
   premium: data.premium,
 };
 
-      const blob = new Blob([JSON.stringify(payload)], {
-        type: "application/json",
+         // --- webhook hívás Next API-n keresztül ---
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
-      // 1) próbáljuk sendBeacon-nel
-      const beaconOk =
-        typeof navigator !== "undefined" && "sendBeacon" in navigator
-          ? navigator.sendBeacon(WEBHOOK_URL, blob)
-          : false;
-
-      // 2) ha a beacon nem oké, fallback fetch (keepalive)
-      if (!beaconOk) {
-        fetch(WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          keepalive: true,
-        }).catch(() => {
-          // ide most nem kell hibaüzent, mert a fő flow a Stripe redirect
-        });
-      }
-
+      // --- Stripe redirect ---
       const url = new URL(target);
       if (data.email) url.searchParams.set("prefilled_email", data.email);
       window.location.href = url.toString();
