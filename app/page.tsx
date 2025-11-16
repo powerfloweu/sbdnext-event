@@ -48,7 +48,7 @@ const CAP_REMAINING = Math.max(0, CAP_LIMIT - CAP_USED);
 const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
 
 // NEVEZÉS NYITVA? – MOST MÉG NEM
-const REG_OPEN = false; // ha nyit a nevezés: true
+const REG_OPEN = true; // ha nyit a nevezés: true
 
 // ====== ESEMÉNY ADATOK ======
 const EVENT = {
@@ -263,23 +263,21 @@ function RegistrationForm() {
         },
       };
 
-      const blob = new Blob([JSON.stringify(payload)], {
-        type: "application/json",
-      });
-      const beaconOk =
-        typeof navigator !== "undefined" && "sendBeacon" in navigator
-          ? navigator.sendBeacon(WEBHOOK_URL, blob)
-          : false;
+      // --- Webhook hívás Make felé (tisztán fetch-csel) ---
+      console.log("SBD Next – webhook payload:", payload);
 
-      if (!beaconOk) {
-        await fetch(WEBHOOK_URL, {
+      try {
+        const res = await fetch(WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-          keepalive: true,
-        }).catch(() => {});
+        });
+        console.log("Webhook response status:", res.status);
+      } catch (err) {
+        console.error("Webhook hiba:", err);
       }
 
+      // --- Stripe átirányítás ---
       const url = new URL(target);
       if (data.email) url.searchParams.set("prefilled_email", data.email);
       window.location.href = url.toString();
@@ -916,7 +914,7 @@ export default function EventLanding() {
                     MERSZ minősítési szintek (2025 – Open)
                     <br />
                     <span className="text-neutral-400">
-                      Férfi és női open szintek külön PDF-ben
+                      Férfi és női open szintek egy fájlban
                     </span>
                   </span>
                   <div className="mt-2 flex flex-wrap gap-3 text-[13px]">
