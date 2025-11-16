@@ -48,7 +48,7 @@ const CAP_REMAINING = Math.max(0, CAP_LIMIT - CAP_USED);
 const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
 
 // NEVEZÉS NYITVA? – MOST MÉG NEM
-const REG_OPEN = true; // ha nyit a nevezés: true
+const REG_OPEN = false; // ha nyit a nevezés: true
 
 // ====== ESEMÉNY ADATOK ======
 const EVENT = {
@@ -181,14 +181,22 @@ interface RegistrationData {
   honeypot: string;
 }
 
+type TimeLeft = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
 // ====== REGISZTRÁCIÓ ======
 function RegistrationForm() {
+  // Stripe Payment Linkek
   const PAYMENT_LINK_BASE =
     "https://buy.stripe.com/8x26oG6az4yg8AQ89DdfG0m"; // Nevezés (33 990 Ft)
   const PAYMENT_LINK_PREMIUM =
     "https://buy.stripe.com/bJe7sK0Qf7Ks9EU1LfdfG0n"; // Prémium (+24 990 Ft)
 
-   const WEBHOOK_URL = "/api/registration-webhook";
+  // Webhook a Next API route-hoz (innen megy tovább a Make + Google Sheet felé)
+  const WEBHOOK_URL = "/api/registration-webhook";
 
   const [data, setData] = useState<RegistrationData>({
     name: "",
@@ -203,6 +211,30 @@ function RegistrationForm() {
     premium: false,
     honeypot: "",
   });
+
+  // 🔢 visszaszámláló – nevezés indul: 2025-11-20 20:00 (CET)
+  const REG_OPEN_AT = new Date("2025-11-20T20:00:00+01:00");
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+
+  useEffect(() => {
+    function updateTimeLeft() {
+      const diff = REG_OPEN_AT.getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft(null);
+        return;
+      }
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      setTimeLeft({ days, hours, minutes, seconds });
+    }
+
+    updateTimeLeft();
+    const id = setInterval(updateTimeLeft, 1000);
+    return () => clearInterval(id);
+  }, [REG_OPEN_AT]);
 
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -243,25 +275,39 @@ function RegistrationForm() {
       const target = data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE;
       const utm =
         typeof window !== "undefined" ? window.location.search || "" : "";
-const payload = {
-  timestamp: new Date().toISOString(),
-  name: data.name,
-  email: data.email,
-  club: data.club,
-  sex: data.sex,
-  division: data.division,
-  bestTotal: data.bestTotal,
-  premium: data.premium,
-};
 
-         // --- webhook hívás Next API-n keresztül ---
+      const payload = {
+        timestamp: new Date().toISOString(),
+        registrationId,
+        name: data.name,
+        email: data.email,
+        birthdate: data.birthdate,
+        club: data.club,
+        sex: data.sex,
+        division: data.division,
+        bestTotal: data.bestTotal,
+        notes: data.notes,
+        consent: data.consent,
+        premium: data.premium,
+        paymentOption: data.premium ? "premium" : "base",
+        stripeLink: target,
+        page: "/",
+        utm,
+        cap: {
+          limit: CAP_LIMIT,
+          used: CAP_USED,
+          remaining: CAP_REMAINING,
+          full: CAP_FULL,
+        },
+      };
+
+      // --- webhook hívás a Next API-n keresztül (ami továbbküldi Make → Google Sheet) ---
       await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      }).catch(() => {});
 
-      // --- Stripe redirect ---
       const url = new URL(target);
       if (data.email) url.searchParams.set("prefilled_email", data.email);
       window.location.href = url.toString();
@@ -276,75 +322,60 @@ const payload = {
     }
   }
 
-  if (CAP_FULL) {
-    return (
-      <div className="rounded-2xl border border-red-500/40 bg-red-950/40 p-6 text-sm">
-        <div className="flex items-center gap-2 font-semibold text-red-200">
-          <AlertCircle className="h-5 w-5" />
-          Betelt a nevezés ({CAP_LIMIT} fő).
-        </div>
-        <p className="mt-2 text-red-100/90">
-          Jelentkezés betelése után lemondás esetén várólista alapján egyénileg
-          értesítünk.
-        </p>
-        <p className="mt-2 text-red-100/90">
-          Kövesd az Instagramot (
-          <a
-            href={EVENT.social.igPowerflow}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            @powerfloweu
-          </a>{" "}
-          és{" "}
-          <a
-            href={EVENT.social.igSbd}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            @sbdhungary
-          </a>
-          ) a lemondott helyekért / várólistáért.
-        </p>
-      </div>
-    );
-  }
-
+  // 🔒 ha nincs nyitva a nevezés, csak info box + visszaszámláló
   if (!REG_OPEN) {
     return (
-      <div className="space-y-3 rounded-2xl border border-yellow-500/50 bg-yellow-950/40 p-6 text-sm">
+      <div className="space-y-4 rounded-2xl border border-yellow-500/40 bg-yellow-950/40 p-6 text-sm">
         <div className="flex items-center gap-2 font-semibold text-yellow-200">
           <AlertCircle className="h-5 w-5" />
           A nevezés még nem indult el.
         </div>
+
         <p className="text-yellow-100/90">
-          Jelentkezés: <b>{EVENT.deadlines.regOpen}</b> –{" "}
-          <b>{EVENT.deadlines.regClose}</b>. A nevezési felület ezen az oldalon
-          fog megnyílni.
+          A nevezési időszak:{" "}
+          <b>2025. november 20.</b> – <b>2025. december 1.</b>
         </p>
-        <p className="text-yellow-100/80">
-          Kövess minket Instagramon{" "}
-          <a
-            href={EVENT.social.igSbd}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            @sbdhungary
-          </a>{" "}
-          és{" "}
+
+        {timeLeft && (
+          <div className="rounded-xl border border-yellow-500/40 bg-black/40 p-3">
+            <div className="text-xs uppercase tracking-[0.18em] text-yellow-200/80">
+              Várható indulásig
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-sm text-yellow-50">
+              <span>{timeLeft.days} nap</span>
+              <span>
+                {timeLeft.hours.toString().padStart(2, "0")} óra
+              </span>
+              <span>
+                {timeLeft.minutes.toString().padStart(2, "0")} perc
+              </span>
+              <span>
+                {timeLeft.seconds.toString().padStart(2, "0")} mp
+              </span>
+            </div>
+          </div>
+        )}
+
+        <p className="text-yellow-100/60">
+          Kövesd az Instát a friss infókért:{" "}
           <a
             href={EVENT.social.igPowerflow}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline"
+            className="text-yellow-200 underline hover:text-yellow-100"
           >
             @powerfloweu
           </a>{" "}
-          oldalakon – folyamatos információ-frissítés 2–4 hetente az esemény
-          közeledtével.
+          és{" "}
+          <a
+            href={EVENT.social.igSbd}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-yellow-200 underline hover:text-yellow-100"
+          >
+            @sbdhungary
+          </a>
+          .
         </p>
       </div>
     );
@@ -371,6 +402,7 @@ const payload = {
     );
   }
 
+  // Ha nyitva a nevezés és nincs CAP_FULL, jön a form
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       {error && (
@@ -386,9 +418,7 @@ const payload = {
           tabIndex={-1}
           autoComplete="off"
           value={data.honeypot}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            setData({ ...data, honeypot: e.target.value })
-          }
+          onChange={(e) => setData({ ...data, honeypot: e.target.value })}
           placeholder="Hagyja üresen"
         />
       </div>
@@ -398,9 +428,7 @@ const payload = {
           <label className="text-sm">Teljes név</label>
           <Input
             value={data.name}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setData({ ...data, name: e.target.value })
-            }
+            onChange={(e) => setData({ ...data, name: e.target.value })}
             placeholder="Vezetéknév Keresztnév"
             required
           />
@@ -410,30 +438,26 @@ const payload = {
           <Input
             type="email"
             value={data.email}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setData({ ...data, email: e.target.value })
-            }
+            onChange={(e) => setData({ ...data, email: e.target.value })}
             placeholder="nev@email.hu"
             required
           />
         </div>
-        <div>
-          <label className="text-sm">Születési dátum</label>
-          <Input
-            type="date"
-            value={data.birthdate}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setData({ ...data, birthdate: e.target.value })
-            }
-          />
-        </div>
+ <div>
+  <label className="text-sm">Születési dátum</label>
+  <Input
+    type="date"
+    value={data.birthdate}
+    onChange={(e) =>
+      setData({ ...data, birthdate: (e.target as HTMLInputElement).value })
+    }
+  />
+</div>
         <div>
           <label className="text-sm">Egyesület / Klub (opcionális)</label>
           <Input
             value={data.club}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setData({ ...data, club: e.target.value })
-            }
+            onChange={(e) => setData({ ...data, club: e.target.value })}
             placeholder="—"
           />
         </div>
@@ -477,8 +501,8 @@ const payload = {
             inputMode="numeric"
             placeholder="pl. 495 kg"
             value={data.bestTotal}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setData({ ...data, bestTotal: e.target.value })
+            onChange={(e) =>
+              setData({ ...data, bestTotal: (e.target as HTMLInputElement).value })
             }
           />
         </div>
@@ -490,9 +514,7 @@ const payload = {
         </label>
         <Textarea
           value={data.notes}
-          onChange={(e) =>
-            setData({ ...data, notes: e.target.value })
-          }
+          onChange={(e) => setData({ ...data, notes: e.target.value })}
           placeholder="—"
         />
       </div>
@@ -501,8 +523,8 @@ const payload = {
         <Checkbox
           id="consent"
           checked={data.consent}
-          onCheckedChange={(checked: boolean | "indeterminate") =>
-            setData({ ...data, consent: checked === true })
+          onCheckedChange={(v: boolean | "indeterminate") =>
+            setData({ ...data, consent: Boolean(v) })
           }
         />
         <label htmlFor="consent" className="text-sm">
@@ -516,12 +538,13 @@ const payload = {
         <Checkbox
           id="premium"
           checked={data.premium}
-          onCheckedChange={(checked: boolean | "indeterminate") =>
-            setData({ ...data, premium: checked === true })
+          onCheckedChange={(v: boolean | "indeterminate") =>
+            setData({ ...data, premium: Boolean(v) })
           }
         />
         <label htmlFor="premium" className="text-sm">
-          Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó
+          Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt
+          válogatás.
         </label>
       </div>
 
@@ -530,8 +553,7 @@ const payload = {
           {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
         </Button>
         <div className="text-xs text-muted-foreground">
-          A nevezési díj: 29 990 Ft — tartalmazza a{" "}
-          <b>media csomagot (profi fotók rólad)</b> és az{" "}
+          A nevezési díj: 33 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
           <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó + 3
           videó).
         </div>
