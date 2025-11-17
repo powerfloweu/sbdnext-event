@@ -885,63 +885,57 @@ export default function EventLanding() {
               </div>
 
               <div className="mt-2 grid gap-3 sm:grid-cols-2">
-                <a
-                  href="/docs/IPF_MERSZ_szabalyzat_2025.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30"
-                >
-                  <span>
-                    IPF/MERSZ szabályzat (PDF)
-                    <br />
-                    <span className="text-neutral-400">
-                      Hivatalos szabálykönyv (2025)
-                    </span>
-                  </span>
-                  <ExternalLink className="h-4 w-4 text-red-400" />
-                </a>
-                <a
-                  href="/docs/SBD_Next_versenykiiras.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30"
-                >
-                  <span>
-                    SBD Next versenykiírás (PDF)
-                    <br />
-                    <span className="text-neutral-400">
-                      Hivatalos kiírás, részletes infók
-                    </span>
-                  </span>
-                  <ExternalLink className="h-4 w-4 text-red-400" />
-                </a>
-                <div className="flex flex-col justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs sm:col-span-2">
-                  <span>
-                    MERSZ minősítési szintek (2025 – Open)
-                    <br />
-                    <span className="text-neutral-400">
-                      Férfi és női open szintek egy fájlban
-                    </span>
-                  </span>
-                  <div className="mt-2 flex flex-wrap gap-3 text-[13px]">
-                   <a
-  href="/docs/MERSZ_Open_Minositesi_Szintek_2025.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs hover:border-red-700 hover:bg-red-950/30 transition"
->
-  <span className="text-neutral-200">
-    MERSZ_Open_Minositesi_Szintek_2025.pdf
-  </span>
-  <ExternalLink className="h-4 w-4 text-red-400" />
-</a>
-                  </div>
-                </div>
-              </div>
+  <a
+    href="/docs/IPF_MERSZ_szabalyzat_2025.pdf"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30"
+  >
+    <span>
+      IPF/MERSZ szabályzat (PDF)
+      <br />
+      <span className="text-neutral-400">
+        Hivatalos szabálykönyv (2025)
+      </span>
+    </span>
+    <ExternalLink className="h-4 w-4 text-red-400" />
+  </a>
+
+  <a
+    href="/docs/SBD_Next_versenykiiras.pdf"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30"
+  >
+    <span>
+      SBD Next versenykiírás (PDF)
+      <br />
+      <span className="text-neutral-400">
+        Hivatalos kiírás, részletes infók
+      </span>
+    </span>
+    <ExternalLink className="h-4 w-4 text-red-400" />
+  </a>
+
+  <a
+    href="/docs/MERSZ_Open_Minositesi_Szintek_2025.pdf"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center justify-between rounded-xl border border-neutral-800 bg-black/60 px-4 py-3 text-xs transition hover:border-red-700 hover:bg-red-950/30"
+  >
+    <span>
+      MERSZ minősítési szintek (2025 – Open)
+      <br />
+      <span className="text-neutral-400">
+        Férfi és női open szintek egy fájlban
+      </span>
+    </span>
+    <ExternalLink className="h-4 w-4 text-red-400" />
+  </a>
+</div>
             </CardContent>
           </Card>
         </Section>
-
 <Section id="fees" icon={TicketCheck} title="Nevezési és nézői díjak">
   <Card className="rounded-2xl border border-neutral-800 bg-black/70">
     <CardContent className="p-6">
