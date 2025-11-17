@@ -50,6 +50,9 @@ const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
 // NEVEZÉS NYITVA? – MOST MÉG NEM
 const REG_OPEN = true; // ha nyit a nevezés: true
 
+// A nevezés indulásának fix időpontja (CET)
+const REG_OPEN_AT = new Date("2025-11-20T20:00:00+01:00");
+
 // ====== ESEMÉNY ADATOK ======
 const EVENT = {
   title: "SBD Next – Nyílt erőemelő verseny",
@@ -209,9 +212,11 @@ function RegistrationForm() {
     honeypot: "",
   });
 
-  // 🔢 visszaszámláló – nevezés indul: 2025-11-20 20:00 (CET)
-  const REG_OPEN_AT = new Date("2025-11-20T20:00:00+01:00");
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+    const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
   useEffect(() => {
     function updateTimeLeft() {
@@ -225,17 +230,14 @@ function RegistrationForm() {
       const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
       const seconds = totalSeconds % 60;
+
       setTimeLeft({ days, hours, minutes, seconds });
     }
 
     updateTimeLeft();
     const id = setInterval(updateTimeLeft, 1000);
     return () => clearInterval(id);
-  }, [REG_OPEN_AT]);
-
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  }, []);
 
   const valid = useMemo(() => {
     if (CAP_FULL) return false;
