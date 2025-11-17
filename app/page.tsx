@@ -52,7 +52,7 @@ const REG_OPEN = false; // ha nyit a nevezés: true
 
 // ====== ESEMÉNY ADATOK ======
 const EVENT = {
-  title: "SBD Next – Új belépők powerlifting versenye",
+  title: "SBD Next – Nyílt erőemelő verseny",
   subtitle: "A következő szint",
   date: "2026. február 14–15.",
   time: "7:00–19:00 (mindkét nap)",
@@ -60,21 +60,18 @@ const EVENT = {
     name: "Thor Gym (Újbuda)",
     address: "Budapest, Nándorfejérvári út 40, 1116",
     mapEmbedSrc:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4748.762520334373!2d19.04355177770303!3d47.46025827117686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4741dda23e15b409%3A0x59fe623bd00aa0be!2sThor%20Gym!5e1!3m2!1shu!2shu!4v1762941118132!5m2!1shu!2shu",
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4748.762520334373!2d19.04355177770303!3d47.46025827117686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4741dda23e15b409%3A0x59fe623bd00aa0be!2sThor%20Gym!5e1!3m2!1shu!2shu!4v1762941118132!5m2!1shu!2hu",
   },
   concept:
     "Szabadidős esemény újoncoknak kötöttségek nélkül, erőemelő versenyzőknek pedig gyakorlásképp!",
   layout: "2 nap, 2 platform",
   federation:
-    "IPF szabályrendszer (hamarosan belinkeljük a hivatalos IPF/MERSZ szabálykönyvet). Nem kell klubtagság és sportorvosi engedély.",
+    "IPF szabályrendszer. Nem kell klubtagság és sportorvosi engedély.",
   equipmentNote:
-    "Nincs kötelező felszerelés, minden használható az IPF szabályrendszerén belül.",
+    "Felszerelés: MERSZ szabályai szerint (kantáros ruha, hosszú zokni, cipő, póló kötelező, ezen felül minden, ami az IPF RAW szabályain belül megengedett).",
   deadlines: {
-    regOpen: "Nov. 20",
-    regClose: "Dec. 1",
-    refundFull: "Dec. 31-ig 100% visszatérítés",
-    refundHalf: "Jan. 14-ig 50% visszatérítés",
-    refundNone: "Később nincs visszatérítés",
+    regOpen: "2025. november 20.",
+    regClose: "2025. december 1.",
   },
   fees: {
     entry: 29990,
@@ -93,10 +90,10 @@ const EVENT = {
   scoring: "Eredményhirdetés IPF pontszám alapján (nincsenek súlycsoportok).",
   eventType: "Háromfogásos, full power (SBD) verseny.",
   streams: {
-    saturdayA: "#",
-    saturdayB: "#",
-    sundayA: "#",
-    sundayB: "#",
+    saturdayA: "https://www.youtube.com/@sbdhungary7034",
+    saturdayB: "https://www.youtube.com/@sbdhungary7034",
+    sundayA: "https://www.youtube.com/@sbdhungary7034",
+    sundayB: "https://www.youtube.com/@sbdhungary7034",
   },
   cap: CAP_LIMIT,
 };
@@ -869,6 +866,9 @@ export default function EventLanding() {
                   <LinkIcon className="h-4 w-4" />
                   Stream — Vasárnap, B platform
                 </a>
+              </div>
+                            <div className="mt-3 text-xs text-neutral-400">
+                Az élő közvetítés linkjei a verseny közeledtével frissülni fognak.
               </div>
             </CardContent>
           </Card>
