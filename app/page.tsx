@@ -68,7 +68,7 @@ const EVENT = {
   federation:
     "IPF szabályrendszer. Nem kell klubtagság és sportorvosi engedély.",
   equipmentNote:
-    "Felszerelés: MERSZ szabályai szerint (kantáros ruha, hosszú zokni, cipő, póló kötelező, ezen felül minden, ami az IPF RAW szabályain belül megengedett).",
+    "MERSZ szabályai szerint (kantáros ruha, hosszú zokni, cipő, póló kötelező, ezen felül minden, ami az IPF RAW szabályain belül megengedett).",
   deadlines: {
     regOpen: "2025. november 20.",
     regClose: "2025. december 1.",
@@ -80,7 +80,7 @@ const EVENT = {
     currency: "HUF",
   },
   contact: {
-    email: "david@power-flow.eu",
+    email: "powerlifting@sbdnext.hu",
   },
   social: {
     igSbd: "https://instagram.com/sbdhungary",
