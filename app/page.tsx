@@ -48,7 +48,7 @@ const CAP_REMAINING = Math.max(0, CAP_LIMIT - CAP_USED);
 const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
 
 // NEVEZÉS NYITVA? – MOST MÉG NEM
-const REG_OPEN = false; // ha nyit a nevezés: true
+const REG_OPEN = true; // ha nyit a nevezés: true
 
 // ====== ESEMÉNY ADATOK ======
 const EVENT = {
@@ -83,7 +83,7 @@ const EVENT = {
     email: "powerlifting@sbdnext.hu",
   },
   social: {
-    igSbd: "https://instagram.com/sbdhungary",
+    igSbd: "https://instagram.com/sbd.hungary",
     igPowerflow: "https://instagram.com/powerfloweu",
   },
   divisions: ["Újonc", "Versenyző"],
