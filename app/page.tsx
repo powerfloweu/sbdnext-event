@@ -837,36 +837,44 @@ export default function EventLanding() {
                 tesszük közzé és itt is megtalálhatod majd!
               </div>
 
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                <a
-                  href={EVENT.streams.saturdayA}
-                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  Stream — Szombat, A platform
-                </a>
-                <a
-                  href={EVENT.streams.saturdayB}
-                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  Stream — Szombat, B platform
-                </a>
-                <a
-                  href={EVENT.streams.sundayA}
-                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  Stream — Vasárnap, A platform
-                </a>
-                <a
-                  href={EVENT.streams.sundayB}
-                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  Stream — Vasárnap, B platform
-                </a>
-              </div>
+             <div className="mt-4 grid gap-2 sm:grid-cols-2">
+  <a
+    href={EVENT.streams.saturdayA}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+  >
+    <LinkIcon className="h-4 w-4" />
+    Stream — Szombat, A platform
+  </a>
+  <a
+    href={EVENT.streams.saturdayB}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+  >
+    <LinkIcon className="h-4 w-4" />
+    Stream — Szombat, B platform
+  </a>
+  <a
+    href={EVENT.streams.sundayA}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+  >
+    <LinkIcon className="h-4 w-4" />
+    Stream — Vasárnap, A platform
+  </a>
+  <a
+    href={EVENT.streams.sundayB}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+  >
+    <LinkIcon className="h-4 w-4" />
+    Stream — Vasárnap, B platform
+  </a>
+</div>
                             <div className="mt-3 text-xs text-neutral-400">
                 Az élő közvetítés linkjei a verseny közeledtével frissülni fognak.
               </div>
@@ -1073,12 +1081,14 @@ export default function EventLanding() {
                 <Mail className="h-5 w-5 text-red-500" />
                 <div>
                   <div className="font-medium">E-mail</div>
-                  <a
-                    href={`mailto:${EVENT.contact.email}`}
-                    className="text-red-400 underline hover:text-red-300"
-                  >
-                    {EVENT.contact.email}
-                  </a>
+                 <a
+  href={`mailto:${EVENT.contact.email}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-red-400 underline hover:text-red-300"
+>
+  {EVENT.contact.email}
+</a>
                 </div>
               </div>
 
