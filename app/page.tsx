@@ -608,10 +608,6 @@ function RegistrationForm() {
           A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
           <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó + 3
           videó).
-          <br />
-          <span className="text-[11px] text-red-300">
-            Fontos: a nevezési díj nem visszatéríthető.
-          </span>
         </div>
       </div>
     </form>
