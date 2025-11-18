@@ -223,7 +223,7 @@ function RegistrationForm() {
 
   // Webhook a Next API route-hoz (innen megy tovább a Make + Google Sheet felé)
   const WEBHOOK_URL = "/api/registration-webhook";
-
+const [waitlisted, setWaitlisted] = useState(false);
  const [data, setData] = useState<RegistrationData>({
   name: "",
   email: "",
@@ -273,12 +273,6 @@ function RegistrationForm() {
       setError("A nevezés ezen a felületen jelenleg nincs nyitva.");
       return;
     }
-    if (CAP_FULL) {
-      setError(
-        "A nevezői létszám betelt, új nevezést már nem tudunk fogadni ezen az űrlapon."
-      );
-      return;
-    }
     if (data.honeypot && data.honeypot.trim().length > 0) {
       // bot / spam – csendben eldobjuk
       return;
@@ -299,9 +293,16 @@ function RegistrationForm() {
           ? crypto.randomUUID()
           : `reg_${Date.now()}`;
 
-      const target = data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE;
-      const utm =
-        typeof window !== "undefined" ? window.location.search || "" : "";
+     const isWaitlist = CAP_FULL;
+
+const target = isWaitlist
+  ? null
+  : data.premium
+  ? PAYMENT_LINK_PREMIUM
+  : PAYMENT_LINK_BASE;
+
+const utm =
+  typeof window !== "undefined" ? window.location.search || "" : "";
 
             const payload = {
         timestamp: new Date().toISOString(),
@@ -329,18 +330,28 @@ function RegistrationForm() {
         },
       };
 
-      // --- webhook hívás a Next API-n keresztül (ami továbbküldi Make → Google Sheet) ---
-      await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }).catch(() => {});
+      // webhook …
+await fetch(WEBHOOK_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+}).catch(() => {});
 
-      const url = new URL(target);
-      if (data.email) url.searchParams.set("prefilled_email", data.email);
-      window.location.href = url.toString();
+// ha várólista, NINCS Stripe redirect
+if (isWaitlist) {
+  setWaitlisted(true);
+  setDone(true);
+  return;
+}
 
-      setDone(true);
+// normál eset: megyünk Stripe-ra
+if (target) {
+  const url = new URL(target);
+  if (data.email) url.searchParams.set("prefilled_email", data.email);
+  window.location.href = url.toString();
+}
+
+setDone(true);
     } catch {
       setError(
         "A jelentkezés nem sikerült. Próbáld újra, vagy írj nekünk e-mailt."
@@ -409,26 +420,42 @@ function RegistrationForm() {
     );
   }
 
-  if (done) {
+ if (done) {
+  if (waitlisted) {
     return (
-      <div className="rounded-2xl border border-green-500/40 bg-green-950/40 p-6 text-center">
-        <CheckCircle2 className="mx-auto h-10 w-10 text-green-400" />
-        <h3 className="mt-4 text-lg font-semibold text-green-100">
-          Átirányítás a fizetéshez…
+      <div className="rounded-2xl border border-yellow-500/40 bg-yellow-950/40 p-6 text-center">
+        <CheckCircle2 className="mx-auto h-10 w-10 text-yellow-300" />
+        <h3 className="mt-4 text-lg font-semibold text-yellow-100">
+          Felkerültél a várólistára.
         </h3>
-        <p className="mt-1 text-sm text-green-100/80">
-          Ha nem történik meg automatikusan,{" "}
-          <a
-            className="underline"
-            href={data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE}
-          >
-            kattints ide
-          </a>{" "}
-          a fizetéshez.
+        <p className="mt-1 text-sm text-yellow-100/80">
+          A nevezői létszám jelenleg betelt, de a jelentkezésed{" "}
+          <b>várólistára került</b>. Ha felszabadul hely, e-mailben keresünk a
+          fizetéshez szükséges információkkal.
         </p>
       </div>
     );
   }
+
+  return (
+    <div className="rounded-2xl border border-green-500/40 bg-green-950/40 p-6 text-center">
+      <CheckCircle2 className="mx-auto h-10 w-10 text-green-400" />
+      <h3 className="mt-4 text-lg font-semibold text-green-100">
+        Átirányítás a fizetéshez…
+      </h3>
+      <p className="mt-1 text-sm text-green-100/80">
+        Ha nem történik meg automatikusan,{" "}
+        <a
+          className="underline"
+          href={data.premium ? PAYMENT_LINK_PREMIUM : PAYMENT_LINK_BASE}
+        >
+          kattints ide
+        </a>{" "}
+        a fizetéshez.
+      </p>
+    </div>
+  );
+}
 
   // Ha nyitva a nevezés és nincs CAP_FULL, jön a form
   return (
@@ -502,7 +529,6 @@ function RegistrationForm() {
             <SelectContent>
               <SelectItem value="Nő">Nő</SelectItem>
               <SelectItem value="Férfi">Férfi</SelectItem>
-              <SelectItem value="Egyéb">Egyéb</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -552,8 +578,6 @@ function RegistrationForm() {
               <SelectItem value="L">L</SelectItem>
               <SelectItem value="XL">XL</SelectItem>
               <SelectItem value="2XL">2XL</SelectItem>
-              <SelectItem value="3XL">3XL</SelectItem>
-              <SelectItem value="4XL">4XL</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -598,18 +622,30 @@ function RegistrationForm() {
       </div>
 
            <div className="flex items-center gap-3">
-        <Button
-          type="submit"
-          disabled={submitting || CAP_FULL || !REG_OPEN}
-        >
-          {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
-        </Button>
-        <div className="text-xs text-muted-foreground">
-          A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
-          <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó + 3
-          videó).
-        </div>
-      </div>
+  <Button
+    type="submit"
+    disabled={submitting || !REG_OPEN}
+  >
+    {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
+  </Button>
+  <div className="text-xs text-muted-foreground">
+    A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
+    <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó + 3
+    videó).
+    <br />
+    <span className="text-[11px] text-red-300">
+      Fontos: a nevezési díj nem visszatéríthető.
+    </span>
+  </div>
+</div>
+
+{CAP_FULL && (
+  <p className="mt-2 text-xs text-yellow-300">
+    A nevezői létszám jelenleg betelt, az űrlap kitöltésével{" "}
+    <b>várólistára</b> tudsz jelentkezni. Fizetni majd csak a külön
+    visszaigazoló e-mail után kell.
+  </p>
+)}
     </form>
   );
 }
