@@ -175,6 +175,7 @@ interface RegistrationData {
   sex: string;
   division: string;
   bestTotal: string;
+  shirtSize: string;
   notes: string;
   consent: boolean;
   premium: boolean;
@@ -187,30 +188,56 @@ type TimeLeft = {
   minutes: number;
   seconds: number;
 };
+function validateRegistration(data: RegistrationData): string | null {
+  if (!data.name.trim()) {
+    return "Kérlek add meg a teljes neved.";
+  }
+  if (!data.email.trim()) {
+    return "Kérlek add meg az e-mail címed.";
+  }
+  if (!/.+@.+\..+/.test(data.email)) {
+    return "Kérlek valós e-mail címet adj meg.";
+  }
+  if (!data.sex) {
+    return "Kérlek válaszd ki a nemed.";
+  }
+   if (!data.division) {
+    return "Kérlek válaszd ki a divíziót.";
+  }
+  if (!data.shirtSize) {
+    return "Kérlek válaszd ki a pólóméreted (SBD póló).";
+  }
+  if (!data.consent) {
+    return "A nevezéshez el kell fogadnod az adatkezelést és a versenyszabályzatot.";
+  }
+  return null;
+}
 // ====== REGISZTRÁCIÓ ======
 function RegistrationForm() {
   // Stripe Payment Linkek
   const PAYMENT_LINK_BASE =
-    "https://buy.stripe.com/8x26oG6az4yg8AQ89DdfG0m"; // Nevezés (33 990 Ft)
+    "https://buy.stripe.com/fZuaEW42r2q89EUahLdfG0o"; // csak nevezés
+
   const PAYMENT_LINK_PREMIUM =
-    "https://buy.stripe.com/bJe7sK0Qf7Ks9EU1LfdfG0n"; // Prémium (+24 990 Ft)
+    "https://buy.stripe.com/cNi00iaqP7Ks5oE3TndfG0p"; // nevezés + prémium média
 
   // Webhook a Next API route-hoz (innen megy tovább a Make + Google Sheet felé)
   const WEBHOOK_URL = "/api/registration-webhook";
 
-  const [data, setData] = useState<RegistrationData>({
-    name: "",
-    email: "",
-    birthdate: "",
-    club: "",
-    sex: "",
-    division: "",
-    bestTotal: "",
-    notes: "",
-    consent: false,
-    premium: false,
-    honeypot: "",
-  });
+ const [data, setData] = useState<RegistrationData>({
+  name: "",
+  email: "",
+  birthdate: "",
+  club: "",
+  sex: "",
+  division: "",
+  bestTotal: "",
+  shirtSize: "",
+  notes: "",
+  consent: false,
+  premium: false,
+  honeypot: "",
+});
 
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -239,28 +266,29 @@ function RegistrationForm() {
     return () => clearInterval(id);
   }, []);
 
-  const valid = useMemo(() => {
-    if (CAP_FULL) return false;
-    if (!REG_OPEN) return false;
-    if (data.honeypot && data.honeypot.trim().length > 0) return false;
-    if (
-      !data.name ||
-      !data.email ||
-      !data.sex ||
-      !data.division ||
-      !data.consent
-    ) {
-      return false;
-    }
-    return /.+@.+\..+/.test(data.email);
-  }, [data]);
-
-  async function onSubmit(e: React.FormEvent) {
+    async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!REG_OPEN) return;
-    if (CAP_FULL) return;
-    if (data.honeypot && data.honeypot.trim().length > 0) return;
+    if (!REG_OPEN) {
+      setError("A nevezés ezen a felületen jelenleg nincs nyitva.");
+      return;
+    }
+    if (CAP_FULL) {
+      setError(
+        "A nevezői létszám betelt, új nevezést már nem tudunk fogadni ezen az űrlapon."
+      );
+      return;
+    }
+    if (data.honeypot && data.honeypot.trim().length > 0) {
+      // bot / spam – csendben eldobjuk
+      return;
+    }
+
+    const validationError = validateRegistration(data);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -275,7 +303,7 @@ function RegistrationForm() {
       const utm =
         typeof window !== "undefined" ? window.location.search || "" : "";
 
-      const payload = {
+            const payload = {
         timestamp: new Date().toISOString(),
         registrationId,
         name: data.name,
@@ -285,6 +313,7 @@ function RegistrationForm() {
         sex: data.sex,
         division: data.division,
         bestTotal: data.bestTotal,
+        shirtSize: data.shirtSize,
         notes: data.notes,
         consent: data.consent,
         premium: data.premium,
@@ -446,6 +475,7 @@ function RegistrationForm() {
   <label className="text-sm">Születési dátum</label>
   <Input
     type="date"
+    className="[&::-webkit-calendar-picker-indicator]:invert"
     value={data.birthdate}
     onChange={(e) =>
       setData({ ...data, birthdate: (e.target as HTMLInputElement).value })
@@ -506,15 +536,35 @@ function RegistrationForm() {
           />
         </div>
       </div>
-
-      <div>
+        <div>
+          <label className="text-sm">Pólóméret (SBD póló)</label>
+          <Select
+            onValueChange={(v) => setData({ ...data, shirtSize: v })}
+            value={data.shirtSize}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Válassz" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="XS">XS</SelectItem>
+              <SelectItem value="S">S</SelectItem>
+              <SelectItem value="M">M</SelectItem>
+              <SelectItem value="L">L</SelectItem>
+              <SelectItem value="XL">XL</SelectItem>
+              <SelectItem value="2XL">2XL</SelectItem>
+              <SelectItem value="3XL">3XL</SelectItem>
+              <SelectItem value="4XL">4XL</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+            <div>
         <label className="text-sm">
-          Megjegyzés (pl. kísérő, speciális igény)
+          Rólad (bármi, amit szívesen megosztasz magadról és a bemondó felkonferálhat)
         </label>
         <Textarea
           value={data.notes}
           onChange={(e) => setData({ ...data, notes: e.target.value })}
-          placeholder="—"
+          placeholder="Pl. mióta edzel, miért jelentkeztél, milyen céljaid vannak."
         />
       </div>
 
@@ -547,14 +597,21 @@ function RegistrationForm() {
         </label>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button type="submit" disabled={!valid || submitting}>
+           <div className="flex items-center gap-3">
+        <Button
+          type="submit"
+          disabled={submitting || CAP_FULL || !REG_OPEN}
+        >
           {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
         </Button>
         <div className="text-xs text-muted-foreground">
-          A nevezési díj: 33 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
+          A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
           <b>egyedi SBD versenypólót</b>. Prémium opció: +24 990 Ft (3 fotó + 3
           videó).
+          <br />
+          <span className="text-[11px] text-red-300">
+            Fontos: a nevezési díj nem visszatéríthető.
+          </span>
         </div>
       </div>
     </form>
@@ -981,7 +1038,7 @@ export default function EventLanding() {
                   {EVENT.location.address}
                 </div>
                 <div>
-                  Parkolás: a gyárépület területlén belül (festékbolt előtt), illetve a Nándorfejérvári utcán ingyenesen. Öltöző és
+                  Parkolás: a gyárépület területén belül (festékbolt előtt), illetve a Nándorfejérvári utcán ingyenesen. Öltöző és
                   zuhany elérhető.
                 </div>
                 <div>
