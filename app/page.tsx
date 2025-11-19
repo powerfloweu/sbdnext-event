@@ -681,7 +681,11 @@ function RegistrationForm() {
 
       {/* SUBMIT */}
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={submitting || !REG_OPEN}>
+                <Button
+          type="submit"
+          disabled={submitting || !REG_OPEN}
+          className="w-full sm:w-auto h-12 sm:h-14 rounded-2xl px-8 sm:px-10 text-sm sm:text-base font-semibold shadow-[0_0_30px_rgba(248,113,113,0.8)]"
+        >
           {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
         </Button>
 
