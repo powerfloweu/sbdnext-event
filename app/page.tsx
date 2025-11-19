@@ -440,7 +440,7 @@ function RegistrationForm() {
 
       {/* KLUB */}
       <div>
-        <label className="text-sm">Egyesület / Klub (nem kötelez)</label>
+        <label className="text-sm">Egyesület / Klub (nem kötelező)</label>
         <Input
           value={data.club}
           onChange={(e) => setData({ ...data, club: e.target.value })}
@@ -505,8 +505,10 @@ function RegistrationForm() {
           </SelectContent>
         </Select>
         <p className="mt-1 text-[11px] text-neutral-400">
-          Újonc: első vagy második IPF/MERSZ versenyed. Versenyző: több versenyen
-          indultál, rutinos vagy.
+          Újonc: nem versenyeztél még Magyar Országos Bajnokságon (open, I.
+          osztály). Versenyző: az elmúlt 2 évben versenyeztél Magyar Országos
+          Bajnokságon és/vagy elérted a nemednek és súlycsoportodnak megfelelő
+          minősítési szintet.
         </p>
       </div>
 
@@ -644,36 +646,37 @@ function RegistrationForm() {
         />
       </div>
 
-      {/* CONSENT */}
-      <div className="mt-2 flex items-start gap-3">
-        <Checkbox
-          id="consent"
-          checked={data.consent}
-          onCheckedChange={(v: boolean | "indeterminate") =>
-            setData({ ...data, consent: Boolean(v) })
-          }
-        />
-        <label htmlFor="consent" className="text-sm text-red-400">
-          Hozzájárulok az adataim kezeléséhez és elfogadom a verseny
-          szabályzatát. Tudomásul veszem, hogy a nevezés a{" "}
-          <b>fizetéssel</b> válik véglegessé.
-          <span className="text-red-500"> *</span>
-        </label>
-      </div>
+      {/* CONSENT + PREMIUM */}
+      <div className="mt-2 space-y-2">
+        <div className="flex items-start gap-3">
+          <Checkbox
+            id="consent"
+            checked={data.consent}
+            onCheckedChange={(v: boolean | "indeterminate") =>
+              setData({ ...data, consent: Boolean(v) })
+            }
+          />
+          <label htmlFor="consent" className="text-sm text-red-400">
+            Hozzájárulok az adataim kezeléséhez és elfogadom a verseny
+            szabályzatát. Tudomásul veszem, hogy a nevezés a{" "}
+            <b>fizetéssel</b> válik véglegessé.
+            <span className="text-red-500"> *</span>
+          </label>
+        </div>
 
-      {/* PREMIUM — moved under consent */}
-      <div className="flex items-start gap-3">
-        <Checkbox
-          id="premium"
-          checked={data.premium}
-          onCheckedChange={(v: boolean | "indeterminate") =>
-            setData({ ...data, premium: Boolean(v) })
-          }
-        />
-        <label htmlFor="premium" className="text-sm">
-          Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt
-          válogatás.
-        </label>
+        <div className="flex items-start gap-3">
+          <Checkbox
+            id="premium"
+            checked={data.premium}
+            onCheckedChange={(v: boolean | "indeterminate") =>
+              setData({ ...data, premium: Boolean(v) })
+            }
+          />
+          <label htmlFor="premium" className="text-sm">
+            Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt
+            válogatás.
+          </label>
+        </div>
       </div>
 
       {/* SUBMIT */}
@@ -685,10 +688,6 @@ function RegistrationForm() {
         <div className="text-xs text-muted-foreground">
           A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
           <b>egyedi SBD versenypólót</b>.
-          <br />
-          <span className="text-[11px] text-red-300">
-            Fontos: a nevezési díj nem visszatéríthető.
-          </span>
         </div>
       </div>
 
@@ -1105,10 +1104,10 @@ export default function EventLanding() {
       />
 
       <PriceRow
-        label="Prémium média csomag (opcionális)"
-        value={`${pricePremium} ${EVENT.fees.currency}`}
-        note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
-      />
+  label="Prémium média csomag (nem kötelező)"
+  value={`${pricePremium} ${EVENT.fees.currency}`}
+  note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
+/>
 
     </CardContent>
   </Card>
