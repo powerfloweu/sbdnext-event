@@ -440,7 +440,7 @@ function RegistrationForm() {
 
       {/* KLUB */}
       <div>
-        <label className="text-sm">Egyesület / Klub (nem kötelező)</label>
+        <label className="text-sm">Egyesület / Klub (nem kötelez)</label>
         <Input
           value={data.club}
           onChange={(e) => setData({ ...data, club: e.target.value })}
