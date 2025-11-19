@@ -217,7 +217,7 @@ function validateRegistration(data: RegistrationData): string | null {
     return "Kérlek válaszd ki a nemed.";
   }
   if (!data.division) {
-    return "Kérlek válaszd ki a divíziót.";
+    return "Kérlek válaszd ki a kategóriát.";
   }
   if (!data.shirtCut) {
     return "Kérlek válaszd ki, hogy női vagy férfi pólót kérsz.";
@@ -241,6 +241,8 @@ function RegistrationForm() {
 
   // Webhook a Next API route-hoz (innen megy tovább a Make + Google Sheet felé)
   const WEBHOOK_URL = "/api/registration-webhook";
+  const REQUIRED_INPUT_CLASS =
+    "border-red-700/70 focus-visible:border-red-500/80 focus-visible:ring-red-500/40";
 const [waitlisted, setWaitlisted] = useState(false);
  const [data, setData] = useState<RegistrationData>({
   firstName: "",
@@ -513,26 +515,37 @@ setDone(true);
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-    <label className="text-sm">Vezetéknév</label>
-    <Input
-      value={data.lastName}
-      onChange={(e) => setData({ ...data, lastName: e.target.value })}
-      placeholder="Vezetéknév"
-      required
-    />
-  </div>
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Vezetéknév <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className={REQUIRED_INPUT_CLASS}
+            value={data.lastName}
+            onChange={(e) => setData({ ...data, lastName: e.target.value })}
+            placeholder="Vezetéknév"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Keresztnév <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className={REQUIRED_INPUT_CLASS}
+            value={data.firstName}
+            onChange={(e) => setData({ ...data, firstName: e.target.value })}
+            placeholder="Keresztnév"
+            required
+          />
+        </div>
+      </div>
   <div>
-    <label className="text-sm">Keresztnév</label>
+    <label className="text-sm font-semibold text-red-400">
+      E-mail <span className="text-red-500">*</span>
+    </label>
     <Input
-      value={data.firstName}
-      onChange={(e) => setData({ ...data, firstName: e.target.value })}
-      placeholder="Keresztnév"
-      required
-    />
-  </div>
-  <div>
-    <label className="text-sm">E-mail</label>
-    <Input
+      className={REQUIRED_INPUT_CLASS}
       type="email"
       value={data.email}
       onChange={(e) => setData({ ...data, email: e.target.value })}
@@ -549,8 +562,11 @@ setDone(true);
     />
   </div>
   <div>
-    <label className="text-sm">Születési év</label>
+    <label className="text-sm font-semibold text-red-400">
+      Születési év <span className="text-red-500">*</span>
+    </label>
     <Input
+      className={REQUIRED_INPUT_CLASS}
       inputMode="numeric"
       maxLength={4}
       placeholder="pl. 1995"
@@ -561,116 +577,118 @@ setDone(true);
       required
     />
   </div>
-       <div>
-  <label className="text-sm">Nem</label>
-  <Select
-    onValueChange={(v) => setData({ ...data, sex: v })}
-    value={data.sex}
-  >
-    <SelectTrigger>
-      <SelectValue placeholder="Válassz" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="Nő">Nő</SelectItem>
-      <SelectItem value="Férfi">Férfi</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
-<div>
-  <label className="text-sm">Divízió</label>
-  <Select
-    onValueChange={(v) => setData({ ...data, division: v })}
-    value={data.division}
-  >
-    <SelectTrigger>
-      <SelectValue placeholder="Válassz" />
-    </SelectTrigger>
-    <SelectContent>
-      {EVENT.divisions.map((d) => (
-        <SelectItem key={d} value={d}>
-          {d}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-  <p className="mt-1 text-[11px] text-neutral-400">
-    Újonc: első vagy második IPF/MERSZ versenyed. Versenyző: több
-    versenyen indultál, rutinos vagy.
-  </p>
-</div>
-        <div>
-  <label className="text-sm">Legjobb összetett (opcionális)</label>
-  <Input
-    inputMode="numeric"
-    placeholder="pl. 495 kg"
-    value={data.bestTotal}
-    onChange={(e) =>
-      setData({
-        ...data,
-        bestTotal: (e.target as HTMLInputElement).value,
-      })
-    }
-  />
-</div>
+  <div>
+    <label className="text-sm font-semibold text-red-400">
+      Nem <span className="text-red-500">*</span>
+    </label>
+    <Select
+      onValueChange={(v) => setData({ ...data, sex: v })}
+      value={data.sex}
+    >
+      <SelectTrigger className={REQUIRED_INPUT_CLASS}>
+        <SelectValue placeholder="Válassz" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="Nő">Nő</SelectItem>
+        <SelectItem value="Férfi">Férfi</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+  <div>
+    <label className="text-sm font-semibold text-red-400">
+      Kategória <span className="text-red-500">*</span>
+    </label>
+    <Select
+      onValueChange={(v) => setData({ ...data, division: v })}
+      value={data.division}
+    >
+      <SelectTrigger className={REQUIRED_INPUT_CLASS}>
+        <SelectValue placeholder="Válassz" />
+      </SelectTrigger>
+      <SelectContent>
+        {EVENT.divisions.map((d) => (
+          <SelectItem key={d} value={d}>
+            {d}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    <p className="mt-1 text-[11px] text-neutral-400">
+      Újonc: első vagy második IPF/MERSZ versenyed. Versenyző: több
+      versenyen indultál, rutinos vagy.
+    </p>
+  </div>
 
-<div className="sm:col-span-2 grid gap-3 sm:grid-cols-3">
-  <div>
-    <label className="text-sm">
-      Nevezési súly – guggolás (kg, opcionális)
-    </label>
-    <Input
-      inputMode="numeric"
-      placeholder="pl. 180"
-      value={data.openerSquat}
-      onChange={(e) =>
-        setData({
-          ...data,
-          openerSquat: (e.target as HTMLInputElement).value,
-        })
-      }
-    />
-  </div>
-  <div>
-    <label className="text-sm">
-      Nevezési súly – fekvenyomás (kg, opcionális)
-    </label>
-    <Input
-      inputMode="numeric"
-      placeholder="pl. 120"
-      value={data.openerBench}
-      onChange={(e) =>
-        setData({
-          ...data,
-          openerBench: (e.target as HTMLInputElement).value,
-        })
-      }
-    />
-  </div>
-  <div>
-    <label className="text-sm">
-      Nevezési súly – felhúzás (kg, opcionális)
-    </label>
-    <Input
-      inputMode="numeric"
-      placeholder="pl. 220"
-      value={data.openerDeadlift}
-      onChange={(e) =>
-        setData({
-          ...data,
-          openerDeadlift: (e.target as HTMLInputElement).value,
-        })
-      }
-    />
-  </div>
-</div>
+
+      <p className="text-xs text-neutral-400 mb-1">
+        Maradjunk a realitások talaján, a versenybeosztás miatt nagyon fontos adat!
+      </p>
+      <div className="sm:col-span-2 grid gap-3 sm:grid-cols-3">
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Nevezési súly – guggolás (kg) <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className={REQUIRED_INPUT_CLASS}
+            inputMode="numeric"
+            placeholder="pl. 180"
+            value={data.openerSquat}
+            onChange={(e) =>
+              setData({
+                ...data,
+                openerSquat: (e.target as HTMLInputElement).value,
+              })
+            }
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Nevezési súly – fekvenyomás (kg) <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className={REQUIRED_INPUT_CLASS}
+            inputMode="numeric"
+            placeholder="pl. 120"
+            value={data.openerBench}
+            onChange={(e) =>
+              setData({
+                ...data,
+                openerBench: (e.target as HTMLInputElement).value,
+              })
+            }
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Nevezési súly – felhúzás (kg) <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className={REQUIRED_INPUT_CLASS}
+            inputMode="numeric"
+            placeholder="pl. 220"
+            value={data.openerDeadlift}
+            onChange={(e) =>
+              setData({
+                ...data,
+                openerDeadlift: (e.target as HTMLInputElement).value,
+              })
+            }
+            required
+          />
+        </div>
+      </div>
         <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
   <div>
-    <label className="text-sm">Póló fazon</label>
+    <label className="text-sm font-semibold text-red-400">
+      Póló fazon <span className="text-red-500">*</span>
+    </label>
     <Select
       onValueChange={(v) => setData({ ...data, shirtCut: v })}
       value={data.shirtCut}
     >
-      <SelectTrigger>
+      <SelectTrigger className={REQUIRED_INPUT_CLASS}>
         <SelectValue placeholder="Válassz" />
       </SelectTrigger>
       <SelectContent>
@@ -683,12 +701,14 @@ setDone(true);
     </p>
   </div>
   <div>
-    <label className="text-sm">Pólóméret (SBD póló)</label>
+    <label className="text-sm font-semibold text-red-400">
+      Pólóméret (SBD póló) <span className="text-red-500">*</span>
+    </label>
     <Select
       onValueChange={(v) => setData({ ...data, shirtSize: v })}
       value={data.shirtSize}
     >
-      <SelectTrigger>
+      <SelectTrigger className={REQUIRED_INPUT_CLASS}>
         <SelectValue placeholder="Válassz" />
       </SelectTrigger>
       <SelectContent>
@@ -738,10 +758,11 @@ setDone(true);
             setData({ ...data, consent: Boolean(v) })
           }
         />
-        <label htmlFor="consent" className="text-sm">
+        <label htmlFor="consent" className="text-sm text-red-400">
           Hozzájárulok az adataim kezeléséhez és elfogadom a verseny
           szabályzatát. Tudomásul veszem, hogy a nevezés a{" "}
           <b>fizetéssel</b> válik véglegessé.
+          <span className="text-red-500"> *</span>
         </label>
       </div>
 
