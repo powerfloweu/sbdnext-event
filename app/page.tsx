@@ -168,15 +168,21 @@ function PriceRow({
 }
 
 interface RegistrationData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  birthdate: string;
+  birthYear: string;
   club: string;
   sex: string;
   division: string;
   bestTotal: string;
-  shirtSize: string;
-  notes: string;
+  openerSquat: string;
+  openerBench: string;
+  openerDeadlift: string;
+  shirtCut: string; // Női / Férfi
+  shirtSize: string; // XS–4XL
+  mcNotes: string; // bemondó szöveg
+  otherNotes: string; // megjegyzés, kérés
   consent: boolean;
   premium: boolean;
   honeypot: string;
@@ -189,8 +195,11 @@ type TimeLeft = {
   seconds: number;
 };
 function validateRegistration(data: RegistrationData): string | null {
-  if (!data.name.trim()) {
-    return "Kérlek add meg a teljes neved.";
+  if (!data.lastName.trim()) {
+    return "Kérlek add meg a vezetékneved.";
+  }
+  if (!data.firstName.trim()) {
+    return "Kérlek add meg a keresztneved.";
   }
   if (!data.email.trim()) {
     return "Kérlek add meg az e-mail címed.";
@@ -198,11 +207,20 @@ function validateRegistration(data: RegistrationData): string | null {
   if (!/.+@.+\..+/.test(data.email)) {
     return "Kérlek valós e-mail címet adj meg.";
   }
+  if (!data.birthYear.trim()) {
+    return "Kérlek add meg a születési éved.";
+  }
+  if (!/^\d{4}$/.test(data.birthYear.trim())) {
+    return "A születési év négy számjegy legyen (pl. 1995).";
+  }
   if (!data.sex) {
     return "Kérlek válaszd ki a nemed.";
   }
-   if (!data.division) {
+  if (!data.division) {
     return "Kérlek válaszd ki a divíziót.";
+  }
+  if (!data.shirtCut) {
+    return "Kérlek válaszd ki, hogy női vagy férfi pólót kérsz.";
   }
   if (!data.shirtSize) {
     return "Kérlek válaszd ki a pólóméreted (SBD póló).";
@@ -225,15 +243,21 @@ function RegistrationForm() {
   const WEBHOOK_URL = "/api/registration-webhook";
 const [waitlisted, setWaitlisted] = useState(false);
  const [data, setData] = useState<RegistrationData>({
-  name: "",
+  firstName: "",
+  lastName: "",
   email: "",
-  birthdate: "",
+  birthYear: "",
   club: "",
   sex: "",
   division: "",
   bestTotal: "",
+  openerSquat: "",
+  openerBench: "",
+  openerDeadlift: "",
+  shirtCut: "",
   shirtSize: "",
-  notes: "",
+  mcNotes: "",
+  otherNotes: "",
   consent: false,
   premium: false,
   honeypot: "",
@@ -289,11 +313,11 @@ const [waitlisted, setWaitlisted] = useState(false);
 
     try {
       const registrationId =
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `reg_${Date.now()}`;
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `reg_${Date.now()}`;
 
-     const isWaitlist = CAP_FULL;
+const isWaitlist = CAP_FULL;
 
 const target = isWaitlist
   ? null
@@ -304,31 +328,41 @@ const target = isWaitlist
 const utm =
   typeof window !== "undefined" ? window.location.search || "" : "";
 
-            const payload = {
-        timestamp: new Date().toISOString(),
-        registrationId,
-        name: data.name,
-        email: data.email,
-        birthdate: data.birthdate,
-        club: data.club,
-        sex: data.sex,
-        division: data.division,
-        bestTotal: data.bestTotal,
-        shirtSize: data.shirtSize,
-        notes: data.notes,
-        consent: data.consent,
-        premium: data.premium,
-        paymentOption: data.premium ? "premium" : "base",
-        stripeLink: target,
-        page: "/",
-        utm,
-        cap: {
-          limit: CAP_LIMIT,
-          used: CAP_USED,
-          remaining: CAP_REMAINING,
-          full: CAP_FULL,
-        },
-      };
+const fullName = `${data.lastName.trim()} ${data.firstName.trim()}`.trim();
+
+const payload = {
+  timestamp: new Date().toISOString(),
+  registrationId,
+  name: fullName,
+  firstName: data.firstName,
+  lastName: data.lastName,
+  email: data.email,
+  birthYear: data.birthYear,
+  club: data.club,
+  sex: data.sex,
+  division: data.division,
+  bestTotal: data.bestTotal,
+  openerSquat: data.openerSquat,
+  openerBench: data.openerBench,
+  openerDeadlift: data.openerDeadlift,
+  shirtCut: data.shirtCut,
+  shirtSize: data.shirtSize,
+  mcNotes: data.mcNotes,
+  otherNotes: data.otherNotes,
+  consent: data.consent,
+  premium: data.premium,
+  paymentOption: data.premium ? "premium" : "base",
+  stripeLink: target ?? "",
+  page: "/",
+  utm,
+  status: isWaitlist ? "waitlist" : "pending_payment",
+  cap: {
+    limit: CAP_LIMIT,
+    used: CAP_USED,
+    remaining: CAP_REMAINING,
+    full: CAP_FULL,
+  },
+};
 
       // webhook …
 await fetch(WEBHOOK_URL, {
@@ -479,118 +513,222 @@ setDone(true);
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
+    <label className="text-sm">Vezetéknév</label>
+    <Input
+      value={data.lastName}
+      onChange={(e) => setData({ ...data, lastName: e.target.value })}
+      placeholder="Vezetéknév"
+      required
+    />
+  </div>
+  <div>
+    <label className="text-sm">Keresztnév</label>
+    <Input
+      value={data.firstName}
+      onChange={(e) => setData({ ...data, firstName: e.target.value })}
+      placeholder="Keresztnév"
+      required
+    />
+  </div>
+  <div>
+    <label className="text-sm">E-mail</label>
+    <Input
+      type="email"
+      value={data.email}
+      onChange={(e) => setData({ ...data, email: e.target.value })}
+      placeholder="nev@email.hu"
+      required
+    />
+  </div>
+  <div>
+    <label className="text-sm">Egyesület / Klub (opcionális)</label>
+    <Input
+      value={data.club}
+      onChange={(e) => setData({ ...data, club: e.target.value })}
+      placeholder="—"
+    />
+  </div>
+  <div>
+    <label className="text-sm">Születési év</label>
+    <Input
+      inputMode="numeric"
+      maxLength={4}
+      placeholder="pl. 1995"
+      value={data.birthYear}
+      onChange={(e) =>
+        setData({ ...data, birthYear: (e.target as HTMLInputElement).value })
+      }
+      required
+    />
+  </div>
+       <div>
+  <label className="text-sm">Nem</label>
+  <Select
+    onValueChange={(v) => setData({ ...data, sex: v })}
+    value={data.sex}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Válassz" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="Nő">Nő</SelectItem>
+      <SelectItem value="Férfi">Férfi</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+<div>
+  <label className="text-sm">Divízió</label>
+  <Select
+    onValueChange={(v) => setData({ ...data, division: v })}
+    value={data.division}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Válassz" />
+    </SelectTrigger>
+    <SelectContent>
+      {EVENT.divisions.map((d) => (
+        <SelectItem key={d} value={d}>
+          {d}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+  <p className="mt-1 text-[11px] text-neutral-400">
+    Újonc: első vagy második IPF/MERSZ versenyed. Versenyző: több
+    versenyen indultál, rutinos vagy.
+  </p>
+</div>
         <div>
-          <label className="text-sm">Teljes név</label>
-          <Input
-            value={data.name}
-            onChange={(e) => setData({ ...data, name: e.target.value })}
-            placeholder="Vezetéknév Keresztnév"
-            required
-          />
-        </div>
-        <div>
-          <label className="text-sm">E-mail</label>
-          <Input
-            type="email"
-            value={data.email}
-            onChange={(e) => setData({ ...data, email: e.target.value })}
-            placeholder="nev@email.hu"
-            required
-          />
-        </div>
- <div>
-  <label className="text-sm">Születési dátum</label>
+  <label className="text-sm">Legjobb összetett (opcionális)</label>
   <Input
-    type="date"
-    className="[&::-webkit-calendar-picker-indicator]:invert"
-    value={data.birthdate}
+    inputMode="numeric"
+    placeholder="pl. 495 kg"
+    value={data.bestTotal}
     onChange={(e) =>
-      setData({ ...data, birthdate: (e.target as HTMLInputElement).value })
+      setData({
+        ...data,
+        bestTotal: (e.target as HTMLInputElement).value,
+      })
     }
   />
 </div>
-        <div>
-          <label className="text-sm">Egyesület / Klub (opcionális)</label>
-          <Input
-            value={data.club}
-            onChange={(e) => setData({ ...data, club: e.target.value })}
-            placeholder="—"
-          />
-        </div>
-        <div>
-          <label className="text-sm">Nem</label>
-          <Select
-            onValueChange={(v) => setData({ ...data, sex: v })}
-            value={data.sex}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Nő">Nő</SelectItem>
-              <SelectItem value="Férfi">Férfi</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm">Divízió</label>
-          <Select
-            onValueChange={(v) => setData({ ...data, division: v })}
-            value={data.division}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              {EVENT.divisions.map((d) => (
-                <SelectItem key={d} value={d}>
-                  {d}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm">Legjobb összetett (opcionális)</label>
-          <Input
-            inputMode="numeric"
-            placeholder="pl. 495 kg"
-            value={data.bestTotal}
-            onChange={(e) =>
-              setData({ ...data, bestTotal: (e.target as HTMLInputElement).value })
-            }
-          />
-        </div>
-      </div>
-        <div>
-          <label className="text-sm">Pólóméret (SBD póló)</label>
-          <Select
-            onValueChange={(v) => setData({ ...data, shirtSize: v })}
-            value={data.shirtSize}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="XS">XS</SelectItem>
-              <SelectItem value="S">S</SelectItem>
-              <SelectItem value="M">M</SelectItem>
-              <SelectItem value="L">L</SelectItem>
-              <SelectItem value="XL">XL</SelectItem>
-              <SelectItem value="2XL">2XL</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
+<div className="sm:col-span-2 grid gap-3 sm:grid-cols-3">
+  <div>
+    <label className="text-sm">
+      Nevezési súly – guggolás (kg, opcionális)
+    </label>
+    <Input
+      inputMode="numeric"
+      placeholder="pl. 180"
+      value={data.openerSquat}
+      onChange={(e) =>
+        setData({
+          ...data,
+          openerSquat: (e.target as HTMLInputElement).value,
+        })
+      }
+    />
+  </div>
+  <div>
+    <label className="text-sm">
+      Nevezési súly – fekvenyomás (kg, opcionális)
+    </label>
+    <Input
+      inputMode="numeric"
+      placeholder="pl. 120"
+      value={data.openerBench}
+      onChange={(e) =>
+        setData({
+          ...data,
+          openerBench: (e.target as HTMLInputElement).value,
+        })
+      }
+    />
+  </div>
+  <div>
+    <label className="text-sm">
+      Nevezési súly – felhúzás (kg, opcionális)
+    </label>
+    <Input
+      inputMode="numeric"
+      placeholder="pl. 220"
+      value={data.openerDeadlift}
+      onChange={(e) =>
+        setData({
+          ...data,
+          openerDeadlift: (e.target as HTMLInputElement).value,
+        })
+      }
+    />
+  </div>
+</div>
+        <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
+  <div>
+    <label className="text-sm">Póló fazon</label>
+    <Select
+      onValueChange={(v) => setData({ ...data, shirtCut: v })}
+      value={data.shirtCut}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Válassz" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="Női">Női</SelectItem>
+        <SelectItem value="Férfi">Férfi</SelectItem>
+      </SelectContent>
+    </Select>
+    <p className="mt-1 text-[11px] text-neutral-400">
+      Női póló: XS–3XL • Férfi póló: XS–4XL.
+    </p>
+  </div>
+  <div>
+    <label className="text-sm">Pólóméret (SBD póló)</label>
+    <Select
+      onValueChange={(v) => setData({ ...data, shirtSize: v })}
+      value={data.shirtSize}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Válassz" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="XS">XS</SelectItem>
+        <SelectItem value="S">S</SelectItem>
+        <SelectItem value="M">M</SelectItem>
+        <SelectItem value="L">L</SelectItem>
+        <SelectItem value="XL">XL</SelectItem>
+        <SelectItem value="2XL">2XL</SelectItem>
+        <SelectItem value="3XL">3XL</SelectItem>
+        <SelectItem value="4XL">4XL</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+</div>
             <div>
-        <label className="text-sm">
-          Rólad (bármi, amit szívesen megosztasz magadról és a bemondó felkonferálhat)
-        </label>
-        <Textarea
-          value={data.notes}
-          onChange={(e) => setData({ ...data, notes: e.target.value })}
-          placeholder="Pl. mióta edzel, miért jelentkeztél, milyen céljaid vannak."
-        />
-      </div>
+  <label className="text-sm">
+    Rólad / bemondó szöveg (opcionális)
+  </label>
+  <Textarea
+    value={data.mcNotes}
+    onChange={(e) =>
+      setData({ ...data, mcNotes: e.target.value })
+    }
+    placeholder="Pl. mióta edzel, miért jelentkeztél, milyen céljaid vannak."
+  />
+</div>
+
+<div>
+  <label className="text-sm">
+    Megjegyzés, kérés a szervezőknek (opcionális)
+  </label>
+  <Textarea
+    value={data.otherNotes}
+    onChange={(e) =>
+      setData({ ...data, otherNotes: e.target.value })
+    }
+    placeholder="Pl. külön kérés, egészségügyi infó, flight preferencia."
+  />
+</div>
 
       <div className="flex items-start gap-3">
         <Checkbox
