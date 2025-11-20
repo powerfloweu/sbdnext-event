@@ -250,7 +250,8 @@ function RegistrationForm() {
   const PAYMENT_LINK_PREMIUM =
     "https://buy.stripe.com/3cI14obMbfhkcM30kv1ck05"; // nevezés + prémium média
 
-  const WEBHOOK_URL = "/api/registration-webhook";
+    const WEBHOOK_URL =
+    "https://hook.eu1.make.com/6vbe2dxien274ohy91ew22lp9bbfzrl3";
 
   const [waitlisted, setWaitlisted] = useState(false);
   const [data, setData] = useState<RegistrationData>({
