@@ -208,27 +208,53 @@ function validateRegistration(data: RegistrationData): string | null {
   if (!/.+@.+\..+/.test(data.email)) {
     return "Kérlek valós e-mail címet adj meg.";
   }
-  if (!data.birthYear.trim()) {
+
+  const birthYearRaw = data.birthYear.trim();
+  if (!birthYearRaw) {
     return "Kérlek add meg a születési éved.";
   }
-  if (!/^\d{4}$/.test(data.birthYear.trim())) {
+  if (!/^\d{4}$/.test(birthYearRaw)) {
     return "A születési év négy számjegy legyen (pl. 1995).";
   }
+  const birthYearNum = Number(birthYearRaw);
+  if (Number.isNaN(birthYearNum) || birthYearNum < 1925 || birthYearNum > 2011) {
+    return "A születési évnek 1925 és 2011 közé kell esnie (14–100 éves korhatár).";
+  }
+
   if (!data.sex) {
     return "Kérlek válaszd ki a nemed.";
   }
   if (!data.division) {
     return "Kérlek válaszd ki, hogy Újonc vagy Versenyző kategóriában indulsz.";
   }
-  if (!data.openerSquat.trim()) {
+
+  const squatRaw = data.openerSquat.trim().replace(",", ".");
+  if (!squatRaw) {
     return "Kérlek add meg a guggolás nevezési súlyát (kg).";
   }
-  if (!data.openerBench.trim()) {
+  const squat = Number(squatRaw);
+  if (Number.isNaN(squat) || squat < 20 || squat > 400) {
+    return "A guggolás nevezési súlyát 20 és 400 kg közé add meg.";
+  }
+
+  const benchRaw = data.openerBench.trim().replace(",", ".");
+  if (!benchRaw) {
     return "Kérlek add meg a fekvenyomás nevezési súlyát (kg).";
   }
-  if (!data.openerDeadlift.trim()) {
+  const bench = Number(benchRaw);
+  if (Number.isNaN(bench) || bench < 20 || bench > 400) {
+    return "A fekvenyomás nevezési súlyát 20 és 400 kg közé add meg.";
+  }
+
+  const deadliftRaw = data.openerDeadlift.trim().replace(",", ".");
+  if (!deadliftRaw) {
     return "Kérlek add meg a felhúzás nevezési súlyát (kg).";
   }
+  const deadlift = Number(deadliftRaw);
+  if (Number.isNaN(deadlift) || deadlift < 20 || deadlift > 400) {
+    return "A felhúzás nevezési súlyát 20 és 400 kg közé add meg.";
+  }
+
   if (!data.shirtCut) {
     return "Kérlek válaszd ki, hogy női vagy férfi pólót kérsz.";
   }
