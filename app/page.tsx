@@ -872,6 +872,23 @@ export default function EventLanding() {
               <a href="#faq" className="hover:text-red-300">
                 GYIK
               </a>
+              {/* Jobb oldal: menü + CTA */}
+<div className="flex items-center gap-4 text-sm">
+  {/* ... a meglévő menü ... */}
+
+  <a
+    href="/en"
+    className="hidden rounded-full border border-neutral-700 px-3 py-1 text-xs text-neutral-200 hover:border-red-500 hover:text-red-300 sm:inline-flex"
+  >
+    EN
+  </a>
+
+  <a href="#register">
+    <button className="flex items-center rounded-full border border-red-500/70 bg-red-600/90 px-4 py-1 text-xs font-semibold text-white shadow-[0_0_20px_rgba(248,113,113,0.55)] hover:bg-red-500 sm:text-sm">
+      Nevezés <ChevronRight className="ml-1 h-3 w-3" />
+    </button>
+  </a>
+</div>
             </div>
 
             <a href="#register">
