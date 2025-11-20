@@ -351,6 +351,7 @@ function RegistrationForm() {
         page: "/",
         utm,
         status: isWaitlist ? "waitlist" : "pending_payment",
+        statusText: isWaitlist ? "várólistán" : "fizetésre vár",
         cap: {
           limit: CAP_LIMIT,
           used: CAP_USED,
