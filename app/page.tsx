@@ -503,6 +503,7 @@ function RegistrationForm() {
             Vezetéknév <span className="text-red-500">*</span>
           </label>
           <Input
+            className="border-red-500"
             value={data.lastName}
             onChange={(e) => setData({ ...data, lastName: e.target.value })}
             placeholder="Vezetéknév"
@@ -514,6 +515,7 @@ function RegistrationForm() {
             Keresztnév <span className="text-red-500">*</span>
           </label>
           <Input
+            className="border-red-500"
             value={data.firstName}
             onChange={(e) => setData({ ...data, firstName: e.target.value })}
             placeholder="Keresztnév"
@@ -528,6 +530,7 @@ function RegistrationForm() {
           E-mail <span className="text-red-500">*</span>
         </label>
         <Input
+          className="border-red-500"
           type="email"
           value={data.email}
           onChange={(e) => setData({ ...data, email: e.target.value })}
@@ -552,6 +555,7 @@ function RegistrationForm() {
           Születési év <span className="text-red-500">*</span>
         </label>
         <Input
+          className="border-red-500"
           inputMode="numeric"
           maxLength={4}
           placeholder="pl. 1995"
@@ -975,6 +979,12 @@ export default function EventLanding() {
                 </Button>
               </a>
               <a
+                href="/en"
+                className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
+              >
+                English guide <ChevronRight className="h-4 w-4" />
+              </a>
+              <a
                 href="#fees"
                 className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
               >
@@ -1284,7 +1294,11 @@ export default function EventLanding() {
         </Section>
 
         <Section id="register" icon={Dumbbell} title="Nevezés">
-          <RegistrationForm />
+          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
+            <CardContent className="p-6">
+              <RegistrationForm />
+            </CardContent>
+          </Card>
 
           <p className="mt-4 text-xs text-neutral-400">
             A nevezők maximális létszámának elérése után minden új jelentkező
@@ -1354,6 +1368,31 @@ export default function EventLanding() {
                   >
                     {EVENT.contact.email}
                   </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <ExternalLink className="h-5 w-5 text-red-500" />
+                <div>
+                  <div className="font-medium">Instagram</div>
+                  <div className="flex flex-col text-red-400 underline">
+                    <a
+                      href={EVENT.social.igSbd}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-red-300"
+                    >
+                      @sbd.hungary
+                    </a>
+                    <a
+                      href={EVENT.social.igPowerflow}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-red-300"
+                    >
+                      @powerfloweu
+                    </a>
+                  </div>
                 </div>
               </div>
 
