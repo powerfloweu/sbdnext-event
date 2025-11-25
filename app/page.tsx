@@ -209,7 +209,7 @@ function validateRegistration(data: RegistrationData): string | null {
     return "Kérlek valós e-mail címet adj meg.";
   }
 
-  const birthYearRaw = data.birthYear.trim();
+    const birthYearRaw = data.birthYear.trim();
   if (!birthYearRaw) {
     return "Kérlek add meg a születési éved.";
   }
@@ -529,24 +529,24 @@ function RegistrationForm() {
             Vezetéknév <span className="text-red-500">*</span>
           </label>
           <Input
-            className="border-red-500"
-            value={data.lastName}
-            onChange={(e) => setData({ ...data, lastName: e.target.value })}
-            placeholder="Vezetéknév"
-            required
-          />
+  className="border-red-500"
+  value={data.lastName}
+  onChange={(e) => setData({ ...data, lastName: e.target.value })}
+  placeholder="Vezetéknév"
+  required
+/>
         </div>
         <div>
           <label className="text-sm font-semibold text-red-400">
             Keresztnév <span className="text-red-500">*</span>
           </label>
           <Input
-            className="border-red-500"
-            value={data.firstName}
-            onChange={(e) => setData({ ...data, firstName: e.target.value })}
-            placeholder="Keresztnév"
-            required
-          />
+  className="border-red-500"
+  value={data.firstName}
+  onChange={(e) => setData({ ...data, firstName: e.target.value })}
+  placeholder="Keresztnév"
+  required
+/>
         </div>
       </div>
 
@@ -556,13 +556,13 @@ function RegistrationForm() {
           E-mail <span className="text-red-500">*</span>
         </label>
         <Input
-          className="border-red-500"
-          type="email"
-          value={data.email}
-          onChange={(e) => setData({ ...data, email: e.target.value })}
-          placeholder="nev@email.hu"
-          required
-        />
+  className="border-red-500"
+  type="email"
+  value={data.email}
+  onChange={(e) => setData({ ...data, email: e.target.value })}
+  placeholder="nev@email.hu"
+  required
+/>
       </div>
 
       {/* KLUB */}
@@ -581,16 +581,16 @@ function RegistrationForm() {
           Születési év <span className="text-red-500">*</span>
         </label>
         <Input
-          className="border-red-500"
-          inputMode="numeric"
-          maxLength={4}
-          placeholder="pl. 1995"
-          value={data.birthYear}
-          onChange={(e) =>
-            setData({ ...data, birthYear: (e.target as HTMLInputElement).value })
-          }
-          required
-        />
+  className="border-red-500"
+  inputMode="numeric"
+  maxLength={4}
+  placeholder="pl. 1995"
+  value={data.birthYear}
+  onChange={(e) =>
+    setData({ ...data, birthYear: (e.target as HTMLInputElement).value })
+  }
+  required
+/>
       </div>
 
       {/* NEM */}
@@ -998,23 +998,48 @@ export default function EventLanding() {
             </div>
 
             {/* CTA */}
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <a href="#register">
-                <Button className="rounded-2xl bg-red-600 px-6 font-semibold shadow-[0_0_28px_rgba(248,113,113,0.7)] hover:bg-red-500">
-                  Nevezek most
+<div className="mt-6 flex flex-wrap items-center gap-3">
+  <a href="#register">
+    <Button className="rounded-2xl bg-red-600 px-6 font-semibold shadow-[0_0_28px_rgba(248,113,113,0.7)] hover:bg-red-500">
+      Nevezek most
+    </Button>
+  </a>
+  <a
+    href="/en"
+    className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
+  >
+    English guide <ChevronRight className="h-4 w-4" />
+  </a>
+  <a
+    href="#fees"
+    className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
+  >
+    Nevezési díjak <ChevronRight className="h-4 w-4" />
+  </a>
+</div>
+
+            {/* Új segédletek – két nagy piros gomb */}
+            <div className="mt-4 grid gap-3 sm:max-w-md">
+              <a
+                href="/docs/SBD_Next_ujonc_11.24.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="w-full rounded-2xl bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(248,113,113,0.7)] hover:bg-red-500">
+                  Újonc nevezési lista (ideiglenes) (PDF)
+                  <ExternalLink className="ml-2 h-4 w-4" />
                 </Button>
               </a>
+
               <a
-                href="/en"
-                className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
+                href="/docs/SBD_Next_versenyzo_11.24.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                English guide <ChevronRight className="h-4 w-4" />
-              </a>
-              <a
-                href="#fees"
-                className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
-              >
-                Nevezési díjak <ChevronRight className="h-4 w-4" />
+                <Button className="w-full rounded-2xl bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(248,113,113,0.7)] hover:bg-red-500">
+                  Versenyző nevezési lista (ideiglenes) (PDF)
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </Button>
               </a>
             </div>
 
@@ -1320,21 +1345,21 @@ export default function EventLanding() {
         </Section>
 
         <Section id="register" icon={Dumbbell} title="Nevezés">
-          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6">
-              <RegistrationForm />
-            </CardContent>
-          </Card>
+  <Card className="rounded-2xl border border-neutral-800 bg-black/70">
+    <CardContent className="p-6">
+      <RegistrationForm />
+    </CardContent>
+  </Card>
 
-          <p className="mt-4 text-xs text-neutral-400">
-            A nevezők maximális létszámának elérése után minden új jelentkező
-            automatikusan várólistára kerül. A felszabaduló helyeket a
-            várólistán szereplők jelentkezési sorrendben kapják meg, a
-            szervezők egyéni e-mailes értesítése alapján. A várólistáról való
-            bekerülés a visszaigazolás és a nevezési díj befizetése után válik
-            érvényessé.
-          </p>
-        </Section>
+  <p className="mt-4 text-xs text-neutral-400">
+    A nevezők maximális létszámának elérése után minden új jelentkező
+    automatikusan várólistára kerül. A felszabaduló helyeket a
+    várólistán szereplők jelentkezési sorrendben kapják meg, a
+    szervezők egyéni e-mailes értesítése alapján. A várólistáról való
+    bekerülés a visszaigazolás és a nevezési díj befizetése után válik
+    érvényessé.
+  </p>
+</Section>
 
         <Section id="faq" icon={Info} title="GYIK">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
@@ -1382,51 +1407,51 @@ export default function EventLanding() {
         <Section id="contact" icon={Mail} title="Kapcsolat">
           <Card className="rounded-2xl">
             <CardContent className="grid gap-3 p-6 text-sm">
-              <div className="flex items-start gap-3">
-                <Mail className="h-5 w-5 text-red-500" />
-                <div>
-                  <div className="font-medium">E-mail</div>
-                  <a
-                    href={`mailto:${EVENT.contact.email}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-red-400 underline hover:text-red-300"
-                  >
-                    {EVENT.contact.email}
-                  </a>
-                </div>
-              </div>
+  <div className="flex items-start gap-3">
+    <Mail className="h-5 w-5 text-red-500" />
+    <div>
+      <div className="font-medium">E-mail</div>
+      <a
+        href={`mailto:${EVENT.contact.email}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-red-400 underline hover:text-red-300"
+      >
+        {EVENT.contact.email}
+      </a>
+    </div>
+  </div>
 
-              <div className="flex items-start gap-3">
-                <ExternalLink className="h-5 w-5 text-red-500" />
-                <div>
-                  <div className="font-medium">Instagram</div>
-                  <div className="flex flex-col text-red-400 underline">
-                    <a
-                      href={EVENT.social.igSbd}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-red-300"
-                    >
-                      @sbd.hungary
-                    </a>
-                    <a
-                      href={EVENT.social.igPowerflow}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-red-300"
-                    >
-                      @powerfloweu
-                    </a>
-                  </div>
-                </div>
-              </div>
+  <div className="flex items-start gap-3">
+    <ExternalLink className="h-5 w-5 text-red-500" />
+    <div>
+      <div className="font-medium">Instagram</div>
+      <div className="flex flex-col text-red-400 underline">
+        <a
+          href={EVENT.social.igSbd}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-red-300"
+        >
+          @sbd.hungary
+        </a>
+        <a
+          href={EVENT.social.igPowerflow}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-red-300"
+        >
+          @powerfloweu
+        </a>
+      </div>
+    </div>
+  </div>
 
-              <div className="text-xs text-neutral-400">
-                Kérdésed van a nevezéssel, szabályokkal vagy a részletekkel
-                kapcsolatban? Írj nekünk, válaszolunk!
-              </div>
-            </CardContent>
+  <div className="text-xs text-neutral-400">
+    Kérdésed van a nevezéssel, szabályokkal vagy a részletekkel
+    kapcsolatban? Írj nekünk, válaszolunk!
+  </div>
+</CardContent>
           </Card>
         </Section>
       </main>
