@@ -1047,7 +1047,7 @@ export default function EventLanding() {
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-200 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
               <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
               <span>
-                Első versenyeseknek is, IPF-szabályos full power esemény.
+                Első versenyeseknek is, IPF-szabályrendszerő háromfogásos erőemelő esemény.
               </span>
             </div>
           </div>
