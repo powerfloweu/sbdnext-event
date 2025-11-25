@@ -1008,7 +1008,9 @@ export default function EventLanding() {
             {/* CTA */}
 <div className="mt-6 flex flex-wrap items-center gap-3">
   <a href="#register">
-    <Button className="rounded-2xl bg-red-600 px-6 font-semibold shadow-[0_0_28px_rgba(248,113,113,0.7)] hover:bg-red-500">
+    <Button
+      className="rounded-3xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-12 py-5 text-xl font-extrabold shadow-[0_0_55px_rgba(248,113,113,1)] hover:from-red-600 hover:via-red-500 hover:to-red-400 transition-all duration-200"
+    >
       Nevezek most
     </Button>
   </a>
@@ -1049,6 +1051,7 @@ export default function EventLanding() {
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </Button>
               </a>
+              <p className="text-xs text-neutral-300 pl-1">Az ideiglenes nevezési lista naponta frissül.</p>
             </div>
 
             {/* Pulse chip */}
