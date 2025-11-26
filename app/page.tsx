@@ -186,7 +186,9 @@ interface RegistrationData {
   consent: boolean;
   premium: boolean;
   honeypot: string;
+  weight: string;        // 🔴 ÚJ: testsúly (kg)
 }
+
 
 type TimeLeft = {
   days: number;
@@ -229,9 +231,24 @@ function validateRegistration(data: RegistrationData): string | null {
     return "A születési évnek 1925 és 2011 közé kell esnie (14–100 éves korhatár).";
   }
 
-  if (!data.sex) {
+    if (!data.sex) {
     return "Kérlek válaszd ki a nemed.";
   }
+
+  // 🔴 TESTSÚLY VALIDÁCIÓ
+  const weightRaw = data.weight.trim().replace(",", ".");
+  if (!weightRaw) {
+    return "Kérlek add meg a testsúlyod (kg).";
+  }
+  const weight = Number(weightRaw);
+  if (Number.isNaN(weight) || weight < 30 || weight > 300) {
+    return "A testsúlyodnak 30 és 300 kg közé kell esnie.";
+  }
+
+  if (!data.division) {
+    return "Kérlek válaszd ki, hogy Újonc vagy Versenyző kategóriában indulsz.";
+  }
+
   if (!data.division) {
     return "Kérlek válaszd ki, hogy Újonc vagy Versenyző kategóriában indulsz.";
   }
@@ -289,25 +306,27 @@ function RegistrationForm() {
 
   const [waitlisted, setWaitlisted] = useState(false);
   const [data, setData] = useState<RegistrationData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    birthYear: "",
-    club: "",
-    sex: "",
-    division: "",
-    bestTotal: "",
-    openerSquat: "",
-    openerBench: "",
-    openerDeadlift: "",
-    shirtCut: "",
-    shirtSize: "",
-    mcNotes: "",
-    otherNotes: "",
-    consent: false,
-    premium: false,
-    honeypot: "",
-  });
+  firstName: "",
+  lastName: "",
+  email: "",
+  birthYear: "",
+  club: "",
+  sex: "",
+  division: "",
+  bestTotal: "",
+  openerSquat: "",
+  openerBench: "",
+  openerDeadlift: "",
+  shirtCut: "",
+  shirtSize: "",
+  mcNotes: "",
+  otherNotes: "",
+  consent: false,
+  premium: false,
+  honeypot: "",
+  weight: "",          // 🔴 ÚJ
+});
+
 
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [regOpen, setRegOpen] = useState(false);
@@ -583,23 +602,51 @@ function RegistrationForm() {
         />
       </div>
 
-      {/* SZÜLETÉSI ÉV */}
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Születési év <span className="text-red-500">*</span>
-        </label>
-        <Input
-  className="border-red-500"
-  inputMode="numeric"
-  maxLength={4}
-  placeholder="pl. 1995"
-  value={data.birthYear}
-  onChange={(e) =>
-    setData({ ...data, birthYear: (e.target as HTMLInputElement).value })
-  }
-  required
-/>
+            {/* SZÜLETÉSI ÉV + TESTSÚLY */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Születési év <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className="border-red-500"
+            inputMode="numeric"
+            maxLength={4}
+            placeholder="pl. 1995"
+            value={data.birthYear}
+            onChange={(e) =>
+              setData({
+                ...data,
+                birthYear: (e.target as HTMLInputElement).value,
+              })
+            }
+            required
+          />
+        </div>
+
+                <div>
+          <label className="text-sm font-semibold text-red-400">
+            Testsúly (kg) <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className="border-red-500"
+            inputMode="numeric"
+            placeholder="pl. 83"
+            value={data.weight}
+            onChange={(e) =>
+              setData({
+                ...data,
+                weight: (e.target as HTMLInputElement).value,
+              })
+            }
+            required
+          />
+          <p className="mt-1 text-[11px] text-neutral-400">
+            A versenyen tervezett testsúlyod ±3 kg – a beosztás miatt fontos.
+          </p>
+        </div>
       </div>
+
 
       {/* NEM */}
       <div>
