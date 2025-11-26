@@ -137,7 +137,7 @@ function Stat({
       <CardContent className="flex items-center gap-3 p-4">
         {Icon && <Icon className="h-5 w-5 text-red-400" />}
         <div>
-          <div className="text-xs uppercase tracking-widest text-red-200/80">
+          <div className="text-xs uppercase tracking-widest text-red-400">
             {label}
           </div>
           <div className="text-sm font-semibold">{value}</div>
@@ -172,6 +172,7 @@ interface RegistrationData {
   lastName: string;
   email: string;
   birthYear: string;
+  weight: string;
   club: string;
   sex: string;
   division: string;
@@ -186,9 +187,7 @@ interface RegistrationData {
   consent: boolean;
   premium: boolean;
   honeypot: string;
-  weight: string;        // 🔴 ÚJ: testsúly (kg)
 }
-
 
 type TimeLeft = {
   days: number;
@@ -213,9 +212,6 @@ function validateRegistration(data: RegistrationData): string | null {
 
   const birthYearRaw = data.birthYear.trim();
   if (!birthYearRaw) {
-
-  const birthYearRaw = data.birthYear.trim();
-  if (!birthYearRaw) {
     return "Kérlek add meg a születési éved.";
   }
   if (!/^\d{4}$/.test(birthYearRaw)) {
@@ -226,31 +222,20 @@ function validateRegistration(data: RegistrationData): string | null {
     return "A születési évnek 1925 és 2011 közé kell esnie (14–100 éves korhatár).";
   }
 
-  const birthYearNum = Number(birthYearRaw);
-  if (Number.isNaN(birthYearNum) || birthYearNum < 1925 || birthYearNum > 2011) {
-    return "A születési évnek 1925 és 2011 közé kell esnie (14–100 éves korhatár).";
-  }
-
-    if (!data.sex) {
+  if (!data.sex) {
     return "Kérlek válaszd ki a nemed.";
   }
+  if (!data.division) {
+    return "Kérlek válaszd ki, hogy Újonc vagy Versenyző kategóriában indulsz.";
+  }
 
-  // 🔴 TESTSÚLY VALIDÁCIÓ
   const weightRaw = data.weight.trim().replace(",", ".");
   if (!weightRaw) {
-    return "Kérlek add meg a testsúlyod (kg).";
+    return "Kérlek add meg a versenyen tervezett testsúlyod (kg).";
   }
   const weight = Number(weightRaw);
-  if (Number.isNaN(weight) || weight < 30 || weight > 300) {
-    return "A testsúlyodnak 30 és 300 kg közé kell esnie.";
-  }
-
-  if (!data.division) {
-    return "Kérlek válaszd ki, hogy Újonc vagy Versenyző kategóriában indulsz.";
-  }
-
-  if (!data.division) {
-    return "Kérlek válaszd ki, hogy Újonc vagy Versenyző kategóriában indulsz.";
+  if (Number.isNaN(weight) || weight < 30 || weight > 250) {
+    return "A versenyen tervezett testsúlyod 30 és 250 kg közé essen.";
   }
 
   const squatRaw = data.openerSquat.trim().replace(",", ".");
@@ -306,27 +291,26 @@ function RegistrationForm() {
 
   const [waitlisted, setWaitlisted] = useState(false);
   const [data, setData] = useState<RegistrationData>({
-  firstName: "",
-  lastName: "",
-  email: "",
-  birthYear: "",
-  club: "",
-  sex: "",
-  division: "",
-  bestTotal: "",
-  openerSquat: "",
-  openerBench: "",
-  openerDeadlift: "",
-  shirtCut: "",
-  shirtSize: "",
-  mcNotes: "",
-  otherNotes: "",
-  consent: false,
-  premium: false,
-  honeypot: "",
-  weight: "",          // 🔴 ÚJ
-});
-
+    firstName: "",
+    lastName: "",
+    email: "",
+    birthYear: "",
+    weight: "",
+    club: "",
+    sex: "",
+    division: "",
+    bestTotal: "",
+    openerSquat: "",
+    openerBench: "",
+    openerDeadlift: "",
+    shirtCut: "",
+    shirtSize: "",
+    mcNotes: "",
+    otherNotes: "",
+    consent: false,
+    premium: false,
+    honeypot: "",
+  });
 
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [regOpen, setRegOpen] = useState(false);
@@ -530,7 +514,7 @@ function RegistrationForm() {
 
   // ====== FORM (nevezés nyitva) ======
   return (
-    <form onSubmit={onSubmit} className="grid gap-4">
+    <form onSubmit={onSubmit} noValidate className="grid gap-4">
       {error && (
         <div className="flex items-center gap-2 text-sm text-red-400">
           <AlertCircle className="h-4 w-4" /> {error}
@@ -602,62 +586,57 @@ function RegistrationForm() {
         />
       </div>
 
-            {/* SZÜLETÉSI ÉV + TESTSÚLY */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Születési év <span className="text-red-500">*</span>
-          </label>
-          <Input
-            className="border-red-500"
-            inputMode="numeric"
-            maxLength={4}
-            placeholder="pl. 1995"
-            value={data.birthYear}
-            onChange={(e) =>
-              setData({
-                ...data,
-                birthYear: (e.target as HTMLInputElement).value,
-              })
-            }
-            required
-          />
-        </div>
-
-                <div>
-          <label className="text-sm font-semibold text-red-400">
-            Testsúly (kg) <span className="text-red-500">*</span>
-          </label>
-          <Input
-            className="border-red-500"
-            inputMode="numeric"
-            placeholder="pl. 83"
-            value={data.weight}
-            onChange={(e) =>
-              setData({
-                ...data,
-                weight: (e.target as HTMLInputElement).value,
-              })
-            }
-            required
-          />
-          <p className="mt-1 text-[11px] text-neutral-400">
-            A versenyen tervezett testsúlyod ±3 kg – a beosztás miatt fontos.
-          </p>
-        </div>
+      {/* SZÜLETÉSI ÉV */}
+      <div>
+        <label className="text-sm font-semibold text-red-400">
+          Születési év <span className="text-red-500">*</span>
+        </label>
+        <Input
+  className="border-red-500"
+  inputMode="numeric"
+  maxLength={4}
+  placeholder="pl. 1995"
+  value={data.birthYear}
+  onChange={(e) =>
+    setData({ ...data, birthYear: (e.target as HTMLInputElement).value })
+  }
+  required
+/>
       </div>
 
+      {/* TESTSÚLY */}
+      <div>
+        <label className="text-sm font-semibold text-red-400">
+          Testsúly (kg) <span className="text-red-500">*</span>
+        </label>
+        <Input
+          className="border-red-500"
+          inputMode="numeric"
+          placeholder="pl. 83"
+          value={data.weight}
+          onChange={(e) =>
+            setData({
+              ...data,
+              weight: (e.target as HTMLInputElement).value,
+            })
+          }
+          required
+        />
+        <p className="mt-1 text-[11px] text-neutral-400">
+          A versenyen tervezett testsúlyod, nagyjából ±3 kg pontossággal. A beosztás miatt nagyon fontos adat!
+        </p>
+      </div>
 
       {/* NEM */}
       <div>
         <label className="text-sm font-semibold text-red-400">
           Nem <span className="text-red-500">*</span>
         </label>
-        <Select
+                <Select
           onValueChange={(v) => setData({ ...data, sex: v })}
           value={data.sex}
         >
-          <SelectTrigger>
+          <SelectTrigger className="border-red-500">
             <SelectValue placeholder="Válassz" />
           </SelectTrigger>
           <SelectContent>
@@ -672,11 +651,11 @@ function RegistrationForm() {
         <label className="text-sm font-semibold text-red-400">
           Újonc / Versenyző <span className="text-red-500">*</span>
         </label>
-        <Select
+                <Select
           onValueChange={(v) => setData({ ...data, division: v })}
           value={data.division}
         >
-          <SelectTrigger>
+          <SelectTrigger className="border-red-500">
             <SelectValue placeholder="Válassz" />
           </SelectTrigger>
           <SelectContent>
@@ -766,11 +745,11 @@ function RegistrationForm() {
           <label className="text-sm font-semibold text-red-400">
             Póló fazon <span className="text-red-500">*</span>
           </label>
-          <Select
+                    <Select
             onValueChange={(v) => setData({ ...data, shirtCut: v })}
             value={data.shirtCut}
           >
-            <SelectTrigger>
+            <SelectTrigger className="border-red-500">
               <SelectValue placeholder="Válassz" />
             </SelectTrigger>
             <SelectContent>
@@ -787,11 +766,11 @@ function RegistrationForm() {
           <label className="text-sm font-semibold text-red-400">
             Pólóméret (SBD póló) <span className="text-red-500">*</span>
           </label>
-          <Select
+                    <Select
             onValueChange={(v) => setData({ ...data, shirtSize: v })}
             value={data.shirtSize}
           >
-            <SelectTrigger>
+            <SelectTrigger className="border-red-500">
               <SelectValue placeholder="Válassz" />
             </SelectTrigger>
             <SelectContent>
@@ -866,16 +845,16 @@ function RegistrationForm() {
       </div>
 
       {/* SUBMIT */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
         <Button
           type="submit"
           disabled={submitting || !effectiveRegOpen}
-          className="w-full sm:w-auto h-12 sm:h-14 rounded-2xl px-8 sm:px-10 text-sm sm:text-base font-semibold shadow-[0_0_30px_rgba(248,113,113,0.8)]"
+          className="w-full sm:w-auto h-12 sm:h-14 rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 sm:px-10 text-sm sm:text-base font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
         >
           {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
         </Button>
 
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-muted-foreground max-w-md text-left">
           A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
           <b>egyedi SBD versenypólót</b>.
         </div>
@@ -908,7 +887,7 @@ export default function EventLanding() {
   const year = new Date().getUTCFullYear();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50">
+    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50 text-3xl">
       {/* NAV – SBD Hungary + PowerFlow */}
       <nav className="sticky top-0 z-40 border-b border-red-900/70 bg-black/85 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -957,24 +936,14 @@ export default function EventLanding() {
               <a href="#faq" className="hover:text-red-300">
                 GYIK
               </a>
-              {/* Jobb oldal: menü + CTA */}
-<div className="flex items-center gap-4 text-sm">
-  {/* ... a meglévő menü ... */}
-
-  <a
-    href="/en"
-    className="hidden rounded-full border border-neutral-700 px-3 py-1 text-xs text-neutral-200 hover:border-red-500 hover:text-red-300 sm:inline-flex"
-  >
-    EN
-  </a>
-
-  <a href="#register">
-    <button className="flex items-center rounded-full border border-red-500/70 bg-red-600/90 px-4 py-1 text-xs font-semibold text-white shadow-[0_0_20px_rgba(248,113,113,0.55)] hover:bg-red-500 sm:text-sm">
-      Nevezés <ChevronRight className="ml-1 h-3 w-3" />
-    </button>
-  </a>
-</div>
             </div>
+
+            <a
+              href="/en"
+              className="hidden rounded-full border border-neutral-700 px-3 py-1 text-xs text-neutral-200 hover:border-red-500 hover:text-red-300 sm:inline-flex"
+            >
+              EN
+            </a>
 
             <a href="#register">
               <button className="flex items-center rounded-full border border-red-500/70 bg-red-600/90 px-4 py-1 text-xs font-semibold text-white shadow-[0_0_20px_rgba(248,113,113,0.55)] hover:bg-red-500 sm:text-sm">
@@ -994,129 +963,137 @@ export default function EventLanding() {
         </div>
 
         {/* Tartalom */}
-        <div className="relative mx-auto flex max-w-5xl flex-col gap-10 px-4 py-12 lg:flex-row lg:items-start">
-          {/* Bal oldal */}
-          <div className="flex-1">
-            {/* SBD NEXT LOGÓ */}
+        <div className="relative mx-auto max-w-5xl px-4 py-12 space-y-8">
+                    {/* Felső blokk: logó + cím + alapinfók */}
+          <div>
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="mb-6"
+              className="mb-4"
             >
-              <img
-                src="/sbd_next_logo.png"
-                alt="SBD Next"
-                className="w-[260px] drop-shadow-[0_0_45px_rgba(248,113,113,0.85)] sm:w-[320px] md:w-[360px]"
-              />
-            </motion.div>
-
-            {/* Cím + chevron fadeout */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45 }}
-              className="flex items-center gap-3"
-            >
-              <h1 className="text-3xl font-extrabold tracking-tight drop-shadow-[0_0_20px_rgba(0,0,0,0.9)] sm:text-4xl">
-                A következő szint
-              </h1>
-              <div className="hidden items-center gap-1 text-red-400/70 sm:flex">
-                <ChevronRight className="h-4 w-4" />
-                <div className="h-[2px] w-24 bg-gradient-to-r from-red-500/80 via-red-500/30 to-transparent" />
+              <div className="relative overflow-hidden rounded-3xl border border-red-900/30 bg-black/10 backdrop-blur-sm">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_86%_50%,rgba(248,113,113,0.55),transparent_74%)] opacity-70" />
+                <div className="relative flex flex-col gap-6 px-4 py-5 md:flex-row md:items-center md:px-6 md:py-6">
+                  <div className="relative inline-block">
+                    <img
+                      src="/sbd_next_logo_transparent.png"
+                      alt="SBD Next"
+                      className="relative z-10 w-[260px] object-contain drop-shadow-[0_0_24px_rgba(248,113,113,0.9)] drop-shadow-[0_0_60px_rgba(248,113,113,0.45)] sm:w-[320px] md:w-[360px]"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h1 className="text-3xl font-extrabold tracking-tight drop-shadow-[0_0_20px_rgba(0,0,0,0.9)] sm:text-4xl">
+                      A következő szint
+                    </h1>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                      <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
+                      <Stat label="Idő" value={EVENT.time} Icon={Timer} />
+                      <Stat
+                        label="Helyszín"
+                        value={`${EVENT.location.name} — ${EVENT.location.address}`}
+                        Icon={MapPin}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
-
-            {/* Alapinfók */}
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <Stat label="Dátum" value={EVENT.date} Icon={CalendarDays} />
-              <Stat label="Idő" value={EVENT.time} Icon={Timer} />
-              <Stat
-                label="Helyszín"
-                value={`${EVENT.location.name} — ${EVENT.location.address}`}
-                Icon={MapPin}
-              />
-            </div>
-
-            {/* Versenykiírás – nagy gomb */}
-            <div className="mt-5">
-              <a
-                href="/docs/SBD_Next_versenykiiras.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-200 shadow-[0_0_24px_rgba(248,113,113,0.6)] hover:bg-red-600 hover:text-white sm:w-auto">
-                  Versenykiírás (PDF)
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
-            </div>
-
-            {/* CTA */}
-<div className="mt-6 flex flex-wrap items-center gap-3">
-  <a href="#register">
-    <Button
-      className="rounded-3xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-12 py-5 text-xl font-extrabold shadow-[0_0_55px_rgba(248,113,113,1)] hover:from-red-600 hover:via-red-500 hover:to-red-400 transition-all duration-200"
-    >
-      Nevezek most
-    </Button>
-  </a>
-  <a
-    href="/en"
-    className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
-  >
-    English guide <ChevronRight className="h-4 w-4" />
-  </a>
-  <a
-    href="#fees"
-    className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200"
-  >
-    Nevezési díjak <ChevronRight className="h-4 w-4" />
-  </a>
-</div>
-
-            {/* Új segédletek – két nagy piros gomb */}
-            <div className="mt-4 grid gap-3 sm:max-w-md">
-              <a
-                href="/docs/SBD_Next_ujonc_11.24.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="w-full rounded-2xl bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(248,113,113,0.7)] hover:bg-red-500">
-                  Újonc nevezési lista (ideiglenes) (PDF)
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
-
-              <a
-                href="/docs/SBD_Next_versenyzo_11.24.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="w-full rounded-2xl bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(248,113,113,0.7)] hover:bg-red-500">
-                  Versenyző nevezési lista (ideiglenes) (PDF)
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
-              <p className="text-xs text-neutral-300 pl-1">Az ideiglenes nevezési lista naponta frissül.</p>
-            </div>
-
-            {/* Pulse chip */}
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-200 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
-              <span>
-                Első versenyeseknek is, IPF-szabályrendszerő háromfogásos erőemelő esemény.
-              </span>
-            </div>
           </div>
 
-          {/* Jobb oldali kártya */}
-          <Card className="mt-4 flex-1 rounded-2xl border border-red-900/60 bg-black/80 shadow-[0_0_45px_rgba(0,0,0,0.9)] lg:mt-0">
+            {/* Versenykiírás + nevezés + listák – külön doboz */}
+            <Card className="mt-4 rounded-2xl border border-neutral-800 bg-black/80">
+              <CardContent className="space-y-5 p-5 text-sm text-neutral-100 text-center">
+                {/* Fő CTA: Nevezés */}
+                <div className="flex justify-center">
+                  <a href="#register">
+                    <Button className="rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-12 py-4 text-lg font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200">
+                      Nevezek most
+                    </Button>
+                  </a>
+                </div>
+
+                {/* Versenykiírás + magyarázó nyíl */}
+                <div className="space-y-2">
+                  <a
+                    href="/docs/SBD_Next_versenykiiras.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="rounded-2xl border border-red-500/80 bg-black/80 px-5 py-3 text-xs sm:text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white">
+                      Versenykiírás (PDF)
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+
+                  <div className="flex items-center justify-center gap-2 text-[11px] text-neutral-300">
+                    <ChevronRight className="h-3 w-3 text-red-400" />
+                    <span>Itt olvashatod el a hivatalos versenykiírást</span>
+                  </div>
+                </div>
+
+                {/* Ideiglenes nevezési listák */}
+                <div className="grid gap-3 sm:max-w-md mx-auto">
+                  <a
+                    href="/docs/SBD_Next_ujonc_11.24.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white">
+                      Újonc nevezési lista (ideiglenes) (PDF)
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+
+                  <a
+                    href="/docs/SBD_Next_versenyzo_11.24.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white">
+                      Versenyző nevezési lista (ideiglenes) (PDF)
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+
+                  <p className="pl-1 text-xs text-neutral-300">
+                    Az ideiglenes nevezési lista naponta frissül.
+                  </p>
+                </div>
+
+                {/* Alsó linkek: English guide + díjak */}
+                <div className="flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm">
+                  <a
+                    href="/en"
+                    className="inline-flex items-center gap-1 text-red-400 hover:text-red-300"
+                  >
+                    English guide <ChevronRight className="h-4 w-4" />
+                  </a>
+                  <a
+                    href="#fees"
+                    className="inline-flex items-center gap-1 text-red-400 hover:text-red-300"
+                  >
+                    Nevezési díjak <ChevronRight className="h-4 w-4" />
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pulse chip */}
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-400 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
+              <span>
+                Első versenyeseknek is, IPF-szabályrendszerű háromfogásos erőemelő esemény.
+              </span>
+            </div>
+
+          {/* Verseny röviden – teljes szélesség alatt */}
+          <Card className="rounded-2xl border border-red-900/60 bg-black/80 shadow-[0_0_45px_rgba(0,0,0,0.9)]">
             <CardContent className="space-y-4 p-5 text-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.2em] text-red-300">
-                    Verseny röviden
+                  <div className="text-xs uppercase tracking-[0.2em] text-red-400">
+                    Röviden
                   </div>
                 </div>
 
@@ -1330,27 +1307,29 @@ export default function EventLanding() {
         </Section>
 
         <Section id="fees" icon={TicketCheck} title="Nevezési és nézői díjak">
-          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6">
-              <PriceRow
-                label="Nevezési díj"
-                value={`${priceEntry} ${EVENT.fees.currency}`}
-                note="Tartalmazza a media csomagot (menő fotók rólad) és az egyedi SBD pólót. A profi fotókról és videókról 5 fős csapat gondoskodik."
-              />
+          <div className="text-base sm:text-lg">
+            <Card className="rounded-2xl border border-neutral-800 bg-black/70">
+              <CardContent className="p-6">
+                <PriceRow
+                  label="Nevezési díj"
+                  value={`${priceEntry} ${EVENT.fees.currency}`}
+                  note="Tartalmazza a media csomagot (menő fotók rólad) és az egyedi SBD pólót. A profi fotókról és videókról 5 fős csapat gondoskodik."
+                />
 
-              <PriceRow
-                label="Nézői jegy"
-                value={`${priceSpectator} ${EVENT.fees.currency}`}
-                note="A helyszínen készpénzben vagy kártyával."
-              />
+                <PriceRow
+                  label="Nézői jegy"
+                  value={`${priceSpectator} ${EVENT.fees.currency}`}
+                  note="A helyszínen készpénzben vagy kártyával."
+                />
 
-              <PriceRow
-                label="Prémium média csomag (nem kötelező)"
-                value={`${pricePremium} ${EVENT.fees.currency}`}
-                note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
-              />
-            </CardContent>
-          </Card>
+                <PriceRow
+                  label="Prémium média csomag (nem kötelező)"
+                  value={`${pricePremium} ${EVENT.fees.currency}`}
+                  note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
+                />
+              </CardContent>
+            </Card>
+          </div>
         </Section>
 
         <Section id="venue" icon={MapPin} title="Helyszín">
@@ -1403,21 +1382,40 @@ export default function EventLanding() {
         </Section>
 
         <Section id="register" icon={Dumbbell} title="Nevezés">
-  <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-    <CardContent className="p-6">
-      <RegistrationForm />
-    </CardContent>
-  </Card>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-900/60 bg-black/60 px-3 py-1 text-[11px] text-red-200">
+            {CAP_FULL ? (
+              <>
+                <span className="h-2 w-2 animate-pulse rounded-full bg-yellow-300" />
+                <span>
+                  A nevezői létszám jelenleg betelt. Az űrlap kitöltésével várólistára tudsz jelentkezni.
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
+                <span>
+                  Jelenleg {CAP_USED} / {CAP_LIMIT} nevezés érkezett, még{" "}
+                  {CAP_REMAINING} hely szabad.
+                </span>
+              </>
+            )}
+          </div>
 
-  <p className="mt-4 text-xs text-neutral-400">
-    A nevezők maximális létszámának elérése után minden új jelentkező
-    automatikusan várólistára kerül. A felszabaduló helyeket a
-    várólistán szereplők jelentkezési sorrendben kapják meg, a
-    szervezők egyéni e-mailes értesítése alapján. A várólistáról való
-    bekerülés a visszaigazolás és a nevezési díj befizetése után válik
-    érvényessé.
-  </p>
-</Section>
+          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
+            <CardContent className="p-6">
+              <RegistrationForm />
+            </CardContent>
+          </Card>
+
+          <p className="mt-4 text-xs text-neutral-400">
+            A nevezők maximális létszámának elérése után minden új jelentkező
+            automatikusan várólistára kerül. A felszabaduló helyeket a
+            várólistán szereplők jelentkezési sorrendben kapják meg, a
+            szervezők egyéni e-mailes értesítése alapján. A várólistáról való
+            bekerülés a visszaigazolás és a nevezési díj befizetése után válik
+            érvényessé.
+          </p>
+        </Section>
 
         <Section id="faq" icon={Info} title="GYIK">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
@@ -1551,7 +1549,7 @@ export default function EventLanding() {
               Kapcsolat:{" "}
               <a
                 href={`mailto:${EVENT.contact.email}`}
-                className="text-red-400 hover:text-red-300"
+                className="text-red-400 hover:text-red-400"
               >
                 {EVENT.contact.email}
               </a>
