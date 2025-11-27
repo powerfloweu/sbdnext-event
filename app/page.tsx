@@ -1035,7 +1035,7 @@ export default function EventLanding() {
                 {/* Ideiglenes nevezési listák */}
                 <div className="grid gap-3 sm:max-w-md mx-auto">
                   <a
-                    href="/docs/SBD_Next_ujonc_11.24.pdf"
+                    href="/docs/SBD_Next_ujonc_11.26.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -1046,7 +1046,7 @@ export default function EventLanding() {
                   </a>
 
                   <a
-                    href="/docs/SBD_Next_versenyzo_11.24.pdf"
+                    href="/docs/SBD_Next_versenyzo_11.26.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
