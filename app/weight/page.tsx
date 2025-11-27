@@ -1,158 +1,227 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
-const WEBHOOK_URL = process.env.NEXT_PUBLIC_WEIGHT_WEBHOOK_URL!;
+type WeightFormState = {
+  name: string;
+  email: string;
+  weight: string;
+  submitting: boolean;
+  done: boolean;
+  error: string | null;
+};
 
-export default function WeightPage() {
+const WEBHOOK_URL = process.env.NEXT_PUBLIC_WEIGHT_WEBHOOK || "";
+
+function WeightFormInner() {
   const searchParams = useSearchParams();
-  const registrationId = searchParams.get("registrationId");
 
-  const [weight, setWeight] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
-    "idle",
-  );
-  const [message, setMessage] = useState<string | null>(null);
+  const prefillName = searchParams.get("name") ?? "";
+  const prefillEmail = searchParams.get("email") ?? "";
 
-  if (!registrationId) {
-    return (
-      <main className="mx-auto flex min-h-screen max-w-xl items-center justify-center px-4">
-        <Card className="w-full border-red-900/60 bg-black/80 text-red-50">
-          <CardHeader>
-            <CardTitle className="text-lg">
-              Hiányzó azonosító
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-red-100/80">
-              A testsúly megadásához egyedi hivatkozás szükséges.
-              Kérjük, az e-mailben kapott linkre kattints, vagy vedd fel velünk
-              a kapcsolatot:{" "}
-              <a
-                href="mailto:powerlifting@sbdnext.hu"
-                className="underline underline-offset-4"
-              >
-                powerlifting@sbdnext.hu
-              </a>
-              .
-            </p>
-          </CardContent>
-        </Card>
-      </main>
-    );
-  }
+  const [state, setState] = useState<WeightFormState>({
+    name: prefillName,
+    email: prefillEmail,
+    weight: "",
+    submitting: false,
+    done: false,
+    error: null,
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const trimmed = weight.trim().replace(",", ".");
-    const numeric = Number(trimmed);
-
-    if (!trimmed || Number.isNaN(numeric) || numeric <= 0) {
-      setStatus("error");
-      setMessage("Kérlek, valós testsúlyt adj meg kg-ban (pl. 83).");
+    // Név
+    if (!state.name.trim()) {
+      setState((s) => ({ ...s, error: "Kérlek add meg a neved." }));
       return;
     }
 
-    setStatus("loading");
-    setMessage(null);
+    // E-mail
+    if (!state.email.trim()) {
+      setState((s) => ({ ...s, error: "Kérlek add meg az e-mail címed." }));
+      return;
+    }
+    if (!/.+@.+\..+/.test(state.email)) {
+      setState((s) => ({
+        ...s,
+        error: "Kérlek valós e-mail címet adj meg.",
+      }));
+      return;
+    }
+
+    // Testsúly
+    const weightRaw = state.weight.trim().replace(",", ".");
+    if (!weightRaw) {
+      setState((s) => ({
+        ...s,
+        error: "Kérlek add meg a testsúlyod (kg).",
+      }));
+      return;
+    }
+    const weightNum = Number(weightRaw);
+    if (Number.isNaN(weightNum) || weightNum < 30 || weightNum > 250) {
+      setState((s) => ({
+        ...s,
+        error: "A testsúlynak 30 és 250 kg közé kell esnie.",
+      }));
+      return;
+    }
+
+    setState((s) => ({ ...s, submitting: true, error: null }));
 
     try {
-      const res = await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          registrationId,
-          weight: numeric,
-        }),
-      });
+      if (WEBHOOK_URL) {
+        const payload = {
+          timestamp: new Date().toISOString(),
+          name: state.name.trim(),
+          email: state.email.trim(),
+          weight: weightNum,
+          page: "/weight",
+        };
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => {
+          // ha elszáll a webhook, ettől még a usernek sikert jelezünk
+        });
       }
 
-      setStatus("success");
-      setMessage(
-        "Köszönjük! A megadott testsúlyt rögzítettük. Ha több mint 1-2 napon belül új értéket szeretnél, elég válaszolni az e-mailre.",
-      );
-    } catch (err) {
-      console.error(err);
-      setStatus("error");
-      setMessage(
-        "Valami hiba történt a mentés közben. Próbáld meg pár perc múlva újra, vagy írj nekünk: powerlifting@sbdnext.hu.",
-      );
+      setState((s) => ({ ...s, done: true }));
+    } catch {
+      setState((s) => ({
+        ...s,
+        error:
+          "A beküldés nem sikerült. Próbáld újra, vagy írj nekünk e-mailt.",
+      }));
+    } finally {
+      setState((s) => ({ ...s, submitting: false }));
     }
   }
 
-  return (
-    <main className="mx-auto flex min-h-screen max-w-xl items-center justify-center px-4">
-      <Card className="w-full border-red-900/60 bg-black/80 text-red-50 shadow-xl shadow-red-950/40">
-        <CardHeader>
-          <CardTitle className="text-xl">
-            Tervezett testsúly megadása
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4 text-sm text-red-100/80">
-            A kategóriabeosztás miatt kérjük, add meg a{" "}
-            <span className="font-semibold">versenyen tervezett testsúlyodat</span>{" "}
-            kg-ban. Nyugodtan gondolkodj kb. <span className="font-semibold">±3 kg</span>-os
-            tartományban.
+  if (state.done) {
+    return (
+      <Card className="rounded-2xl border border-green-600/60 bg-black/70">
+        <CardContent className="p-6 text-center text-sm text-green-100">
+          <p className="mb-2 font-semibold">
+            Köszönjük, a testsúlyod rögzítettük.
           </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-red-200/80">
-                Testsúly (kg)
-              </label>
-              <Input
-                inputMode="decimal"
-                className="border-red-700/80 bg-black/70 text-red-50 placeholder:text-red-400/60"
-                placeholder="pl. 83"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                required
-              />
-              <p className="mt-1 text-[11px] text-red-200/70">
-                A megadott testsúly alapján osztunk be kategóriába. 
-                Későbbi kisebb módosítás nem gond.
-              </p>
-            </div>
-
-            {message && (
-              <div
-                className={cn(
-                  "rounded-md border px-3 py-2 text-xs",
-                  status === "success"
-                    ? "border-green-600/70 bg-green-900/40 text-green-100"
-                    : "border-red-700/80 bg-red-950/70 text-red-100",
-                )}
-              >
-                {message}
-              </div>
-            )}
-
-            <div className="pt-2">
-              <Button
-                type="submit"
-                className="w-full bg-red-600 text-white hover:bg-red-500"
-                disabled={status === "loading"}
-              >
-                {status === "loading"
-                  ? "Mentés..."
-                  : "Testsúly mentése"}
-              </Button>
-            </div>
-          </form>
+          <p className="text-xs text-neutral-300">
+            Ha elírást vettél észre, írj nekünk a{" "}
+            <a
+              href="mailto:powerlifting@sbdnext.hu"
+              className="text-red-400 underline hover:text-red-300"
+            >
+              powerlifting@sbdnext.hu
+            </a>{" "}
+            címen.
+          </p>
         </CardContent>
       </Card>
-    </main>
+    );
+  }
+
+  return (
+    <Card className="rounded-2xl border border-neutral-800 bg-black/80 shadow-[0_0_45px_rgba(0,0,0,0.9)]">
+      <CardContent className="space-y-4 p-6 text-sm text-neutral-100">
+        <div>
+          <h1 className="text-lg font-semibold text-red-400">
+            Tervezett testsúly megadása
+          </h1>
+          <p className="mt-1 text-xs text-neutral-300">
+            A beosztás miatt fontos, hogy lásd, milyen testsúlyra készülsz a
+            verseny napján. Kérlek, nagyjából ±3 kg pontossággal add meg.
+          </p>
+        </div>
+
+        {state.error && (
+          <div className="text-xs text-red-400">{state.error}</div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+          <div>
+            <label className="text-xs font-semibold text-red-400">
+              Név <span className="text-red-500">*</span>
+            </label>
+            <Input
+              className="mt-1"
+              value={state.name}
+              onChange={(e) =>
+                setState((s) => ({ ...s, name: e.target.value }))
+              }
+              placeholder="Vezetéknév Keresztnév"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-red-400">
+              E-mail <span className="text-red-500">*</span>
+            </label>
+            <Input
+              className="mt-1"
+              type="email"
+              value={state.email}
+              onChange={(e) =>
+                setState((s) => ({ ...s, email: e.target.value }))
+              }
+              placeholder="nev@email.hu"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-red-400">
+              Tervezett testsúly (kg) <span className="text-red-500">*</span>
+            </label>
+            <Input
+              className="mt-1"
+              inputMode="numeric"
+              value={state.weight}
+              onChange={(e) =>
+                setState((s) => ({ ...s, weight: e.target.value }))
+              }
+              placeholder="pl. 83"
+              required
+            />
+            <p className="mt-1 text-[11px] text-neutral-400">
+              A versenyen tervezett testsúlyod, nagyjából ±3 kg pontossággal.
+            </p>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={state.submitting}
+            className="mt-2 w-full rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-6 py-3 text-sm font-semibold shadow-[0_0_40px_rgba(248,113,113,0.9)] hover:from-red-600 hover:via-red-500 hover:to-red-300"
+          >
+            {state.submitting ? "Beküldés…" : "Testsúly beküldése"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function WeightPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50">
+      <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10">
+        <Suspense
+          fallback={
+            <div className="rounded-2xl border border-neutral-800 bg-black/80 p-6 text-center text-sm text-neutral-200">
+              Betöltés…
+            </div>
+          }
+        >
+          <WeightFormInner />
+        </Suspense>
+      </main>
+    </div>
   );
 }
