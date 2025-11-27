@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,8 @@ function WeightFormInner() {
 
   const prefillName = searchParams.get("name") ?? "";
   const prefillEmail = searchParams.get("email") ?? "";
+  const isNamePrefilled = Boolean(prefillName);
+  const isEmailPrefilled = Boolean(prefillEmail);
 
   const [state, setState] = useState<WeightFormState>({
     name: prefillName,
@@ -31,6 +33,20 @@ function WeightFormInner() {
     done: false,
     error: null,
   });
+
+  useEffect(() => {
+    setState((s) => {
+      // csak akkor írjuk felül, ha még üres és van prefill
+      const next = { ...s };
+      if (!next.name && prefillName) {
+        next.name = prefillName;
+      }
+      if (!next.email && prefillEmail) {
+        next.email = prefillEmail;
+      }
+      return next;
+    });
+  }, [prefillName, prefillEmail]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -113,6 +129,9 @@ function WeightFormInner() {
             Köszönjük, a testsúlyod rögzítettük.
           </p>
           <p className="text-xs text-neutral-300">
+            Amennyiben esetleg még nem kaptál e-mailt arról, hogy a fizetés is rendben van, akkor most megnyugodhatsz – a nevezésed végleges. Ha bármi gond adódna, felkeresünk.
+          </p>
+          <p className="mt-3 text-[11px] text-neutral-400">
             Ha elírást vettél észre, írj nekünk a{" "}
             <a
               href="mailto:powerlifting@sbdnext.hu"
@@ -157,6 +176,7 @@ function WeightFormInner() {
               }
               placeholder="Vezetéknév Keresztnév"
               required
+              readOnly={isNamePrefilled}
             />
           </div>
 
@@ -173,6 +193,7 @@ function WeightFormInner() {
               }
               placeholder="nev@email.hu"
               required
+              readOnly={isEmailPrefilled}
             />
           </div>
 
