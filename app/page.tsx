@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
   type ReactNode,
   type ChangeEvent,
 } from "react";
@@ -23,6 +24,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Link as LinkIcon,
+  Trophy,
 } from "lucide-react";
 
 import type { ComponentType } from "react";
@@ -52,6 +54,7 @@ const FORCE_REG_OPEN =
 
 // A nevezés indulásának fix időpontja (CET)
 const REG_OPEN_AT = new Date("2025-11-20T20:00:00+01:00");
+const REG_DEADLINE_AT = new Date("2026-01-07T23:59:00+01:00");
 
 // ====== ESEMÉNY ADATOK ======
 const EVENT = {
@@ -871,11 +874,286 @@ function RegistrationForm() {
   );
 }
 
+// ====== LEADERBOARD (online nevezési lista) ======
+
+type LeaderboardRow = {
+  name: string;
+  club: string;
+  total: number;
+};
+
+const LEADERBOARD_SOURCES = {
+  ujoncNoi:
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=1482153429&single=true&output=csv",
+  ujoncFerfi:
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=862629266&single=true&output=csv",
+  versenyzoNoi:
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=672992038&single=true&output=csv",
+  versenyzoFerfi:
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=1696060010&single=true&output=csv",
+} as const;
+
+function parseCsv(text: string): LeaderboardRow[] {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return [];
+  const [, ...rows] = lines;
+
+  return rows
+    .map((line) => {
+      const cells = line.split(",");
+      const [nameRaw = "", clubRaw = "", totalRaw = ""] = cells;
+      const name = nameRaw.trim();
+      const club = clubRaw.trim();
+      const total = Number(
+        totalRaw.trim().replace(/\s/g, "").replace(",", ".")
+      );
+      if (!name) return null;
+      return {
+        name,
+        club,
+        total: Number.isFinite(total) ? total : 0,
+      };
+    })
+    .filter((r): r is LeaderboardRow => r !== null);
+}
+
+function LeaderboardTable({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: LeaderboardRow[];
+}) {
+  return (
+    <Card className="rounded-2xl border border-neutral-800 bg-black/75">
+      <CardContent className="p-4 sm:p-5 text-sm text-neutral-100">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-red-400" />
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-red-300">
+              {title}
+            </div>
+          </div>
+        </div>
+
+        {rows.length === 0 ? (
+          <div className="py-4 text-xs text-neutral-400">
+            Még nincs aktív nevezés ebben a kategóriában.
+          </div>
+        ) : (
+          <div className="max-h-[420px] overflow-y-auto rounded-xl border border-neutral-800 bg-black/80">
+            <table className="min-w-full text-xs sm:text-sm">
+              <thead className="bg-red-950/60 text-[11px] uppercase tracking-[0.16em] text-neutral-300">
+                <tr>
+                  <th className="px-3 py-2 text-left">#</th>
+                  <th className="px-3 py-2 text-left">Név</th>
+                  <th className="px-3 py-2 text-left">Egyesület</th>
+                  <th className="px-3 py-2 text-right">Nevezési total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, idx) => (
+                  <tr
+                    key={row.name + row.club + idx}
+                    className={idx % 2 === 0 ? "bg-black" : "bg-neutral-950"}
+                  >
+                    <td className="px-3 py-1.5 text-left text-[11px] text-neutral-400">
+                      {idx + 1}
+                    </td>
+                    <td className="px-3 py-1.5 font-medium text-neutral-100">
+                      {row.name}
+                    </td>
+                    <td className="px-3 py-1.5 text-neutral-300">
+                      {row.club || "—"}
+                    </td>
+                    <td className="px-3 py-1.5 text-right tabular-nums text-neutral-100">
+                      {row.total || "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function Leaderboard() {
+  const [data, setData] = useState<
+    Partial<Record<keyof typeof LEADERBOARD_SOURCES, LeaderboardRow[]>>
+  >({});
+
+  // tab state
+  const [activeTab, setActiveTab] = useState<
+    "ujoncNoi" | "ujoncFerfi" | "versenyzoNoi" | "versenyzoFerfi"
+  >("ujoncNoi");
+
+  // Order for swiping
+  const order = ["ujoncNoi", "ujoncFerfi", "versenyzoNoi", "versenyzoFerfi"] as const;
+  const touchStartXRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      for (const key of Object.keys(
+        LEADERBOARD_SOURCES
+      ) as (keyof typeof LEADERBOARD_SOURCES)[]) {
+        try {
+          const res = await fetch(LEADERBOARD_SOURCES[key]);
+          const text = await res.text();
+          const rows = parseCsv(text);
+          if (!cancelled) {
+            setData((prev) => ({ ...prev, [key]: rows }));
+          }
+        } catch {
+          // swallow, we show empty state in the table
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartXRef.current = e.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    const startX = touchStartXRef.current;
+    if (startX == null) return;
+    const endX = e.changedTouches[0]?.clientX ?? startX;
+    const diff = endX - startX;
+    if (Math.abs(diff) < 50) return;
+
+    const currentIndex = order.indexOf(activeTab);
+    if (currentIndex === -1) return;
+
+    const nextIndex = diff < 0 ? currentIndex + 1 : currentIndex - 1;
+    if (nextIndex < 0 || nextIndex >= order.length) return;
+
+    setActiveTab(order[nextIndex]);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 sm:mx-0 border-b border-neutral-800">
+        <button
+          onClick={() => setActiveTab("ujoncNoi")}
+          className={`relative mx-1 flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:text-base font-semibold tracking-wide transition-colors ${
+            activeTab === "ujoncNoi"
+              ? "border-red-500 text-red-100"
+              : "border-transparent text-neutral-400 hover:text-red-200"
+          }`}
+        >
+          <span aria-hidden className="text-base">
+            ✨
+          </span>
+          <span>Újonc – Nők</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("ujoncFerfi")}
+          className={`relative mx-1 flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:text-base font-semibold tracking-wide transition-colors ${
+            activeTab === "ujoncFerfi"
+              ? "border-red-500 text-red-100"
+              : "border-transparent text-neutral-400 hover:text-red-200"
+          }`}
+        >
+          <span aria-hidden className="text-base">
+            ✨
+          </span>
+          <span>Újonc – Férfiak</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("versenyzoNoi")}
+          className={`relative mx-1 flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:text-base font-semibold tracking-wide transition-colors ${
+            activeTab === "versenyzoNoi"
+              ? "border-red-500 text-red-100"
+              : "border-transparent text-neutral-400 hover:text-red-200"
+          }`}
+        >
+          <span aria-hidden className="text-base">
+            🏆
+          </span>
+          <span>Versenyző – Nők</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("versenyzoFerfi")}
+          className={`relative mx-1 flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:text-base font-semibold tracking-wide transition-colors ${
+            activeTab === "versenyzoFerfi"
+              ? "border-red-500 text-red-100"
+              : "border-transparent text-neutral-400 hover:text-red-200"
+          }`}
+        >
+          <span aria-hidden className="text-base">
+            🏆
+          </span>
+          <span>Versenyző – Férfiak</span>
+        </button>
+      </div>
+      <div
+        className="pt-2"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {activeTab === "ujoncNoi" && (
+          <LeaderboardTable title="Újonc – Nők" rows={data.ujoncNoi ?? []} />
+        )}
+        {activeTab === "ujoncFerfi" && (
+          <LeaderboardTable
+            title="Újonc – Férfiak"
+            rows={data.ujoncFerfi ?? []}
+          />
+        )}
+        {activeTab === "versenyzoNoi" && (
+          <LeaderboardTable
+            title="Versenyző – Nők"
+            rows={data.versenyzoNoi ?? []}
+          />
+        )}
+        {activeTab === "versenyzoFerfi" && (
+          <LeaderboardTable
+            title="Versenyző – Férfiak"
+            rows={data.versenyzoFerfi ?? []}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ====== OLDAL ======
 export default function EventLanding() {
   const [mounted, setMounted] = useState(false);
+  const [deadlineLeft, setDeadlineLeft] = useState<TimeLeft | null>(null);
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    function updateDeadline() {
+      const diff = REG_DEADLINE_AT.getTime() - Date.now();
+      if (diff <= 0) {
+        setDeadlineLeft(null);
+        return;
+      }
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / (24 * 3600));
+      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      setDeadlineLeft({ days, hours, minutes, seconds });
+    }
+
+    updateDeadline();
+    const id = setInterval(updateDeadline, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const priceEntry = new Intl.NumberFormat("hu-HU").format(EVENT.fees.entry);
   const priceSpectator = new Intl.NumberFormat("hu-HU").format(
@@ -886,8 +1164,16 @@ export default function EventLanding() {
   );
   const year = new Date().getUTCFullYear();
 
+  const scrollToLeaderboard = () => {
+    if (typeof document === "undefined") return;
+    const el = document.getElementById("leaderboard");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50 text-3xl">
+    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50">
       {/* NAV – SBD Hungary + PowerFlow */}
       <nav className="sticky top-0 z-40 border-b border-red-900/70 bg-black/85 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -1048,32 +1334,19 @@ export default function EventLanding() {
                   </div>
                 </div>
 
-                {/* Ideiglenes nevezési listák */}
+                {/* Online nevezési listák */}
                 <div className="grid gap-3 sm:max-w-md mx-auto">
-                  <a
-                    href="/docs/SBD_Next_ujonc_11.30.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Button
+                    type="button"
+                    onClick={scrollToLeaderboard}
+                    className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white"
                   >
-                    <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white">
-                      Újonc nevezési lista (ideiglenes) (PDF)
-                      <ExternalLink className="ml-2 h-4 w-4" />
-                    </Button>
-                  </a>
-
-                  <a
-                    href="/docs/SBD_Next_versenyzo_11.30.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white">
-                      Versenyző nevezési lista (ideiglenes) (PDF)
-                      <ExternalLink className="ml-2 h-4 w-4" />
-                    </Button>
-                  </a>
+                    Élő nevezési lista (ideiglenes)
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
 
                   <p className="pl-1 text-xs text-neutral-300">
-                    Az ideiglenes nevezési lista naponta frissül.
+                    A lista automatikusan frissül minden nevezés beérkezése után. A kategória a nevezés lezárása után felülvizsgálatra fog kerülni.
                   </p>
                 </div>
 
@@ -1096,12 +1369,34 @@ export default function EventLanding() {
               </Card>
             </div>
 
-            {/* Pulse chip */}
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-400 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
-              <span>
-                Első versenyeseknek is, IPF-szabályrendszerű háromfogásos erőemelő esemény.
-              </span>
+            {/* Pulse chip + countdown to registration deadline */}
+            <div className="mt-4 flex flex-row items-center justify-center gap-4 w-full max-w-5xl mx-auto">
+              {/* Right pill – First-timers */}
+              <div className="flex-1 rounded-full border border-red-900/70 bg-black/70 px-4 py-2 text-white shadow-[0_0_18px_rgba(127,29,29,0.7)] flex items-center gap-3 justify-center">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
+                <span className="leading-snug text-center text-[0.85em]">
+                  Első versenyeseknek is, IPF-szabályrendszerű<br />
+                  háromfogásos erőemelő esemény.
+                </span>
+              </div>
+
+              {/* Left pill – Deadline countdown */}
+              {deadlineLeft && (
+                <div className="flex-1 rounded-full border border-red-900/70 bg-black/70 px-4 py-2 text-neutral-300 shadow-[0_0_18px_rgba(127,29,29,0.7)] flex items-center gap-3 justify-center">
+                  <span className="flex items-center gap-2 text-red-400 text-[0.85em]">
+                    <span aria-hidden>⏳</span>
+                    <span className="text-red-400">
+                      Nevezési határidőig:{" "}
+                      <span className="font-mono">
+                        {deadlineLeft.days} nap{" "}
+                        {deadlineLeft.hours.toString().padStart(2, "0")}:
+                        {deadlineLeft.minutes.toString().padStart(2, "0")}:
+                        {deadlineLeft.seconds.toString().padStart(2, "0")}
+                      </span>
+                    </span>
+                  </span>
+                </div>
+              )}
             </div>
 
           {/* Verseny röviden – teljes szélesség alatt */}
@@ -1213,6 +1508,9 @@ export default function EventLanding() {
 
       {/* TARTALOM */}
       <main className="mx-auto max-w-5xl px-4 pb-20">
+        <Section id="leaderboard" icon={Dumbbell} title="Nevezési listák (online)">
+          <Leaderboard />
+        </Section>
         <Section id="info" icon={Info} title="Versenyinformációk">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
