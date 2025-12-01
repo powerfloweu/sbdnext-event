@@ -71,10 +71,10 @@ const EVENT = {
   federation:
     "IPF szabályrendszer. Nem kell klubtagság és sportorvosi engedély.",
   equipmentNote:
-    "MERSZ szabályai szerint (kantáros ruha, hosszú zokni, cipő, póló kötelező, ezen felül minden, ami az IPF RAW szabályain belül megengedett).",
+    "Versenyző kategóriában a MERSZ szabályai szerint kell versenyezni. Újonc kategóriában NEM kötelező a kantáros erőemelő mez, elegendő testhez simuló rövid- vagy hosszúnadrág és felső.",
   deadlines: {
     regOpen: "2025. november 20.",
-    regClose: "2025. december 1.",
+    regClose: "2026. január 7. 23:59",
   },
   fees: {
     entry: 29990,
@@ -437,7 +437,7 @@ function RegistrationForm() {
 
         <p className="text-yellow-100/90">
           A nevezési időszak:{" "}
-          <b>2025. november 20.</b> – <b>2025. december 1.</b>
+          <b>{EVENT.deadlines.regOpen}</b> – <b>{EVENT.deadlines.regClose}</b>
         </p>
 
         {timeLeft && (
@@ -1002,16 +1002,32 @@ export default function EventLanding() {
           </div>
 
             {/* Versenykiírás + nevezés + listák – külön doboz */}
-            <Card className="mt-4 rounded-2xl border border-neutral-800 bg-black/80">
-              <CardContent className="space-y-5 p-5 text-sm text-neutral-100 text-center">
+            <div className="mt-4 flex justify-center">
+              <Card className="w-full max-w-5xl rounded-2xl border border-neutral-800 bg-black/80">
+                <CardContent className="space-y-5 p-5 text-sm text-neutral-100 text-center">
                 {/* Fő CTA: Nevezés */}
-                <div className="flex justify-center">
-                  <a href="#register">
-                    <Button className="rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-12 py-4 text-lg font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200">
+                <div className="grid max-w-md mx-auto w-full">
+                  <a href="#register" className="block">
+                    <Button className="w-full rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-12 py-4 text-lg font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200">
                       Nevezek most
                     </Button>
                   </a>
                 </div>
+                <div className="flex justify-center">
+                  <a
+                    href="#deadline-changes"
+                    className="no-underline"
+                  >
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-100/80 bg-black/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white animate-pulse">
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
+                      <div className="flex flex-col leading-tight">
+                        <span>Nevezési határidő meghosszabbítva</span>
+                        <span>Újonc felszerelés könnyítve</span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+
 
                 {/* Versenykiírás + magyarázó nyíl */}
                 <div className="space-y-2">
@@ -1077,7 +1093,8 @@ export default function EventLanding() {
                   </a>
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
 
             {/* Pulse chip */}
             <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-900/70 bg-black/70 px-3 py-1 text-xs text-red-400 shadow-[0_0_18px_rgba(127,29,29,0.7)]">
@@ -1128,6 +1145,50 @@ export default function EventLanding() {
               </div>
             </CardContent>
           </Card>
+          <div
+            id="deadline-changes"
+            className="mt-4 grid gap-3 text-xs sm:text-sm scroll-mt-40"
+          >
+            <div className="rounded-xl border border-yellow-600/70 bg-yellow-950/50 p-4 text-yellow-100">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-300">
+                Nevezési határidő MÓDOSULT
+              </div>
+              <p className="mb-1">
+                A versenyszervezés kezdeti szakaszában nem láttunk előre néhány fontos részletet, amelyek a folyamatos visszajelzésekből most körvonalazódnak.
+              </p>
+              <p className="mb-1">
+                Az első legfontosabb ezek közül az, hogy a versenynaptár telítettsége miatt a verseny időpontja és beharangozása, valamint a nevezési határidő között igen kevés idő állt rendelkezésre.
+              </p>
+              <p className="mb-1">
+                Ezt szeretnénk kompenzálni azzal a könnyítéssel, hogy a nevezési határidőt meghosszabbítottuk 2026. január 7, 23:59 percig.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-yellow-600/70 bg-yellow-950/40 p-4 text-yellow-100">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-300">
+                Újonc felszerelés – MÓDOSULT
+              </div>
+              <p className="mb-1">
+                Újonc kategóriában testhez simuló rövid- vagy hosszúnadrág és felső elegendő. Rövid nadrág esetén a felhúzáshoz szükséges a hosszú szárú zokni.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-yellow-600/70 bg-yellow-950/40 p-4 text-yellow-100">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-300">
+                Díjazás
+              </div>
+              <div className="flex items-center gap-4">
+                <p className="text-sm flex-1">
+                  A dobogósok – helyezéstől függően – SBD vásárlási utalványt, táplálék-kiegészítőket, PowerFlow kurzust és konzultációt, valamint Avancus cipőt kapnak.
+                </p>
+                <img
+                  src="/avancus.png"
+                  alt="Avancus cipő"
+                  className="h-40 sm:h-48 object-contain select-none self-end"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -1252,6 +1313,15 @@ export default function EventLanding() {
                 • Tiltott szerek és eszközök nem engedélyezettek. Versenyzők
                 mindent használhatnak az IPF szabályain belül.
               </div>
+              <div>
+                • Versenyzők: kantáros erőemelő mez, hosszú zokni, cipő és póló kötelező. Ezen felül minden használható, ami az IPF RAW szabályain belül megengedett.
+              </div>
+              <div>
+                • Újoncok: testhez simuló rövid- vagy hosszúnadrág és felső elegendő. Rövid nadrág esetén a felhúzáshoz szükséges a hosszú szárú zokni.
+              </div>
+              <div>
+                • Felszerelés-ellenőrzés mindenki számára kötelező.
+              </div>
 
               <div className="mt-2 grid gap-3 sm:grid-cols-2">
                 <a
@@ -1327,6 +1397,9 @@ export default function EventLanding() {
                   value={`${pricePremium} ${EVENT.fees.currency}`}
                   note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
                 />
+                <div className="mt-4 text-xs text-neutral-300">
+                  A dobogósok – helyezéstől függően – SBD vásárlási utalványt, táplálék-kiegészítőket, PowerFlow kurzust és konzultációt, valamint Avancus cipőt kapnak.
+                </div>
               </CardContent>
             </Card>
           </div>
