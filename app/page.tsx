@@ -1151,7 +1151,7 @@ export default function EventLanding() {
           >
             <div className="rounded-xl border border-yellow-600/70 bg-yellow-950/50 p-4 text-yellow-100">
               <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-300">
-                Nevezési határidő MÓDOSULT
+                Nevezési határidő - MÓDOSULT
               </div>
               <p className="mb-1">
                 A versenyszervezés kezdeti szakaszában nem láttunk előre néhány fontos részletet, amelyek a folyamatos visszajelzésekből most körvonalazódnak.
@@ -1177,16 +1177,35 @@ export default function EventLanding() {
               <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-300">
                 Díjazás
               </div>
-              <div className="flex items-center gap-4">
-                <p className="text-sm flex-1">
-                  A dobogósok – helyezéstől függően – SBD vásárlási utalványt, táplálék-kiegészítőket, PowerFlow kurzust és konzultációt, valamint Avancus cipőt kapnak.
-                </p>
+              <div className="flex items-center gap-4 mb-0">
+                <div className="flex flex-col items-start">
+                  <p className="text-sm flex-1">
+                    A dobogósok – helyezéstől függően – SBD vásárlási utalványt, táplálék-kiegészítőket, PowerFlow kurzust és konzultációt, valamint Avancus cipőt kapnak.
+                  </p>
+                </div>
                 <img
                   src="/avancus.png"
                   alt="Avancus cipő"
                   className="h-40 sm:h-48 object-contain select-none self-end"
                 />
               </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+              <img
+                src="/sbd_logo_transparent.png"
+                alt="SBD Hungary"
+                className="h-32 w-auto opacity-95"
+              />
+              <img
+                src="/powerflow_logo.png"
+                alt="PowerFlow"
+                className="h-32 w-auto opacity-95"
+              />
+              <img
+                src="/avancus_logo.png"
+                alt="Avancus"
+                className="h-32 w-auto opacity-95"
+              />
             </div>
           </div>
         </div>
