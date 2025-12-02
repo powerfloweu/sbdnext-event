@@ -57,6 +57,14 @@ const REG_OPEN_AT = new Date("2025-11-20T20:00:00+01:00");
 const REG_DEADLINE_AT = new Date("2026-01-07T23:59:00+01:00");
 
 // ====== ESEMÉNY ADATOK ======
+const HERO_IMAGES = [
+  "/sheffield_25_34.jpg",
+  "/sheffield_25_9.jpg",
+  "/ena_2025_worlds.jpeg",
+  "/pana_2025.jpeg",
+  "/aron_2025_vb.jpeg",
+] as const;
+
 const EVENT = {
   title: "SBD Next – Nyílt erőemelő verseny",
   subtitle: "A következő szint",
@@ -1131,6 +1139,7 @@ function Leaderboard() {
 export default function EventLanding() {
   const [mounted, setMounted] = useState(false);
   const [deadlineLeft, setDeadlineLeft] = useState<TimeLeft | null>(null);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
@@ -1154,6 +1163,16 @@ export default function EventLanding() {
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    if (!HERO_IMAGES.length) return;
+
+    const id = setInterval(() => {
+      setActiveHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 8000);
+
+    return () => clearInterval(id);
+  }, []);
+
   const priceEntry = new Intl.NumberFormat("hu-HU").format(EVENT.fees.entry);
   const priceSpectator = new Intl.NumberFormat("hu-HU").format(
     EVENT.fees.spectator
@@ -1165,7 +1184,24 @@ export default function EventLanding() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50">
+    <div className="relative min-h-screen text-neutral-50">
+      {/* Globális háttér – rotáló hero képek (teljes oldalra) */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        {HERO_IMAGES.map((src, index) => (
+          <div
+            key={src}
+            className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+            style={{
+              backgroundImage: `url('${src}')`,
+              opacity: index === activeHeroIndex ? 1 : 0,
+            }}
+            aria-hidden="true"
+          />
+        ))}
+        {/* Fekete overlay, hogy a szöveg olvasható maradjon */}
+        <div className="absolute inset-0 bg-black/85 pointer-events-none" />
+      </div>
+
       {/* NAV – SBD Hungary + PowerFlow */}
       <nav className="sticky top-0 z-40 border-b border-red-900/70 bg-black/85 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -1234,12 +1270,6 @@ export default function EventLanding() {
 
       {/* HERO */}
       <header className="relative text-white">
-        {/* Háttér */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/hero_bg.jpg')] bg-cover bg-center opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/90 to-black" />
-        </div>
-
         {/* Tartalom */}
         <div className="relative mx-auto max-w-5xl px-4 py-12 space-y-8">
                     {/* Felső blokk: logó + cím + alapinfók */}
