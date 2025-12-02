@@ -5,7 +5,6 @@ import {
   useEffect,
   useMemo,
   useState,
-  useRef,
   type ReactNode,
   type ChangeEvent,
 } from "react";
@@ -24,7 +23,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Link as LinkIcon,
-  Trophy,
 } from "lucide-react";
 
 import type { ComponentType } from "react";
@@ -874,259 +872,6 @@ function RegistrationForm() {
   );
 }
 
-// ====== LEADERBOARD (online nevezési lista) ======
-
-type LeaderboardRow = {
-  name: string;
-  club: string;
-  total: number;
-};
-
-const LEADERBOARD_SOURCES = {
-  ujoncNoi:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=1482153429&single=true&output=csv",
-  ujoncFerfi:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=862629266&single=true&output=csv",
-  versenyzoNoi:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=672992038&single=true&output=csv",
-  versenyzoFerfi:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=1696060010&single=true&output=csv",
-} as const;
-
-function parseCsv(text: string): LeaderboardRow[] {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-  if (lines.length < 2) return [];
-  const [, ...rows] = lines;
-
-  return rows
-    .map((line) => {
-      const cells = line.split(",");
-      const [nameRaw = "", clubRaw = "", totalRaw = ""] = cells;
-      const name = nameRaw.trim();
-      const club = clubRaw.trim();
-      const total = Number(
-        totalRaw.trim().replace(/\s/g, "").replace(",", ".")
-      );
-      if (!name) return null;
-      return {
-        name,
-        club,
-        total: Number.isFinite(total) ? total : 0,
-      };
-    })
-    .filter((r): r is LeaderboardRow => r !== null);
-}
-
-function LeaderboardTable({
-  title,
-  rows,
-}: {
-  title: string;
-  rows: LeaderboardRow[];
-}) {
-  return (
-    <Card className="rounded-2xl border border-neutral-800 bg-black/75">
-      <CardContent className="p-4 sm:p-5 text-sm text-neutral-100">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-red-400" />
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-red-300">
-              {title}
-            </div>
-          </div>
-        </div>
-
-        {rows.length === 0 ? (
-          <div className="py-4 text-xs text-neutral-400">
-            Még nincs aktív nevezés ebben a kategóriában.
-          </div>
-        ) : (
-          <div className="max-h-[420px] overflow-y-auto rounded-xl border border-neutral-800 bg-black/80">
-            <table className="min-w-full text-xs sm:text-sm">
-              <thead className="bg-red-950/60 text-[11px] uppercase tracking-[0.16em] text-neutral-300">
-                <tr>
-                  <th className="px-3 py-2 text-left">#</th>
-                  <th className="px-3 py-2 text-left">Név</th>
-                  <th className="px-3 py-2 text-left">Egyesület</th>
-                  <th className="px-3 py-2 text-right">Nevezési total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, idx) => (
-                  <tr
-                    key={row.name + row.club + idx}
-                    className={idx % 2 === 0 ? "bg-black" : "bg-neutral-950"}
-                  >
-                    <td className="px-3 py-1.5 text-left text-[11px] text-neutral-400">
-                      {idx + 1}
-                    </td>
-                    <td className="px-3 py-1.5 font-medium text-neutral-100">
-                      {row.name}
-                    </td>
-                    <td className="px-3 py-1.5 text-neutral-300">
-                      {row.club || "—"}
-                    </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-neutral-100">
-                      {row.total || "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function Leaderboard() {
-  const [data, setData] = useState<
-    Partial<Record<keyof typeof LEADERBOARD_SOURCES, LeaderboardRow[]>>
-  >({});
-
-  // tab state
-  const [activeTab, setActiveTab] = useState<
-    "ujoncNoi" | "ujoncFerfi" | "versenyzoNoi" | "versenyzoFerfi"
-  >("ujoncNoi");
-
-  // Order for swiping
-  const order = ["ujoncNoi", "ujoncFerfi", "versenyzoNoi", "versenyzoFerfi"] as const;
-  const touchStartXRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      for (const key of Object.keys(
-        LEADERBOARD_SOURCES
-      ) as (keyof typeof LEADERBOARD_SOURCES)[]) {
-        try {
-          const res = await fetch(LEADERBOARD_SOURCES[key]);
-          const text = await res.text();
-          const rows = parseCsv(text);
-          if (!cancelled) {
-            setData((prev) => ({ ...prev, [key]: rows }));
-          }
-        } catch {
-          // swallow, we show empty state in the table
-        }
-      }
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartXRef.current = e.touches[0]?.clientX ?? null;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    const startX = touchStartXRef.current;
-    if (startX == null) return;
-    const endX = e.changedTouches[0]?.clientX ?? startX;
-    const diff = endX - startX;
-    if (Math.abs(diff) < 50) return;
-
-    const currentIndex = order.indexOf(activeTab);
-    if (currentIndex === -1) return;
-
-    const nextIndex = diff < 0 ? currentIndex + 1 : currentIndex - 1;
-    if (nextIndex < 0 || nextIndex >= order.length) return;
-
-    setActiveTab(order[nextIndex]);
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 sm:mx-0 border-b border-neutral-800">
-        <button
-          onClick={() => setActiveTab("ujoncNoi")}
-          className={`relative mx-1 flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:text-base font-semibold tracking-wide transition-colors ${
-            activeTab === "ujoncNoi"
-              ? "border-red-500 text-red-100"
-              : "border-transparent text-neutral-400 hover:text-red-200"
-          }`}
-        >
-          <span aria-hidden className="text-base">
-            ✨
-          </span>
-          <span>Újonc – Nők</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("ujoncFerfi")}
-          className={`relative mx-1 flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:text-base font-semibold tracking-wide transition-colors ${
-            activeTab === "ujoncFerfi"
-              ? "border-red-500 text-red-100"
-              : "border-transparent text-neutral-400 hover:text-red-200"
-          }`}
-        >
-          <span aria-hidden className="text-base">
-            ✨
-          </span>
-          <span>Újonc – Férfiak</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("versenyzoNoi")}
-          className={`relative mx-1 flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:text-base font-semibold tracking-wide transition-colors ${
-            activeTab === "versenyzoNoi"
-              ? "border-red-500 text-red-100"
-              : "border-transparent text-neutral-400 hover:text-red-200"
-          }`}
-        >
-          <span aria-hidden className="text-base">
-            🏆
-          </span>
-          <span>Versenyző – Nők</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("versenyzoFerfi")}
-          className={`relative mx-1 flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm sm:text-base font-semibold tracking-wide transition-colors ${
-            activeTab === "versenyzoFerfi"
-              ? "border-red-500 text-red-100"
-              : "border-transparent text-neutral-400 hover:text-red-200"
-          }`}
-        >
-          <span aria-hidden className="text-base">
-            🏆
-          </span>
-          <span>Versenyző – Férfiak</span>
-        </button>
-      </div>
-      <div
-        className="pt-2"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {activeTab === "ujoncNoi" && (
-          <LeaderboardTable title="Újonc – Nők" rows={data.ujoncNoi ?? []} />
-        )}
-        {activeTab === "ujoncFerfi" && (
-          <LeaderboardTable
-            title="Újonc – Férfiak"
-            rows={data.ujoncFerfi ?? []}
-          />
-        )}
-        {activeTab === "versenyzoNoi" && (
-          <LeaderboardTable
-            title="Versenyző – Nők"
-            rows={data.versenyzoNoi ?? []}
-          />
-        )}
-        {activeTab === "versenyzoFerfi" && (
-          <LeaderboardTable
-            title="Versenyző – Férfiak"
-            rows={data.versenyzoFerfi ?? []}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
 
 // ====== OLDAL ======
 export default function EventLanding() {
@@ -1164,13 +909,6 @@ export default function EventLanding() {
   );
   const year = new Date().getUTCFullYear();
 
-  const scrollToLeaderboard = () => {
-    if (typeof document === "undefined") return;
-    const el = document.getElementById("leaderboard");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-neutral-950 to-black text-neutral-50">
@@ -1334,19 +1072,32 @@ export default function EventLanding() {
                   </div>
                 </div>
 
-                {/* Online nevezési listák */}
+                {/* Nevezési listák – befagyasztott PDF-ek */}
                 <div className="grid gap-3 sm:max-w-md mx-auto">
-                  <Button
-                    type="button"
-                    onClick={scrollToLeaderboard}
-                    className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white"
+                  <a
+                    href="/docs/SBD_Next_ujonc_11.30.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Élő nevezési lista (ideiglenes)
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
+                    <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white">
+                      Ideiglenes nevezési lista – Újonc (PDF)
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+
+                  <a
+                    href="/docs/SBD_Next_versenyzo_11.30.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white">
+                      Ideiglenes nevezési lista – Versenyző (PDF)
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
 
                   <p className="pl-1 text-xs text-neutral-300">
-                    A lista automatikusan frissül minden nevezés beérkezése után. A kategória a nevezés lezárása után felülvizsgálatra fog kerülni.
+                    A nevezési listák jelenleg egy befagyasztott, utolsó jó állapotot mutatnak. A kategóriák a nevezés lezárása után felülvizsgálatra kerülnek.
                   </p>
                 </div>
 
@@ -1508,8 +1259,43 @@ export default function EventLanding() {
 
       {/* TARTALOM */}
       <main className="mx-auto max-w-5xl px-4 pb-20">
-        <Section id="leaderboard" icon={Dumbbell} title="Nevezési listák (online)">
-          <Leaderboard />
+        <Section id="leaderboard" icon={Dumbbell} title="Nevezési listák (ideiglenes)">
+          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
+            <CardContent className="p-6 text-sm text-neutral-100 space-y-4">
+              <p>
+                Az alábbi nevezési listák egy pillanatfelvételt mutatnak az utolsó jó állapotról. 
+                Új nevezések ettől függetlenül érkezhetnek, a végleges kategóriák a nevezés lezárása után kerülnek megállapításra.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <a
+                  href="/docs/SBD_Next_ujonc_11.30.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between rounded-xl border border-red-500/80 bg-black/80 px-4 py-3 text-xs transition hover:bg-red-600/20"
+                >
+                  <span>
+                    Újonc kategória – ideiglenes lista
+                    <br />
+                    <span className="text-neutral-400">PDF megnyitása új ablakban</span>
+                  </span>
+                  <ExternalLink className="h-4 w-4 text-red-400" />
+                </a>
+                <a
+                  href="/docs/SBD_Next_versenyzo_11.30.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between rounded-xl border border-red-500/80 bg-black/80 px-4 py-3 text-xs transition hover:bg-red-600/20"
+                >
+                  <span>
+                    Versenyző kategória – ideiglenes lista
+                    <br />
+                    <span className="text-neutral-400">PDF megnyitása új ablakban</span>
+                  </span>
+                  <ExternalLink className="h-4 w-4 text-red-400" />
+                </a>
+              </div>
+            </CardContent>
+          </Card>
         </Section>
         <Section id="info" icon={Info} title="Versenyinformációk">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
