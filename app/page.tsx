@@ -1042,8 +1042,8 @@ function LeaderboardTable({
           </div>
         ) : (
           <>
-            <div className="max-h-[420px] overflow-y-auto overflow-x-auto rounded-xl border border-neutral-800 bg-black/80">
-              <table className="w-full min-w-[480px] sm:min-w-full text-xs sm:text-sm">
+            <div className="max-h-[420px] overflow-y-auto overflow-x-auto touch-pan-x rounded-xl border border-neutral-800 bg-black/80">
+              <table className="w-full min-w-[420px] sm:min-w-full text-xs sm:text-sm">
                 <thead className="bg-red-950/60 text-[11px] uppercase tracking-[0.16em] text-neutral-300">
                   <tr>
                     <th className="px-3 py-2 text-left">#</th>
