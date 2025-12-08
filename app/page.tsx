@@ -1043,7 +1043,7 @@ function LeaderboardTable({
         ) : (
           <>
             {/* Mobil: kártyákban, nincs swipe gond */}
-            <div className="space-y-2 sm:hidden">
+            <div className="space-y-2 md:hidden">
               {rows.map((row, idx) => (
                 <div
                   key={row.name + row.club + idx}
@@ -1062,7 +1062,7 @@ function LeaderboardTable({
             </div>
 
             {/* Desktop/tablet: táblázat marad */}
-            <div className="hidden max-h-[420px] overflow-y-auto rounded-xl border border-neutral-800 bg-black/80 sm:block">
+            <div className="hidden max-h-[420px] overflow-y-auto rounded-xl border border-neutral-800 bg-black/80 md:block">
               <table className="w-full min-w-full text-xs sm:text-sm">
                 <thead className="bg-red-950/60 text-[11px] uppercase tracking-[0.16em] text-neutral-300">
                   <tr>
