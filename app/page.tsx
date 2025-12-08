@@ -756,42 +756,45 @@ function RegistrationForm() {
             </div>
           </div>
 
-          {/* KLUB */}
-          <div>
-            <label className="text-sm">Egyesület / Klub (nem kötelező)</label>
-            <Input
-              value={data.club}
-              onChange={(e) => setData({ ...data, club: e.target.value })}
-              placeholder="—"
-            />
-          </div>
+                    {/* TESTSÚLY + KLUB EGY SORBAN */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {/* TESTSÚLY */}
+            <div>
+              <label className="text-sm font-semibold text-red-400">
+                Testsúly (kg) <span className="text-red-500">*</span>
+              </label>
+              <Input
+                className="border-red-500"
+                inputMode="numeric"
+                placeholder="pl. 83"
+                value={data.weight}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    weight: (e.target as HTMLInputElement).value,
+                  })
+                }
+                required
+              />
+              <p className="mt-1 text-[11px] text-neutral-400">
+                A versenyen tervezett testsúlyod, nagyjából ±3 kg pontossággal. A
+                beosztás miatt nagyon fontos adat!
+              </p>
+            </div>
 
-          {/* TESTSÚLY */}
-          <div>
-            <label className="text-sm font-semibold text-red-400">
-              Testsúly (kg) <span className="text-red-500">*</span>
-            </label>
-            <Input
-              className="border-red-500"
-              inputMode="numeric"
-              placeholder="pl. 83"
-              value={data.weight}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  weight: (e.target as HTMLInputElement).value,
-                })
-              }
-              required
-            />
-            <p className="mt-1 text-[11px] text-neutral-400">
-              A versenyen tervezett testsúlyod, nagyjából ±3 kg pontossággal. A
-              beosztás miatt nagyon fontos adat!
-            </p>
+            {/* KLUB */}
+            <div>
+              <label className="text-sm">Egyesület / Klub (nem kötelező)</label>
+              <Input
+                value={data.club}
+                onChange={(e) => setData({ ...data, club: e.target.value })}
+                placeholder="—"
+              />
+            </div>
           </div>
 
           {/* NEVEZÉSI SÚLYOK */}
-          <div className="sm:col-span-2 grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div>
               <label className="text-sm font-semibold text-red-400">
                 Guggolás – nevezési súly (kg){" "}
@@ -851,40 +854,42 @@ function RegistrationForm() {
                 required
               />
             </div>
-          </div>
 
-          <p className="mt-1 text-xs text-neutral-400">
-            Maradjunk a realitások talaján, a versenybeosztás miatt nagyon
-            fontos adat!
-          </p>
+            <p className="sm:col-span-3 mt-1 text-xs text-neutral-400">
+              Maradjunk a realitások talaján, a versenybeosztás miatt nagyon
+              fontos adat!
+            </p>
 
+            {/* MC + MEGJEGYZÉS EGY SORBAN */}
+            <div className="sm:col-span-3 mt-1 grid gap-3 sm:grid-cols-2">
+              {/* MC NOTES */}
+              <div>
+                <label className="text-sm">
+                  Rólad / bemondó szöveg (nem kötelező)
+                </label>
+                <Textarea
+                  value={data.mcNotes}
+                  onChange={(e) =>
+                    setData({ ...data, mcNotes: e.target.value })
+                  }
+                  placeholder="Pl. mióta edzel, miért jelentkeztél, milyen céljaid vannak."
+                />
+              </div>
 
-          {/* MC NOTES */}
-          <div>
-            <label className="text-sm">
-              Rólad / bemondó szöveg (nem kötelező)
-            </label>
-            <Textarea
-              value={data.mcNotes}
-              onChange={(e) =>
-                setData({ ...data, mcNotes: e.target.value })
-              }
-              placeholder="Pl. mióta edzel, miért jelentkeztél, milyen céljaid vannak."
-            />
-          </div>
-
-          {/* OTHER NOTES */}
-          <div>
-            <label className="text-sm">
-              Megjegyzés, kérés a szervezőknek (nem kötelező)
-            </label>
-            <Textarea
-              value={data.otherNotes}
-              onChange={(e) =>
-                setData({ ...data, otherNotes: e.target.value })
-              }
-              placeholder="Pl. külön kérés vagy egészségügyi infó."
-            />
+              {/* OTHER NOTES */}
+              <div>
+                <label className="text-sm">
+                  Megjegyzés, kérés a szervezőknek (nem kötelező)
+                </label>
+                <Textarea
+                  value={data.otherNotes}
+                  onChange={(e) =>
+                    setData({ ...data, otherNotes: e.target.value })
+                  }
+                  placeholder="Pl. külön kérés vagy egészségügyi infó."
+                />
+              </div>
+            </div>
           </div>
         </>
       )}
@@ -893,7 +898,7 @@ function RegistrationForm() {
       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
         {/* Bal oszlop: adatkezelés + prémium (csak a 2. lépésen) */}
         {step === 2 && (
-          <div className="space-y-2 max-w-md sm:w-1/2">
+          <div className="space-y-3 max-w-md sm:w-1/2">
             <div className="flex items-start gap-3">
               <Checkbox
                 id="consent"
@@ -923,25 +928,23 @@ function RegistrationForm() {
                 válogatás.
               </label>
             </div>
+
+            <Button
+              type="button"
+              onClick={() => setStep(1)}
+              className="w-full sm:w-auto h-11 sm:h-12 rounded-3xl border border-neutral-700 bg-black/60 px-6 text-sm sm:text-base font-semibold text-neutral-100 hover:border-red-500 hover:text-red-300 transition-all duration-200"
+            >
+              Vissza az alapadatokhoz
+            </Button>
           </div>
         )}
 
         {/* Jobb oszlop: gomb(ok) + díj szöveg */}
-        <div className="flex flex-col items-start gap-3 sm:flex-1">
-          {step === 2 && (
-            <Button
-              type="button"
-              onClick={() => setStep(1)}
-              className="w-full sm:w-auto h-12 sm:h-14 rounded-3xl border border-neutral-700 bg-black/60 px-6 text-sm sm:text-base font-semibold text-neutral-100 hover:border-red-500 hover:text-red-300 transition-all duration-200"
-            >
-              Vissza az alapadatokhoz
-            </Button>
-          )}
-
+        <div className="flex flex-col items-center gap-3 sm:flex-1">
           <Button
             type="submit"
             disabled={submitting || !effectiveRegOpen}
-            className="w-full sm:w-auto h-12 sm:h-14 rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 sm:px-10 text-sm sm:text-base font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
+            className="w-full sm:max-w-md h-14 sm:h-16 rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-10 sm:px-16 text-base sm:text-lg font-extrabold shadow-[0_0_70px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
           >
             {step === 1
               ? "Folytatom a nevezést"
@@ -950,7 +953,7 @@ function RegistrationForm() {
               : "Nevezés és fizetés"}
           </Button>
 
-          <div className="text-xs text-muted-foreground max-w-md text-left">
+          <div className="text-xs text-muted-foreground max-w-md text-center sm:text-left">
             A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
             <b>egyedi SBD versenypólót</b>.
           </div>
