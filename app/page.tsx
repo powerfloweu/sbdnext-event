@@ -1,4 +1,4 @@
-// temp: trigger redeploy
+// temp: trigger staging redeploy
 "use client";
 
 import {
@@ -352,10 +352,19 @@ function RegistrationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<1 | 2>(1);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    // Step 1: csak továbbléptetünk a részletes adatokhoz
+    if (step === 1) {
+      setError(null);
+      setStep(2);
+      return;
+    }
+
+    // Step 2: teljes validáció + webhook + Stripe (meglévő logika)
     if (!effectiveRegOpen) {
       setError("A nevezés ezen a felületen jelenleg nincs nyitva.");
       return;
@@ -440,23 +449,23 @@ function RegistrationForm() {
   // 🔒 Ha még NEM nyitott ki a nevezés: info + visszaszámláló
   if (!effectiveRegOpen && !done) {
     return (
-      <div className="space-y-4 rounded-2xl border border-yellow-500/40 bg-yellow-950/40 p-6 text-sm">
-        <div className="flex items-center gap-2 font-semibold text-yellow-200">
+      <div className="space-y-4 rounded-2xl border border-red-500/40 bg-red-950/40 p-6 text-sm">
+        <div className="flex items-center gap-2 font-semibold text-red-200">
           <AlertCircle className="h-5 w-5" />
           A nevezés még nem indult el.
         </div>
 
-        <p className="text-yellow-100/90">
+        <p className="text-red-100/90">
           A nevezési időszak:{" "}
           <b>{EVENT.deadlines.regOpen}</b> – <b>{EVENT.deadlines.regClose}</b>
         </p>
 
         {timeLeft && (
-          <div className="rounded-xl border border-yellow-500/40 bg-black/40 p-3">
-            <div className="text-xs uppercase tracking-[0.18em] text-yellow-200/80">
+          <div className="rounded-xl border border-red-500/40 bg-black/40 p-3">
+            <div className="text-xs uppercase tracking-[0.18em] text-red-200/80">
               Várható indulásig
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-sm text-yellow-50">
+            <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-sm text-red-50">
               <span>{timeLeft.days} nap</span>
               <span>
                 {timeLeft.hours.toString().padStart(2, "0")} óra
@@ -471,13 +480,13 @@ function RegistrationForm() {
           </div>
         )}
 
-        <p className="text-yellow-100/60">
+        <p className="text-red-100/60">
           Kövesd az Instát a friss infókért:{" "}
           <a
             href={EVENT.social.igPowerflow}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-yellow-200 underline hover:text-yellow-100"
+            className="text-red-200 underline hover:text-red-100"
           >
             @powerfloweu
           </a>{" "}
@@ -486,7 +495,7 @@ function RegistrationForm() {
             href={EVENT.social.igSbd}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-yellow-200 underline hover:text-yellow-100"
+            className="text-red-200 underline hover:text-red-100"
           >
             @sbd.hungary
           </a>
@@ -500,12 +509,12 @@ function RegistrationForm() {
   if (done) {
     if (waitlisted) {
       return (
-        <div className="rounded-2xl border border-yellow-500/40 bg-yellow-950/40 p-6 text-center">
-          <CheckCircle2 className="mx-auto h-10 w-10 text-yellow-300" />
-          <h3 className="mt-4 text-lg font-semibold text-yellow-100">
+        <div className="rounded-2xl border border-red-500/40 bg-red-950/40 p-6 text-center">
+          <CheckCircle2 className="mx-auto h-10 w-10 text-red-300" />
+          <h3 className="mt-4 text-lg font-semibold text-red-100">
             Felkerültél a várólistára.
           </h3>
-          <p className="mt-1 text-sm text-yellow-100/80">
+          <p className="mt-1 text-sm text-red-100/80">
             A nevezői létszám betelt, de a jelentkezésed{" "}
             <b>várólistára került</b>. Ha felszabadul hely, e-mailben keresünk.
           </p>
@@ -544,335 +553,412 @@ function RegistrationForm() {
         />
       </div>
 
-      {/* NÉV */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Vezetéknév <span className="text-red-500">*</span>
-          </label>
-          <Input
-  className="border-red-500"
-  value={data.lastName}
-  onChange={(e) => setData({ ...data, lastName: e.target.value })}
-  placeholder="Vezetéknév"
-  required
-/>
-        </div>
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Keresztnév <span className="text-red-500">*</span>
-          </label>
-          <Input
-  className="border-red-500"
-  value={data.firstName}
-  onChange={(e) => setData({ ...data, firstName: e.target.value })}
-  placeholder="Keresztnév"
-  required
-/>
-        </div>
-      </div>
+      {/* STEP 1 – Alapadatok */}
+      {step === 1 && (
+        <>
+          <div className="mb-1 text-neutral-300">
+            <span className="text-lg sm:text-xl font-extrabold text-red-400 tracking-wide">
+              1. Alapadatok
+            </span>
+          </div>
 
-      {/* E-MAIL */}
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          E-mail <span className="text-red-500">*</span>
-        </label>
-        <Input
-  className="border-red-500"
-  type="email"
-  value={data.email}
-  onChange={(e) => setData({ ...data, email: e.target.value })}
-  placeholder="nev@email.hu"
-  required
-/>
-      </div>
+          <div className="mb-4 flex items-center gap-3 text-neutral-300">
+            <span className="text-xs text-neutral-500 whitespace-nowrap">
+              1 / 2 lépés
+            </span>
+            <div className="h-1.5 w-full rounded-full bg-neutral-900/80">
+              <div className="h-full w-1/2 rounded-full bg-red-500 shadow-[0_0_12px_rgba(248,113,113,0.8)] transition-all duration-300" />
+            </div>
+          </div>
 
-      {/* KLUB */}
-      <div>
-        <label className="text-sm">Egyesület / Klub (nem kötelező)</label>
-        <Input
-          value={data.club}
-          onChange={(e) => setData({ ...data, club: e.target.value })}
-          placeholder="—"
-        />
-      </div>
+          {/* NÉV */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-sm font-semibold text-red-400">
+                Vezetéknév <span className="text-red-500">*</span>
+              </label>
+              <Input
+                className="border-red-500"
+                value={data.lastName}
+                onChange={(e) => setData({ ...data, lastName: e.target.value })}
+                placeholder="Vezetéknév"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-red-400">
+                Keresztnév <span className="text-red-500">*</span>
+              </label>
+              <Input
+                className="border-red-500"
+                value={data.firstName}
+                onChange={(e) =>
+                  setData({ ...data, firstName: e.target.value })
+                }
+                placeholder="Keresztnév"
+                required
+              />
+            </div>
+          </div>
 
-      {/* SZÜLETÉSI ÉV */}
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Születési év <span className="text-red-500">*</span>
-        </label>
-        <Input
-  className="border-red-500"
-  inputMode="numeric"
-  maxLength={4}
-  placeholder="pl. 1995"
-  value={data.birthYear}
-  onChange={(e) =>
-    setData({ ...data, birthYear: (e.target as HTMLInputElement).value })
-  }
-  required
-/>
-      </div>
+          {/* E-MAIL */}
+          <div>
+            <label className="text-sm font-semibold text-red-400">
+              E-mail <span className="text-red-500">*</span>
+            </label>
+            <Input
+              className="border-red-500"
+              type="email"
+              value={data.email}
+              onChange={(e) => setData({ ...data, email: e.target.value })}
+              placeholder="nev@email.hu"
+              required
+            />
+          </div>
 
-      {/* TESTSÚLY */}
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Testsúly (kg) <span className="text-red-500">*</span>
-        </label>
-        <Input
-          className="border-red-500"
-          inputMode="numeric"
-          placeholder="pl. 83"
-          value={data.weight}
-          onChange={(e) =>
-            setData({
-              ...data,
-              weight: (e.target as HTMLInputElement).value,
-            })
-          }
-          required
-        />
-        <p className="mt-1 text-[11px] text-neutral-400">
-          A versenyen tervezett testsúlyod, nagyjából ±3 kg pontossággal. A beosztás miatt nagyon fontos adat!
-        </p>
-      </div>
+          {/* SZÜLETÉSI ÉV */}
+          <div>
+            <label className="text-sm font-semibold text-red-400">
+              Születési év <span className="text-red-500">*</span>
+            </label>
+            <Input
+              className="border-red-500"
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="pl. 1995"
+              value={data.birthYear}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  birthYear: (e.target as HTMLInputElement).value,
+                })
+              }
+              required
+            />
+          </div>
 
-      {/* NEM */}
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Nem <span className="text-red-500">*</span>
-        </label>
+          {/* NEM */}
+          <div>
+            <label className="text-sm font-semibold text-red-400">
+              Nem <span className="text-red-500">*</span>
+            </label>
+            <Select
+              onValueChange={(v) => setData({ ...data, sex: v })}
+              value={data.sex}
+            >
+              <SelectTrigger className="border-red-500">
+                <SelectValue placeholder="Válassz" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Nő">Nő</SelectItem>
+                <SelectItem value="Férfi">Férfi</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+                    {/* Újonc / Versenyző */}
+          <div className="mt-2">
+            <label className="text-sm font-semibold text-red-400">
+              Újonc / Versenyző <span className="text-red-500">*</span>
+            </label>
+
+            <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-start">
+              <div className="sm:w-2/5">
                 <Select
-          onValueChange={(v) => setData({ ...data, sex: v })}
-          value={data.sex}
-        >
-          <SelectTrigger className="border-red-500">
-            <SelectValue placeholder="Válassz" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Nő">Nő</SelectItem>
-            <SelectItem value="Férfi">Férfi</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+                  onValueChange={(v) => setData({ ...data, division: v })}
+                  value={data.division}
+                >
+                  <SelectTrigger className="border-red-500 w-full">
+                    <SelectValue placeholder="Válassz" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT.divisions.map((d) => (
+                      <SelectItem key={d} value={d}>
+                        {d}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-      {/* DIVISION */}
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Újonc / Versenyző <span className="text-red-500">*</span>
-        </label>
-                <Select
-          onValueChange={(v) => setData({ ...data, division: v })}
-          value={data.division}
-        >
-          <SelectTrigger className="border-red-500">
-            <SelectValue placeholder="Válassz" />
-          </SelectTrigger>
-          <SelectContent>
-            {EVENT.divisions.map((d) => (
-              <SelectItem key={d} value={d}>
-                {d}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="mt-1 text-[11px] text-neutral-400">
-          Újonc: nem versenyeztél még Magyar Országos Bajnokságon (open, I.
-          osztály). Versenyző: az elmúlt 2 évben versenyeztél Magyar Országos
-          Bajnokságon és/vagy elérted a nemednek és súlycsoportodnak megfelelő
-          minősítési szintet.
-        </p>
-      </div>
+              <p className="text-[11px] text-neutral-400 leading-snug sm:w-3/5">
+                Újonc: nem versenyeztél még Magyar Országos Bajnokságon (open, I. osztály).<br />
+                Versenyző: az elmúlt 2 évben versenyeztél Magyar Országos Bajnokságon és/vagy
+                elérted a minősítési szintet.
+              </p>
+            </div>
+          </div>
 
-      {/* NEVEZÉSI SÚLYOK */}
-      <div className="sm:col-span-2 grid gap-3 sm:grid-cols-3">
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Guggolás – nevezési súly (kg) <span className="text-red-500">*</span>
-          </label>
-          <Input
-            className={!data.openerSquat.trim() ? "border-red-500" : ""}
-            inputMode="numeric"
-            placeholder="pl. 180"
-            value={data.openerSquat}
-            onChange={(e) =>
-              setData({
-                ...data,
-                openerSquat: (e.target as HTMLInputElement).value,
-              })
-            }
-            required
-          />
-        </div>
+                  {/* SHIRT */}
+          <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-sm font-semibold text-red-400">
+                Póló fazon <span className="text-red-500">*</span>
+              </label>
+              <Select
+                onValueChange={(v) => setData({ ...data, shirtCut: v })}
+                value={data.shirtCut}
+              >
+                <SelectTrigger className="border-red-500">
+                  <SelectValue placeholder="Válassz" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Női">Női</SelectItem>
+                  <SelectItem value="Férfi">Férfi</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-[11px] text-neutral-400">
+                Női póló: XS–3XL • Férfi póló: XS–4XL.
+              </p>
+            </div>
 
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Fekvenyomás – nevezési súly (kg)
-            <span className="text-red-500">*</span>
-          </label>
-          <Input
-            className={!data.openerBench.trim() ? "border-red-500" : ""}
-            inputMode="numeric"
-            placeholder="pl. 120"
-            value={data.openerBench}
-            onChange={(e) =>
-              setData({
-                ...data,
-                openerBench: (e.target as HTMLInputElement).value,
-              })
-            }
-            required
-          />
-        </div>
+            <div>
+              <label className="text-sm font-semibold text-red-400">
+                Pólóméret (SBD póló) <span className="text-red-500">*</span>
+              </label>
+              <Select
+                onValueChange={(v) => setData({ ...data, shirtSize: v })}
+                value={data.shirtSize}
+              >
+                <SelectTrigger className="border-red-500">
+                  <SelectValue placeholder="Válassz" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="XS">XS</SelectItem>
+                  <SelectItem value="S">S</SelectItem>
+                  <SelectItem value="M">M</SelectItem>
+                  <SelectItem value="L">L</SelectItem>
+                  <SelectItem value="XL">XL</SelectItem>
+                  <SelectItem value="2XL">2XL</SelectItem>
+                  <SelectItem value="3XL">3XL</SelectItem>
+                  <SelectItem value="4XL">4XL</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+</div>
+        </>
+      )}
+      {/* STEP 2 – Részletes nevezési adatok */}
+      {step === 2 && (
+        <>
+          <div className="mb-1 text-neutral-300">
+            <span className="text-lg sm:text-xl font-extrabold text-red-400 tracking-wide">
+              2. Sportolói adatok
+            </span>
+          </div>
 
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Felhúzás – nevezési súly (kg) <span className="text-red-500">*</span>
-          </label>
-          <Input
-            className={!data.openerDeadlift.trim() ? "border-red-500" : ""}
-            inputMode="numeric"
-            placeholder="pl. 220"
-            value={data.openerDeadlift}
-            onChange={(e) =>
-              setData({
-                ...data,
-                openerDeadlift: (e.target as HTMLInputElement).value,
-              })
-            }
-            required
-          />
-        </div>
-      </div>
+          <div className="mb-4 flex items-center gap-3 text-neutral-300">
+            <span className="text-xs text-neutral-500 whitespace-nowrap">
+              2 / 2 lépés
+            </span>
+            <div className="h-1.5 w-full rounded-full bg-neutral-900/80">
+              <div className="h-full w-full rounded-full bg-red-500 shadow-[0_0_12px_rgba(248,113,113,0.8)] transition-all duration-300" />
+            </div>
+          </div>
 
-      <p className="mt-1 text-xs text-neutral-400">
-        Maradjunk a realitások talaján, a versenybeosztás miatt nagyon fontos adat!
-      </p>
+          {/* KLUB */}
+          <div>
+            <label className="text-sm">Egyesület / Klub (nem kötelező)</label>
+            <Input
+              value={data.club}
+              onChange={(e) => setData({ ...data, club: e.target.value })}
+              placeholder="—"
+            />
+          </div>
 
-      {/* SHIRT */}
-      <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Póló fazon <span className="text-red-500">*</span>
-          </label>
-                    <Select
-            onValueChange={(v) => setData({ ...data, shirtCut: v })}
-            value={data.shirtCut}
-          >
-            <SelectTrigger className="border-red-500">
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Női">Női</SelectItem>
-              <SelectItem value="Férfi">Férfi</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="mt-1 text-[11px] text-neutral-400">
-            Női póló: XS–3XL • Férfi póló: XS–4XL.
+          {/* TESTSÚLY */}
+          <div>
+            <label className="text-sm font-semibold text-red-400">
+              Testsúly (kg) <span className="text-red-500">*</span>
+            </label>
+            <Input
+              className="border-red-500"
+              inputMode="numeric"
+              placeholder="pl. 83"
+              value={data.weight}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  weight: (e.target as HTMLInputElement).value,
+                })
+              }
+              required
+            />
+            <p className="mt-1 text-[11px] text-neutral-400">
+              A versenyen tervezett testsúlyod, nagyjából ±3 kg pontossággal. A
+              beosztás miatt nagyon fontos adat!
+            </p>
+          </div>
+
+          {/* NEVEZÉSI SÚLYOK */}
+          <div className="sm:col-span-2 grid gap-3 sm:grid-cols-3">
+            <div>
+              <label className="text-sm font-semibold text-red-400">
+                Guggolás – nevezési súly (kg){" "}
+                <span className="text-red-500">*</span>
+              </label>
+              <Input
+                className={!data.openerSquat.trim() ? "border-red-500" : ""}
+                inputMode="numeric"
+                placeholder="pl. 180"
+                value={data.openerSquat}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    openerSquat: (e.target as HTMLInputElement).value,
+                  })
+                }
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-red-400">
+                Fekvenyomás – nevezési súly (kg)
+                <span className="text-red-500">*</span>
+              </label>
+              <Input
+                className={!data.openerBench.trim() ? "border-red-500" : ""}
+                inputMode="numeric"
+                placeholder="pl. 120"
+                value={data.openerBench}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    openerBench: (e.target as HTMLInputElement).value,
+                  })
+                }
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-red-400">
+                Felhúzás – nevezési súly (kg){" "}
+                <span className="text-red-500">*</span>
+              </label>
+              <Input
+                className={!data.openerDeadlift.trim() ? "border-red-500" : ""}
+                inputMode="numeric"
+                placeholder="pl. 220"
+                value={data.openerDeadlift}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    openerDeadlift: (e.target as HTMLInputElement).value,
+                  })
+                }
+                required
+              />
+            </div>
+          </div>
+
+          <p className="mt-1 text-xs text-neutral-400">
+            Maradjunk a realitások talaján, a versenybeosztás miatt nagyon
+            fontos adat!
           </p>
-        </div>
 
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Pólóméret (SBD póló) <span className="text-red-500">*</span>
-          </label>
-                    <Select
-            onValueChange={(v) => setData({ ...data, shirtSize: v })}
-            value={data.shirtSize}
+
+          {/* MC NOTES */}
+          <div>
+            <label className="text-sm">
+              Rólad / bemondó szöveg (nem kötelező)
+            </label>
+            <Textarea
+              value={data.mcNotes}
+              onChange={(e) =>
+                setData({ ...data, mcNotes: e.target.value })
+              }
+              placeholder="Pl. mióta edzel, miért jelentkeztél, milyen céljaid vannak."
+            />
+          </div>
+
+          {/* OTHER NOTES */}
+          <div>
+            <label className="text-sm">
+              Megjegyzés, kérés a szervezőknek (nem kötelező)
+            </label>
+            <Textarea
+              value={data.otherNotes}
+              onChange={(e) =>
+                setData({ ...data, otherNotes: e.target.value })
+              }
+              placeholder="Pl. külön kérés vagy egészségügyi infó."
+            />
+          </div>
+        </>
+      )}
+
+       {/* SUBMIT + CHECKBOXOK RENDEZVE */}
+      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
+        {/* Bal oszlop: adatkezelés + prémium (csak a 2. lépésen) */}
+        {step === 2 && (
+          <div className="space-y-2 max-w-md sm:w-1/2">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="consent"
+                checked={data.consent}
+                onCheckedChange={(v: boolean | "indeterminate") =>
+                  setData({ ...data, consent: Boolean(v) })
+                }
+              />
+              <label htmlFor="consent" className="text-sm text-red-400">
+                Hozzájárulok az adataim kezeléséhez és elfogadom a verseny
+                szabályzatát. Tudomásul veszem, hogy a nevezés a{" "}
+                <b>fizetéssel</b> válik véglegessé.
+                <span className="text-red-500"> *</span>
+              </label>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="premium"
+                checked={data.premium}
+                onCheckedChange={(v: boolean | "indeterminate") =>
+                  setData({ ...data, premium: Boolean(v) })
+                }
+              />
+              <label htmlFor="premium" className="text-sm">
+                Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt
+                válogatás.
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Jobb oszlop: gomb(ok) + díj szöveg */}
+        <div className="flex flex-col items-start gap-3 sm:flex-1">
+          {step === 2 && (
+            <Button
+              type="button"
+              onClick={() => setStep(1)}
+              className="w-full sm:w-auto h-12 sm:h-14 rounded-3xl border border-neutral-700 bg-black/60 px-6 text-sm sm:text-base font-semibold text-neutral-100 hover:border-red-500 hover:text-red-300 transition-all duration-200"
+            >
+              Vissza az alapadatokhoz
+            </Button>
+          )}
+
+          <Button
+            type="submit"
+            disabled={submitting || !effectiveRegOpen}
+            className="w-full sm:w-auto h-12 sm:h-14 rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 sm:px-10 text-sm sm:text-base font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
           >
-            <SelectTrigger className="border-red-500">
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="XS">XS</SelectItem>
-              <SelectItem value="S">S</SelectItem>
-              <SelectItem value="M">M</SelectItem>
-              <SelectItem value="L">L</SelectItem>
-              <SelectItem value="XL">XL</SelectItem>
-              <SelectItem value="2XL">2XL</SelectItem>
-              <SelectItem value="3XL">3XL</SelectItem>
-              <SelectItem value="4XL">4XL</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+            {step === 1
+              ? "Folytatom a nevezést"
+              : submitting
+              ? "Tovább a fizetéshez…"
+              : "Nevezés és fizetés"}
+          </Button>
 
-      {/* MC NOTES */}
-      <div>
-        <label className="text-sm">
-          Rólad / bemondó szöveg (nem kötelező)
-        </label>
-        <Textarea
-          value={data.mcNotes}
-          onChange={(e) => setData({ ...data, mcNotes: e.target.value })}
-          placeholder="Pl. mióta edzel, miért jelentkeztél, milyen céljaid vannak."
-        />
-      </div>
-
-      {/* OTHER NOTES */}
-      <div>
-        <label className="text-sm">
-          Megjegyzés, kérés a szervezőknek (nem kötelező)
-        </label>
-        <Textarea
-          value={data.otherNotes}
-          onChange={(e) => setData({ ...data, otherNotes: e.target.value })}
-          placeholder="Pl. külön kérés vagy egészségügyi infó."
-        />
-      </div>
-
-      {/* CONSENT + PREMIUM */}
-      <div className="mt-2 space-y-2">
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="consent"
-            checked={data.consent}
-            onCheckedChange={(v: boolean | "indeterminate") =>
-              setData({ ...data, consent: Boolean(v) })
-            }
-          />
-          <label htmlFor="consent" className="text-sm text-red-400">
-            Hozzájárulok az adataim kezeléséhez és elfogadom a verseny
-            szabályzatát. Tudomásul veszem, hogy a nevezés a{" "}
-            <b>fizetéssel</b> válik véglegessé.
-            <span className="text-red-500"> *</span>
-          </label>
-        </div>
-
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="premium"
-            checked={data.premium}
-            onCheckedChange={(v: boolean | "indeterminate") =>
-              setData({ ...data, premium: Boolean(v) })
-            }
-          />
-          <label htmlFor="premium" className="text-sm">
-            Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt
-            válogatás.
-          </label>
-        </div>
-      </div>
-
-      {/* SUBMIT */}
-      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-        <Button
-          type="submit"
-          disabled={submitting || !effectiveRegOpen}
-          className="w-full sm:w-auto h-12 sm:h-14 rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 sm:px-10 text-sm sm:text-base font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
-        >
-          {submitting ? "Tovább a fizetéshez…" : "Nevezés és fizetés"}
-        </Button>
-
-        <div className="text-xs text-muted-foreground max-w-md text-left">
-          A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
-          <b>egyedi SBD versenypólót</b>.
+          <div className="text-xs text-muted-foreground max-w-md text-left">
+            A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
+            <b>egyedi SBD versenypólót</b>.
+          </div>
         </div>
       </div>
 
       {CAP_FULL && (
-        <p className="mt-2 text-xs text-yellow-300">
+        <p className="mt-2 text-xs text-red-300">
           A nevezői létszám jelenleg betelt, az űrlap kitöltésével{" "}
           <b>várólistára</b> tudsz jelentkezni. Fizetni csak akkor kell, ha
           e-mailben visszaigazoljuk.
@@ -881,6 +967,7 @@ function RegistrationForm() {
     </form>
   );
 }
+
 
 
 // ====== LEADERBOARD (online nevezési lista – TABOS, CSV) ======
@@ -1327,7 +1414,7 @@ export default function EventLanding() {
                     className="no-underline"
                   >
                     <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-100/80 bg-black/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white animate-pulse">
-                      <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
                       <div className="flex flex-col leading-tight">
                         <span>Nevezési határidő meghosszabbítva</span>
                         <span>Újonc felszerelés könnyítve</span>
@@ -1382,7 +1469,7 @@ export default function EventLanding() {
             <div className="mt-4 flex flex-row items-center justify-center gap-4 w-full max-w-5xl mx-auto">
               {/* Right pill – First-timers */}
               <div className="flex-1 rounded-full border border-red-900/70 bg-black/70 px-4 py-2 text-white shadow-[0_0_18px_rgba(127,29,29,0.7)] flex items-center gap-3 justify-center">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
+                <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
                 <span className="leading-snug text-center text-[0.85em]">
                   Első versenyeseknek is, IPF-szabályrendszerű<br />
                   háromfogásos erőemelő esemény.
@@ -1453,8 +1540,8 @@ export default function EventLanding() {
             id="deadline-changes"
             className="mt-4 grid gap-3 text-xs sm:text-sm scroll-mt-40"
           >
-            <div className="rounded-xl border border-yellow-600/70 bg-yellow-950/50 p-4 text-yellow-100">
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-300">
+            <div className="rounded-xl border border-red-600/70 bg-red-950/50 p-4 text-red-100">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-300">
                 Nevezési határidő - MÓDOSULT
               </div>
               <p className="mb-1">
@@ -1468,8 +1555,8 @@ export default function EventLanding() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-yellow-600/70 bg-yellow-950/40 p-4 text-yellow-100">
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-300">
+            <div className="rounded-xl border border-red-600/70 bg-red-950/40 p-4 text-red-100">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-300">
                 Újonc felszerelés – MÓDOSULT
               </div>
               <p className="mb-1">
@@ -1477,8 +1564,8 @@ export default function EventLanding() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-yellow-600/70 bg-yellow-950/40 p-4 text-yellow-100">
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-yellow-300">
+            <div className="rounded-xl border border-red-600/70 bg-red-950/40 p-4 text-red-100">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-300">
                 Díjazás
               </div>
               <div className="flex items-center gap-4 mb-0">
@@ -1795,14 +1882,14 @@ export default function EventLanding() {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-900/60 bg-black/60 px-3 py-1 text-[11px] text-red-200">
             {CAP_FULL ? (
               <>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-yellow-300" />
+                <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
                 <span>
                   A nevezői létszám jelenleg betelt. Az űrlap kitöltésével várólistára tudsz jelentkezni.
                 </span>
               </>
             ) : (
               <>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-lime-400" />
+                <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
                 <span>
                   Jelenleg {CAP_USED} / {CAP_LIMIT} nevezés érkezett, még{" "}
                   {CAP_REMAINING} hely szabad.
