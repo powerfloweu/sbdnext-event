@@ -1256,7 +1256,7 @@ export default function EventLanding() {
 
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden text-neutral-50">
+    <div className="relative min-h-screen text-neutral-50">
       {/* Globális háttér – rotáló hero képek (teljes oldalra) */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         {HERO_IMAGES.map((src, index) => (
