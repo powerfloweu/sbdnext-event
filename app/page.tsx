@@ -1041,39 +1041,44 @@ function LeaderboardTable({
             Még nincs aktív nevezés ebben a kategóriában.
           </div>
         ) : (
-          <div className="max-h-[420px] overflow-y-auto overflow-x-auto rounded-xl border border-neutral-800 bg-black/80">
-            <table className="w-full min-w-[480px] sm:min-w-full text-xs sm:text-sm">
-              <thead className="bg-red-950/60 text-[11px] uppercase tracking-[0.16em] text-neutral-300">
-                <tr>
-                  <th className="px-3 py-2 text-left">#</th>
-                  <th className="px-3 py-2 text-left">Név</th>
-                  <th className="px-3 py-2 text-left">Egyesület</th>
-                  <th className="px-3 py-2 text-right">Nevezési total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, idx) => (
-                  <tr
-                    key={row.name + row.club + idx}
-                    className={idx % 2 === 0 ? "bg-black" : "bg-neutral-950"}
-                  >
-                    <td className="px-3 py-1.5 text-left text-[11px] text-neutral-400">
-                      {idx + 1}
-                    </td>
-                    <td className="px-3 py-1.5 font-medium text-neutral-100">
-                      {row.name}
-                    </td>
-                    <td className="px-3 py-1.5 text-neutral-300">
-                      {row.club || "—"}
-                    </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-neutral-100">
-                      {row.total || "—"}
-                    </td>
+          <>
+            <div className="max-h-[420px] overflow-y-auto overflow-x-auto rounded-xl border border-neutral-800 bg-black/80">
+              <table className="w-full min-w-[480px] sm:min-w-full text-xs sm:text-sm">
+                <thead className="bg-red-950/60 text-[11px] uppercase tracking-[0.16em] text-neutral-300">
+                  <tr>
+                    <th className="px-3 py-2 text-left">#</th>
+                    <th className="px-3 py-2 text-left">Név</th>
+                    <th className="px-3 py-2 text-left">Egyesület</th>
+                    <th className="px-3 py-2 text-right">Nevezési total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {rows.map((row, idx) => (
+                    <tr
+                      key={row.name + row.club + idx}
+                      className={idx % 2 === 0 ? "bg-black" : "bg-neutral-950"}
+                    >
+                      <td className="px-3 py-1.5 text-left text-[11px] text-neutral-400">
+                        {idx + 1}
+                      </td>
+                      <td className="px-3 py-1.5 font-medium text-neutral-100">
+                        {row.name}
+                      </td>
+                      <td className="px-3 py-1.5 text-neutral-300">
+                        {row.club || "—"}
+                      </td>
+                      <td className="px-3 py-1.5 text-right tabular-nums text-neutral-100">
+                        {row.total || "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-1 text-[11px] text-neutral-500 sm:hidden">
+              Tipp: húzd oldalra a táblázatot, ha nem látszik a total oszlop.
+            </p>
+          </>
         )}
       </CardContent>
     </Card>
@@ -1090,7 +1095,6 @@ function Leaderboard() {
   >("ujoncNoi");
 
   const order = ["ujoncNoi", "ujoncFerfi", "versenyzoNoi", "versenyzoFerfi"] as const;
-  const touchStartXRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1119,25 +1123,6 @@ function Leaderboard() {
     };
   }, []);
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartXRef.current = e.touches[0]?.clientX ?? null;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    const startX = touchStartXRef.current;
-    if (startX == null) return;
-    const endX = e.changedTouches[0]?.clientX ?? startX;
-    const diff = endX - startX;
-    if (Math.abs(diff) < 50) return;
-
-    const currentIndex = order.indexOf(activeTab);
-    if (currentIndex === -1) return;
-
-    const nextIndex = diff < 0 ? currentIndex + 1 : currentIndex - 1;
-    if (nextIndex < 0 || nextIndex >= order.length) return;
-
-    setActiveTab(order[nextIndex]);
-  };
 
   return (
     <div className="space-y-4">
@@ -1195,11 +1180,7 @@ function Leaderboard() {
           <span>Versenyző – Férfiak</span>
         </button>
       </div>
-      <div
-        className="pt-2"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      <div className="pt-2">
         {activeTab === "ujoncNoi" && (
           <LeaderboardTable title="Újonc – Nők" rows={data.ujoncNoi ?? []} />
         )}
