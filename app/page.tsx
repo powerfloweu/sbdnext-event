@@ -1042,8 +1042,28 @@ function LeaderboardTable({
           </div>
         ) : (
           <>
-            <div className="max-h-[420px] overflow-y-auto overflow-x-auto touch-pan-x rounded-xl border border-neutral-800 bg-black/80">
-              <table className="w-full min-w-[420px] sm:min-w-full text-xs sm:text-sm">
+            {/* Mobil: kártyákban, nincs swipe gond */}
+            <div className="space-y-2 sm:hidden">
+              {rows.map((row, idx) => (
+                <div
+                  key={row.name + row.club + idx}
+                  className="rounded-xl border border-neutral-800 bg-black/70 p-3 text-xs text-neutral-100"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-neutral-400">#{idx + 1}</span>
+                    <span className="font-semibold tabular-nums">
+                      {row.total ? `${row.total} kg` : "—"}
+                    </span>
+                  </div>
+                  <div className="mt-1 font-semibold leading-tight">{row.name}</div>
+                  <div className="text-[11px] text-neutral-300">{row.club || "—"}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop/tablet: táblázat marad */}
+            <div className="hidden max-h-[420px] overflow-y-auto rounded-xl border border-neutral-800 bg-black/80 sm:block">
+              <table className="w-full min-w-full text-xs sm:text-sm">
                 <thead className="bg-red-950/60 text-[11px] uppercase tracking-[0.16em] text-neutral-300">
                   <tr>
                     <th className="px-3 py-2 text-left">#</th>
@@ -1075,9 +1095,6 @@ function LeaderboardTable({
                 </tbody>
               </table>
             </div>
-            <p className="mt-1 text-[11px] text-neutral-500 sm:hidden">
-              Tipp: húzd oldalra a táblázatot, ha nem látszik a total oszlop.
-            </p>
           </>
         )}
       </CardContent>
