@@ -25,6 +25,7 @@ import {
   AlertCircle,
   Link as LinkIcon,
   Trophy,
+  HandHeart,
 } from "lucide-react";
 
 import type { ComponentType } from "react";
@@ -205,6 +206,18 @@ type TimeLeft = {
   hours: number;
   minutes: number;
   seconds: number;
+};
+
+type VolunteerFormState = {
+  name: string;
+  day14: boolean;
+  day15: boolean;
+  shirtCut: string;
+  shirtSize: string;
+  submitting: boolean;
+  done: boolean;
+  error: string | null;
+  honeypot: string;
 };
 
 function validateRegistration(data: RegistrationData): string | null {
@@ -1102,6 +1115,213 @@ function LeaderboardTable({
   );
 }
 
+function VolunteerForm() {
+  const WEBHOOK_URL = process.env.NEXT_PUBLIC_VOLUNTEER_WEBHOOK || "";
+  const [state, setState] = useState<VolunteerFormState>({
+    name: "",
+    day14: false,
+    day15: false,
+    shirtCut: "",
+    shirtSize: "",
+    submitting: false,
+    done: false,
+    error: null,
+    honeypot: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (state.honeypot) return;
+
+    const name = state.name.trim();
+    if (!name) {
+      setState((s) => ({ ...s, error: "Kérlek add meg a neved." }));
+      return;
+    }
+
+    if (!state.day14 && !state.day15) {
+      setState((s) => ({
+        ...s,
+        error: "Válaszd ki, melyik napon tudsz segíteni.",
+      }));
+      return;
+    }
+
+    if (!state.shirtCut) {
+      setState((s) => ({ ...s, error: "Válaszd ki a póló fazonját." }));
+      return;
+    }
+
+    if (!state.shirtSize) {
+      setState((s) => ({ ...s, error: "Válaszd ki a pólóméretet." }));
+      return;
+    }
+
+    setState((s) => ({ ...s, submitting: true, error: null }));
+
+    const days = [];
+    if (state.day14) days.push("2026-02-14");
+    if (state.day15) days.push("2026-02-15");
+
+    const payload = {
+      timestamp: new Date().toISOString(),
+      name,
+      days,
+      shirtCut: state.shirtCut,
+      shirtSize: state.shirtSize,
+      page: "volunteer",
+    };
+
+    try {
+      if (WEBHOOK_URL) {
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+      }
+      setState((s) => ({ ...s, done: true }));
+    } catch {
+      setState((s) => ({
+        ...s,
+        error: "A beküldés nem sikerült, próbáld újra.",
+      }));
+    } finally {
+      setState((s) => ({ ...s, submitting: false }));
+    }
+  };
+
+  if (state.done) {
+    return (
+      <div className="rounded-2xl border border-green-600/60 bg-black/70 p-5 text-sm text-green-100">
+        <div className="flex items-center gap-2 font-semibold">
+          <CheckCircle2 className="h-5 w-5 text-green-400" />
+          Köszönjük, rögzítettük az önkéntes jelentkezésed.
+        </div>
+        <p className="mt-2 text-[12px] text-neutral-300">
+          Hamarosan e-mailben keresünk a részletekkel.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
+      <div className="hidden" aria-hidden="true">
+        <label>Ne töltsd ki ezt a mezőt</label>
+        <Input
+          tabIndex={-1}
+          autoComplete="off"
+          value={state.honeypot}
+          onChange={(e) => setState((s) => ({ ...s, honeypot: e.target.value }))}
+          placeholder="Hagyja üresen"
+        />
+      </div>
+
+      {state.error && (
+        <div className="flex items-center gap-2 text-sm text-red-400">
+          <AlertCircle className="h-4 w-4" /> {state.error}
+        </div>
+      )}
+
+      <div>
+        <label className="text-sm font-semibold text-red-400">
+          Név <span className="text-red-500">*</span>
+        </label>
+        <Input
+          className="border-red-500"
+          value={state.name}
+          onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
+          placeholder="Vezetéknév Keresztnév"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-semibold text-red-400">
+          Melyik napokon tudsz segíteni? <span className="text-red-500">*</span>
+        </label>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <label className="flex items-center gap-3 text-sm">
+            <Checkbox
+              checked={state.day14}
+              onCheckedChange={(v: boolean | "indeterminate") =>
+                setState((s) => ({ ...s, day14: Boolean(v) }))
+              }
+            />
+            <span>02.14 (szombat)</span>
+          </label>
+          <label className="flex items-center gap-3 text-sm">
+            <Checkbox
+              checked={state.day15}
+              onCheckedChange={(v: boolean | "indeterminate") =>
+                setState((s) => ({ ...s, day15: Boolean(v) }))
+              }
+            />
+            <span>02.15 (vasárnap)</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Póló fazon <span className="text-red-500">*</span>
+          </label>
+          <Select
+            onValueChange={(v) => setState((s) => ({ ...s, shirtCut: v }))}
+            value={state.shirtCut}
+          >
+            <SelectTrigger className="border-red-500">
+              <SelectValue placeholder="Válassz" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Női">Női</SelectItem>
+              <SelectItem value="Férfi">Férfi</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Pólóméret <span className="text-red-500">*</span>
+          </label>
+          <Select
+            onValueChange={(v) => setState((s) => ({ ...s, shirtSize: v }))}
+            value={state.shirtSize}
+          >
+            <SelectTrigger className="border-red-500">
+              <SelectValue placeholder="Válassz" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="XS">XS</SelectItem>
+              <SelectItem value="S">S</SelectItem>
+              <SelectItem value="M">M</SelectItem>
+              <SelectItem value="L">L</SelectItem>
+              <SelectItem value="XL">XL</SelectItem>
+              <SelectItem value="2XL">2XL</SelectItem>
+              <SelectItem value="3XL">3XL</SelectItem>
+              <SelectItem value="4XL">4XL</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Button
+        type="submit"
+        disabled={state.submitting}
+        className="h-12 rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 text-sm sm:text-base font-extrabold shadow-[0_0_50px_rgba(248,113,113,0.8)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
+      >
+        {state.submitting ? "Küldés…" : "Önkéntes jelentkezés elküldése"}
+      </Button>
+
+      <p className="text-[11px] text-neutral-400">
+        A megadott adatokat csak a verseny szervezése kapcsán használjuk fel és megosztjuk a szervezőcsapattal.
+      </p>
+    </form>
+  );
+}
+
 function Leaderboard() {
   const [data, setData] = useState<
     Partial<Record<keyof typeof LEADERBOARD_SOURCES, LeaderboardRow[]>>
@@ -1915,6 +2135,17 @@ export default function EventLanding() {
     érvényessé.
   </p>
 </Section>
+
+        <Section id="volunteers" icon={HandHeart} title="Önkéntes jelentkezés">
+          <p className="mb-3 text-sm text-neutral-200">
+            Ha önkéntesként segítenél a versenyen, töltsd ki az alábbi űrlapot. Pólót biztosítunk, a méret miatt kérjük, pontosan add meg az adatokat.
+          </p>
+          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
+            <CardContent className="p-6">
+              <VolunteerForm />
+            </CardContent>
+          </Card>
+        </Section>
 
         <Section id="faq" icon={Info} title="GYIK">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
