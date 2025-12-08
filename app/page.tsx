@@ -940,12 +940,13 @@ function RegistrationForm() {
         )}
 
         {/* Jobb oszlop: gomb(ok) + díj szöveg */}
-        <div className="flex flex-col items-center gap-3 sm:flex-1">
+        <div className="flex flex-col items-start gap-3 w-full sm:w-auto">
           <Button
             type="submit"
             disabled={submitting || !effectiveRegOpen}
-            className="w-full sm:max-w-md h-14 sm:h-16 rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-10 sm:px-16 text-base sm:text-lg font-extrabold shadow-[0_0_70px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
+            className="self-start w-fit h-12 sm:h-14 rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 sm:px-12 text-sm sm:text-base font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
           >
+            <ChevronRight className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
             {step === 1
               ? "Folytatom a nevezést"
               : submitting
@@ -953,7 +954,7 @@ function RegistrationForm() {
               : "Nevezés és fizetés"}
           </Button>
 
-          <div className="text-xs text-muted-foreground max-w-md text-center sm:text-left">
+          <div className="text-xs text-muted-foreground max-w-md text-left">
             A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
             <b>egyedi SBD versenypólót</b>.
           </div>
