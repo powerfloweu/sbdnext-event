@@ -26,6 +26,7 @@ import {
   Link as LinkIcon,
   Trophy,
   HandHeart,
+  ArrowRight,
 } from "lucide-react";
 
 import type { ComponentType } from "react";
@@ -52,6 +53,7 @@ const CAP_REMAINING = Math.max(0, CAP_LIMIT - CAP_USED);
 const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
 const FORCE_REG_OPEN =
   (process.env.NEXT_PUBLIC_FORCE_REG_OPEN ?? "").toLowerCase() === "true";
+const SHOW_VOLUNTEERS = false;
 
 // A nevezés indulásának fix időpontja (CET)
 const REG_OPEN_AT = new Date("2025-11-20T20:00:00+01:00");
@@ -1559,6 +1561,11 @@ export default function EventLanding() {
               <a href="#faq" className="hover:text-red-300">
                 GYIK
               </a>
+              {SHOW_VOLUNTEERS && (
+                <a href="#volunteers" className="hover:text-red-300">
+                  Önkéntesek
+                </a>
+              )}
             </div>
 
             <a
@@ -1630,27 +1637,28 @@ export default function EventLanding() {
                     </Button>
                   </a>
                 </div>
+
                 <div className="flex justify-center">
                   <a
-                    href="#deadline-changes"
+                    href="/docs/SBD_Next_versenykiiras.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="no-underline"
                   >
-                    <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-100/80 bg-black/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white animate-pulse">
-                      <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
-                      <div className="flex flex-col leading-tight">
-                        <span>Nevezési határidő meghosszabbítva</span>
-                        <span>Újonc felszerelés könnyítve</span>
-                      </div>
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-100/80 bg-black/80 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white hover:border-red-400 hover:text-red-200 transition">
+                      <span className="h-2 w-2 rounded-full bg-red-400" />
+                      <span>Versenykiírás</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
                     </div>
                   </a>
                 </div>
 
 
                 {/* Versenykiírás – rövid magyarázat */}
-                <div className="space-y-1 text-[11px] text-neutral-300">
+                <div className="space-y-1 text-[12px] text-neutral-300">
                   <span>
-                    A részletes versenykiírást és szabályokat a lenti szekciókban találod. 
-                    A nevezési lista pedig online, automatikusan frissül a Google Sheets adatai alapján.
+                    A részletes versenykiírást és szabályokat a fenti szekciókban találod. 
+                    (külön ablakban megnyíló PDF)
                   </span>
                 </div>
 
@@ -1762,30 +1770,6 @@ export default function EventLanding() {
             id="deadline-changes"
             className="mt-4 grid gap-3 text-xs sm:text-sm scroll-mt-40"
           >
-            <div className="rounded-xl border border-red-600/70 bg-red-950/50 p-4 text-red-100">
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-300">
-                Nevezési határidő - MÓDOSULT
-              </div>
-              <p className="mb-1">
-                A versenyszervezés kezdeti szakaszában nem láttunk előre néhány fontos részletet, amelyek a folyamatos visszajelzésekből most körvonalazódnak.
-              </p>
-              <p className="mb-1">
-                Az első legfontosabb ezek közül az, hogy a versenynaptár telítettsége miatt a verseny időpontja és beharangozása, valamint a nevezési határidő között igen kevés idő állt rendelkezésre.
-              </p>
-              <p className="mb-1">
-                Ezt szeretnénk kompenzálni azzal a könnyítéssel, hogy a nevezési határidőt meghosszabbítottuk 2026. január 7, 23:59 percig.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-red-600/70 bg-red-950/40 p-4 text-red-100">
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-300">
-                Újonc felszerelés – MÓDOSULT
-              </div>
-              <p className="mb-1">
-                Újonc kategóriában testhez simuló rövid- vagy hosszúnadrág és felső elegendő. Rövid nadrág esetén a felhúzáshoz szükséges a hosszú szárú zokni.
-              </p>
-            </div>
-
             <div className="rounded-xl border border-red-600/70 bg-red-950/40 p-4 text-red-100">
               <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-red-300">
                 Díjazás
@@ -2126,26 +2110,34 @@ export default function EventLanding() {
             </CardContent>
           </Card>
 
-  <p className="mt-4 text-xs text-neutral-400">
-    A nevezők maximális létszámának elérése után minden új jelentkező
-    automatikusan várólistára kerül. A felszabaduló helyeket a
-    várólistán szereplők jelentkezési sorrendben kapják meg, a
-    szervezők egyéni e-mailes értesítése alapján. A várólistáról való
-    bekerülés a visszaigazolás és a nevezési díj befizetése után válik
-    érvényessé.
-  </p>
-</Section>
-
-        <Section id="volunteers" icon={HandHeart} title="Önkéntes jelentkezés">
-          <p className="mb-3 text-sm text-neutral-200">
-            Ha önkéntesként segítenél a versenyen, töltsd ki az alábbi űrlapot. Pólót biztosítunk, a méret miatt kérjük, pontosan add meg az adatokat.
+          <p className="mt-4 text-xs text-neutral-400">
+            A nevezők maximális létszámának elérése után minden új jelentkező
+            automatikusan várólistára kerül. A felszabaduló helyeket a
+            várólistán szereplők jelentkezési sorrendben kapják meg, a
+            szervezők egyéni e-mailes értesítése alapján. A várólistáról való
+            bekerülés a visszaigazolás és a nevezési díj befizetése után válik
+            érvényessé.
           </p>
-          <Card className="rounded-2xl border border-neutral-800 bg-black/70">
-            <CardContent className="p-6">
-              <VolunteerForm />
-            </CardContent>
-          </Card>
         </Section>
+
+        {SHOW_VOLUNTEERS && (
+          <Section id="volunteers" icon={HandHeart} title="Önkéntes jelentkezés">
+            <div className="flex flex-col gap-3 rounded-2xl border border-neutral-800 bg-black/70 p-6 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-neutral-200">
+                  Ha önkéntesként segítenél, itt tudsz jelentkezni!
+                </p>
+              </div>
+              <a
+                href="/volunteers"
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-4 py-2.5 text-xs sm:text-sm font-bold text-neutral-50 shadow-[0_0_24px_rgba(248,113,113,0.7)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200 text-center"
+              >
+                Önkéntes jelentkezés
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
+            </div>
+          </Section>
+        )}
 
         <Section id="faq" icon={Info} title="GYIK">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
