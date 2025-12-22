@@ -9,6 +9,7 @@ import {
   type ReactNode,
   type ChangeEvent,
 } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   CalendarDays,
@@ -54,6 +55,9 @@ const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
 const FORCE_REG_OPEN =
   (process.env.NEXT_PUBLIC_FORCE_REG_OPEN ?? "").toLowerCase() === "true";
 const SHOW_VOLUNTEERS = false;
+
+// Staging környezet ellenőrzése az utólagos prémium média vásárláshoz
+const IS_STAGING = process.env.NEXT_PUBLIC_ENV === "reg-staging";
 
 // A nevezés indulásának fix időpontja (CET)
 const REG_OPEN_AT = new Date("2025-11-20T20:00:00+01:00");
@@ -2027,6 +2031,21 @@ export default function EventLanding() {
                   value={`${pricePremium} ${EVENT.fees.currency}`}
                   note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
                 />
+                
+                {IS_STAGING && (
+                  <div className="mt-4 rounded-lg border border-red-500/40 bg-red-950/20 p-4">
+                    <p className="mb-3 text-sm text-neutral-300">
+                      Már neveztél, de szeretnéd utólag megvásárolni a prémium média csomagot?
+                    </p>
+                    <Link href="/premium-media">
+                      <Button className="w-full rounded-full bg-red-600 hover:bg-red-700 font-semibold">
+                        Prémium média csomag vásárlása
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+                
                 <div className="mt-4 text-xs text-neutral-300">
                   A dobogósok – helyezéstől függően – SBD vásárlási utalványt, táplálék-kiegészítőket, PowerFlow kurzust és konzultációt, valamint Avancus cipőt kapnak.
                 </div>
