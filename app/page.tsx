@@ -54,7 +54,7 @@ const CAP_REMAINING = Math.max(0, CAP_LIMIT - CAP_USED);
 const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
 const FORCE_REG_OPEN =
   (process.env.NEXT_PUBLIC_FORCE_REG_OPEN ?? "").toLowerCase() === "true";
-const SHOW_VOLUNTEERS = false;
+const SHOW_VOLUNTEERS = true;
 
 // Staging környezet ellenőrzése az utólagos prémium média vásárláshoz
 const IS_STAGING = process.env.NEXT_PUBLIC_ENV === "reg-staging";
@@ -2121,24 +2121,7 @@ export default function EventLanding() {
         </Section>
 
         <Section id="register" icon={Dumbbell} title="Nevezés">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-900/60 bg-black/60 px-3 py-1 text-[11px] text-red-200">
-            {CAP_FULL ? (
-              <>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
-                <span>
-                  A nevezői létszám jelenleg betelt. Az űrlap kitöltésével várólistára tudsz jelentkezni.
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
-                <span>
-                  Jelenleg {CAP_USED} / {CAP_LIMIT} nevezés érkezett, még{" "}
-                  {CAP_REMAINING} hely szabad.
-                </span>
-              </>
-            )}
-          </div>
+          {/* Kapacitás chip deaktiválva */}
 
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="p-6">
@@ -2158,20 +2141,11 @@ export default function EventLanding() {
 
         {SHOW_VOLUNTEERS && (
           <Section id="volunteers" icon={HandHeart} title="Önkéntes jelentkezés">
-            <div className="flex flex-col gap-3 rounded-2xl border border-neutral-800 bg-black/70 p-6 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-neutral-200">
-                  Ha önkéntesként segítenél, itt tudsz jelentkezni!
-                </p>
-              </div>
-              <a
-                href="/volunteers"
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-4 py-2.5 text-xs sm:text-sm font-bold text-neutral-50 shadow-[0_0_24px_rgba(248,113,113,0.7)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200 text-center"
-              >
-                Önkéntes jelentkezés
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
-            </div>
+            <Card className="rounded-2xl border border-neutral-800 bg-black/80">
+              <CardContent className="p-6">
+                <VolunteerForm />
+              </CardContent>
+            </Card>
           </Section>
         )}
 
