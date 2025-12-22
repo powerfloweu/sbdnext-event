@@ -2017,7 +2017,7 @@ export default function EventLanding() {
                 <PriceRow
                   label="Nevezési díj"
                   value={`${priceEntry} ${EVENT.fees.currency}`}
-                  note="Tartalmazza a media csomagot (menő fotók rólad) és az egyedi SBD pólót. A profi fotókról és videókról 5 fős csapat gondoskodik."
+                  note="Tartalmazza a media csomagot (menő fotók rólad) és az egyedi SBD pólót. A profi fotókról és videókról 4 fős csapat gondoskodik."
                 />
 
                 <PriceRow
@@ -2029,7 +2029,7 @@ export default function EventLanding() {
                 <PriceRow
                   label="Prémium média csomag (nem kötelező)"
                   value={`${pricePremium} ${EVENT.fees.currency}`}
-                  note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
+                  note="3 fotó + 3 videó. A profi fotókról és videókról 4 fős csapat gondoskodik!"
                 />
                 
                 {IS_STAGING && (

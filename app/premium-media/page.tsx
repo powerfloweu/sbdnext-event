@@ -15,19 +15,13 @@ const PREMIUM_MEDIA_PRICE = 24990;
 const PREMIUM_PAYMENT_LINK = "https://buy.stripe.com/3cIdRabMbfhkeUb6IT1ck03";
 
 interface FormData {
-  firstName: string;
-  lastName: string;
   email: string;
-  registrationEmail: string;
   honeypot: string;
 }
 
 export default function PremiumMediaPage() {
   const [data, setData] = useState<FormData>({
-    firstName: "",
-    lastName: "",
     email: "",
-    registrationEmail: "",
     honeypot: "",
   });
 
@@ -86,20 +80,8 @@ export default function PremiumMediaPage() {
     if (data.honeypot.trim().length > 0) return;
 
     // Validáció
-    if (!data.lastName.trim()) {
-      setError("Kérlek add meg a vezetékneved.");
-      return;
-    }
-    if (!data.firstName.trim()) {
-      setError("Kérlek add meg a keresztneved.");
-      return;
-    }
     if (!data.email.trim() || !/.+@.+\..+/.test(data.email)) {
       setError("Kérlek valós e-mail címet adj meg.");
-      return;
-    }
-    if (!data.registrationEmail.trim() || !/.+@.+\..+/.test(data.registrationEmail)) {
-      setError("Kérlek add meg a nevezéskor használt e-mail címet.");
       return;
     }
 
@@ -195,7 +177,7 @@ export default function PremiumMediaPage() {
           </div>
           
           <p className="text-neutral-300">
-            Utólagos vásárlás versenyzőknek, akik már neveztek az SBD Next versenyre.
+            Utólagos vásárlás sportolóknak, akik már neveztek az SBD Next versenyre.
           </p>
         </motion.div>
 
@@ -226,7 +208,7 @@ export default function PremiumMediaPage() {
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-400" />
                   <span>
-                    5 fős profi média csapat gondoskodik a tartalmakról
+                    4 fős profi média csapat gondoskodik a tartalmakról
                   </span>
                 </li>
               </ul>
@@ -251,9 +233,8 @@ export default function PremiumMediaPage() {
         >
           <Card className="rounded-2xl border border-neutral-800 bg-black/70 backdrop-blur-sm">
             <CardContent className="p-6 sm:p-8">
-              <h2 className="mb-6 text-xl font-semibold text-neutral-100">
-                Vásárlási adatok
-              </h2>
+              <h2 className="mb-2 text-xl font-semibold text-neutral-100">Vásárlási adatok</h2>
+              <p className="mb-6 text-sm text-neutral-400">Add meg az e-mail címedet (lehetőleg a nevezéskor használt e-mail címet).</p>
 
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 {error && (
@@ -274,34 +255,6 @@ export default function PremiumMediaPage() {
                   />
                 </div>
 
-                {/* Név mezők */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-red-400">
-                      Vezetéknév <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      value={data.lastName}
-                      onChange={(e) => setData({ ...data, lastName: e.target.value })}
-                      placeholder="Vezetéknév"
-                      className="border-red-500/50"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-red-400">
-                      Keresztnév <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      value={data.firstName}
-                      onChange={(e) => setData({ ...data, firstName: e.target.value })}
-                      placeholder="Keresztnév"
-                      className="border-red-500/50"
-                      required
-                    />
-                  </div>
-                </div>
-
                 {/* E-mail cím */}
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-red-400">
@@ -317,28 +270,6 @@ export default function PremiumMediaPage() {
                   />
                 </div>
 
-                {/* Nevezéskor használt e-mail */}
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-red-400">
-                    Nevezéskor használt e-mail cím{" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="email"
-                    value={data.registrationEmail}
-                    onChange={(e) =>
-                      setData({ ...data, registrationEmail: e.target.value })
-                    }
-                    placeholder="Az e-mail, amivel neveztél"
-                    className="border-red-500/50"
-                    required
-                  />
-                  <p className="mt-1 text-xs text-neutral-400">
-                    Add meg azt az e-mail címet, amit a versenyre való nevezéskor használtál,
-                    hogy össze tudjuk kötni a megrendelést a nevezéseddel.
-                  </p>
-                </div>
-
                 {/* Info box */}
                 <div className="rounded-lg border border-blue-500/30 bg-blue-950/20 p-4">
                   <div className="flex gap-3">
@@ -349,7 +280,7 @@ export default function PremiumMediaPage() {
                       </p>
                       <p>
                         A fizetés után visszaigazoló e-mailt küldünk. A fotókat és
-                        videókat a verseny után 2-3 héten belül kapod meg e-mailben.
+                        videókat a verseny után legkésőbb 96 órán belül kapod meg e-mailben.
                       </p>
                     </div>
                   </div>
