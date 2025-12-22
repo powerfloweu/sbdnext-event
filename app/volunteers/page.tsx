@@ -16,13 +16,19 @@ export default function VolunteersPage() {
           >
             <ArrowLeft className="h-4 w-4" /> Vissza a főoldalra
           </Link>
-          <div className="flex items-center gap-2 rounded-full border border-red-900/60 bg-red-950/40 px-3 py-1 text-[11px] text-red-200">
-            <HandHeart className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 rounded-full border border-red-900/60 bg-red-950/40 px-4 py-2 text-sm text-red-200">
+            <HandHeart className="h-4 w-4" />
             Önkéntes jelentkezés
           </div>
         </div>
 
         <div className="rounded-3xl border border-red-900/60 bg-neutral-950/70 p-6 shadow-[0_0_40px_rgba(248,113,113,0.15)] sm:p-8">
+          <div className="mb-6 rounded-xl border border-red-500/50 bg-red-950/30 p-4 text-center">
+            <p className="text-base font-semibold text-red-100">
+              🍔 Önkénteseknek étel-ital és póló jár! 👕
+            </p>
+          </div>
+
           <div className="space-y-2 pb-4">
             <p className="text-sm text-neutral-200">
               Köszönjük, hogy segítenél a verseny lebonyolításában! Válaszd ki, melyik napokon tudsz jönni, milyen pozícióban dolgoznál, és add meg a póló adataidat.

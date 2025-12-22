@@ -287,10 +287,6 @@ export function VolunteerForm() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-3 text-sm text-neutral-200">
-        Önkénteseknek étel-ital és póló jár!
-      </div>
-
       <Button
         type="submit"
         disabled={state.submitting}
