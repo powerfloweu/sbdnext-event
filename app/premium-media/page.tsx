@@ -15,12 +15,14 @@ const PREMIUM_MEDIA_PRICE = 24990;
 const PREMIUM_PAYMENT_LINK = "https://buy.stripe.com/3cIdRabMbfhkeUb6IT1ck03";
 
 interface FormData {
+  name: string;
   email: string;
   honeypot: string;
 }
 
 export default function PremiumMediaPage() {
   const [data, setData] = useState<FormData>({
+    name: "",
     email: "",
     honeypot: "",
   });
@@ -80,6 +82,10 @@ export default function PremiumMediaPage() {
     if (data.honeypot.trim().length > 0) return;
 
     // Validáció
+    if (!data.name.trim()) {
+      setError("Kérlek add meg a neved.");
+      return;
+    }
     if (!data.email.trim() || !/.+@.+\..+/.test(data.email)) {
       setError("Kérlek valós e-mail címet adj meg.");
       return;
@@ -234,7 +240,20 @@ export default function PremiumMediaPage() {
           <Card className="rounded-2xl border border-neutral-800 bg-black/70 backdrop-blur-sm">
             <CardContent className="p-6 sm:p-8">
               <h2 className="mb-2 text-xl font-semibold text-neutral-100">Vásárlási adatok</h2>
-              <p className="mb-6 text-sm text-neutral-400">Add meg az e-mail címedet (lehetőleg a nevezéskor használt e-mail címet).</p>
+              <p className="mb-6 text-sm text-neutral-400">Add meg a neved és az e-mail címed (lehetőleg a nevezéskor használt e-mail címet).</p>
+                {/* Név */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-red-400">
+                    Név <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    value={data.name}
+                    onChange={(e) => setData({ ...data, name: e.target.value })}
+                    placeholder="Vezetéknév Keresztnév"
+                    className="border-red-500/50"
+                    required
+                  />
+                </div>
 
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 {error && (

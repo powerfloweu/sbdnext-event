@@ -1588,6 +1588,23 @@ export default function EventLanding() {
         </div>
       </nav>
 
+      {/* STAGING-ONLY CTA – Prémium média utólagos vásárlás */}
+      {IS_STAGING && (
+        <div className="mx-auto max-w-5xl px-4 py-3">
+          <div className="flex flex-col gap-2 rounded-2xl border border-red-900/50 bg-black/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-neutral-200">
+              <span className="font-semibold text-red-300">Prémium média csomag</span> — utólagos vásárlás sportolóknak.
+            </div>
+            <Link href="/premium-media" className="inline-flex">
+              <Button className="inline-flex items-center rounded-full bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-bold">
+                Prémium média csomag vásárlása
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* HERO */}
       <header className="relative text-white">
         {/* Tartalom */}
