@@ -2050,7 +2050,7 @@ export default function EventLanding() {
                 />
                 
                 {IS_STAGING && (
-                  <div className="mt-4 rounded-lg border border-red-500/40 bg-red-950/20 p-4">
+                  <div className="mt-4 rounded-lg border border-red-500/40 bg-red-950/20 p-4 text-center max-w-md mx-auto">
                     <p className="mb-3 text-sm text-neutral-300">
                       Már neveztél, de szeretnéd utólag megvásárolni a prémium média csomagot?
                     </p>
