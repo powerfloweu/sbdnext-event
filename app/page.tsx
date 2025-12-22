@@ -1920,16 +1920,6 @@ export default function EventLanding() {
           </p>
         </Section>
 
-        {SHOW_VOLUNTEERS && (
-          <Section id="volunteers" icon={HandHeart} title="Önkéntes jelentkezés">
-            <Card className="rounded-2xl border border-neutral-800 bg-black/80">
-              <CardContent className="p-6">
-                <VolunteerForm />
-              </CardContent>
-            </Card>
-          </Section>
-        )}
-
         <Section id="faq" icon={Info} title="GYIK">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
