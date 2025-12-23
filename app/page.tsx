@@ -1,3 +1,5 @@
+"use client";
+// ...existing code...
 import React, { useState, useEffect, ReactNode } from "react";
 import { ArrowRight, AlertCircle, ChevronRight, Trophy, CalendarDays, Timer, MapPin, ExternalLink, Dumbbell, Info, ShieldCheck, LinkIcon, Mail } from "lucide-react";
 import { Input } from "../components/ui/input";
