@@ -16,6 +16,7 @@ import {
 
 export type VolunteerFormState = {
   name: string;
+  email: string;
   day14: boolean;
   day15: boolean;
   bothDays: boolean;
@@ -35,6 +36,7 @@ export function VolunteerForm() {
 
   const [state, setState] = useState<VolunteerFormState>({
     name: "",
+    email: "",
     day14: false,
     day15: false,
     bothDays: false,
@@ -54,6 +56,18 @@ export function VolunteerForm() {
     const name = state.name.trim();
     if (!name) {
       setState((s) => ({ ...s, error: "Kérlek add meg a neved." }));
+      return;
+    }
+
+    const email = state.email.trim();
+    if (!email) {
+      setState((s) => ({ ...s, error: "Kérlek add meg az e-mail címed." }));
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setState((s) => ({ ...s, error: "Kérlek add meg egy érvényes e-mail címet." }));
       return;
     }
 
@@ -94,6 +108,7 @@ export function VolunteerForm() {
     const payload = {
       timestamp: new Date().toISOString(),
       name,
+      email,
       days,
       position: state.position,
       shirtCut: state.shirtCut,
@@ -166,17 +181,32 @@ export function VolunteerForm() {
         </div>
       )}
 
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Név <span className="text-red-500">*</span>
-        </label>
-        <Input
-          className="border-red-500"
-          value={state.name}
-          onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
-          placeholder="Vezetéknév Keresztnév"
-          required
-        />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            Név <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className="border-red-500"
+            value={state.name}
+            onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
+            placeholder="Vezetéknév Keresztnév"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-red-400">
+            E-mail <span className="text-red-500">*</span>
+          </label>
+          <Input
+            className="border-red-500"
+            type="email"
+            value={state.email}
+            onChange={(e) => setState((s) => ({ ...s, email: e.target.value }))}
+            placeholder="email@example.com"
+            required
+          />
+        </div>
       </div>
 
       <div>
