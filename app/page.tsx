@@ -979,19 +979,7 @@ function RegistrationForm() {
 
 
 
-=======
-// ...existing code...
-import React, { useState, useEffect, ReactNode } from "react";
-import { ArrowRight, AlertCircle, ChevronRight, Trophy, CalendarDays, Timer, MapPin, ExternalLink, Dumbbell, Info, ShieldCheck, LinkIcon, Mail } from "lucide-react";
-import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui/select";
-import { Checkbox } from "../components/ui/checkbox";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import Link from "next/link";
-import { EVENT, REG_DEADLINE_AT, CAP_FULL, IS_STAGING, SHOW_VOLUNTEERS, HERO_IMAGES, effectiveRegOpen } from "../lib/utils";
->>>>>>> main
+
 // ====== LEADERBOARD (online nevezési lista – TABOS, CSV) ======
 
 type LeaderboardRow = {

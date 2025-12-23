@@ -38,8 +38,6 @@ export function VolunteerForm() {
     email: "",
     day14: false,
     day15: false,
-=======
->>>>>>> main
     bothDays: false,
     shirtCut: "",
     shirtSize: "",
