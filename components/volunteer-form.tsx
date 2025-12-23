@@ -247,31 +247,31 @@ export function VolunteerForm() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Preferált pozíció <span className="text-red-500">*</span>
-          </label>
-          <Select
-            onValueChange={(v) => setState((s) => ({ ...s, position: v }))}
-            value={state.position}
-          >
-            <SelectTrigger className="border-red-500">
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="higiéniai felelős">higiéniai felelős</SelectItem>
-              <SelectItem value="terelő">terelő</SelectItem>
-              <SelectItem value="karszalag felelős">karszalag felelős</SelectItem>
-              <SelectItem value="admin">admin</SelectItem>
-              <SelectItem value="biztonsági">biztonsági</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="mt-1 text-xs text-neutral-400">
-            Minden pozícióra várunk jelentkezőt; ha valamelyikre nincs elég ember, a szervezők jelölik ki a beosztást.
-          </p>
-        </div>
+      <div>
+        <label className="text-sm font-semibold text-red-400">
+          Preferált pozíció <span className="text-red-500">*</span>
+        </label>
+        <Select
+          onValueChange={(v) => setState((s) => ({ ...s, position: v }))}
+          value={state.position}
+        >
+          <SelectTrigger className="border-red-500">
+            <SelectValue placeholder="Válassz" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="higiéniai felelős">higiéniai felelős</SelectItem>
+            <SelectItem value="terelő">terelő</SelectItem>
+            <SelectItem value="karszalag felelős">karszalag felelős</SelectItem>
+            <SelectItem value="admin">admin</SelectItem>
+            <SelectItem value="biztonsági">biztonsági</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="mt-1 text-xs text-neutral-400">
+          Minden pozícióra várunk jelentkezőt; ha valamelyikre nincs elég ember, a szervezők jelölik ki a beosztást.
+        </p>
+      </div>
 
+      <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="text-sm font-semibold text-red-400">
             Póló fazon <span className="text-red-500">*</span>
