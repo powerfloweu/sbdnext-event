@@ -1,6 +1,4 @@
-// temp: trigger staging redeploy
 "use client";
-
 import {
   useEffect,
   useMemo,
@@ -981,6 +979,19 @@ function RegistrationForm() {
 
 
 
+=======
+// ...existing code...
+import React, { useState, useEffect, ReactNode } from "react";
+import { ArrowRight, AlertCircle, ChevronRight, Trophy, CalendarDays, Timer, MapPin, ExternalLink, Dumbbell, Info, ShieldCheck, LinkIcon, Mail } from "lucide-react";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui/select";
+import { Checkbox } from "../components/ui/checkbox";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import Link from "next/link";
+import { EVENT, REG_DEADLINE_AT, CAP_FULL, IS_STAGING, SHOW_VOLUNTEERS, HERO_IMAGES, effectiveRegOpen } from "../lib/utils";
+>>>>>>> main
 // ====== LEADERBOARD (online nevezési lista – TABOS, CSV) ======
 
 type LeaderboardRow = {
@@ -2013,6 +2024,63 @@ export default function EventLanding() {
 </CardContent>
           </Card>
         </Section>
+      {/* === CREATORS / STÁB === */}
+      <section className="max-w-3xl mx-auto mt-12 mb-8 px-4">
+        <h2 className="mb-4 text-xl font-semibold text-red-300">A stáb, akik készítik</h2>
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <h3 className="font-bold text-neutral-100">Fotósok:</h3>
+            <div className="flex items-center gap-3 mt-2">
+              <img
+                src="/visualsofkata.jpg"
+                alt="Hunyás Kata profilképe"
+                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
+              />
+              <div>
+                Hunyás Kata<br />
+                <a href="https://instagram.com/visualsofkata" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@visualsofkata</a>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-2">
+              <img
+                src="/bencelantos.jpg"
+                alt="Lantos Bence profilképe"
+                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
+              />
+              <div>
+                Lantos Bence<br />
+                <a href="https://instagram.com/bencelantos" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@bencelantos</a>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="font-bold text-neutral-100">Videósok:</h3>
+            <div className="flex items-center gap-3 mt-2">
+              <img
+                src="/mark_g_l_.jpg"
+                alt="Lakatos Márk profilképe"
+                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
+              />
+              <div>
+                Lakatos Márk<br />
+                <a href="https://instagram.com/mark_g_l_" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@mark_g_l_</a>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-2">
+              <img
+                src="/akos.schwalm.jpg"
+                alt="Schwalm Ákos profilképe"
+                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
+              />
+              <div>
+                Schwalm Ákos<br />
+                <a href="https://instagram.com/akos.schwalm" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@akos.schwalm</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       </main>
 
       <footer className="border-t border-red-900/70 bg-black">

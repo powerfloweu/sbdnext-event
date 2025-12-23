@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ArrowLeft, HandHeart } from "lucide-react";
-
 import { VolunteerForm } from "@/components/volunteer-form";
 
 export default function VolunteersPage() {

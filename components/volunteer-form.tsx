@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
@@ -39,6 +38,8 @@ export function VolunteerForm() {
     email: "",
     day14: false,
     day15: false,
+=======
+>>>>>>> main
     bothDays: false,
     shirtCut: "",
     shirtSize: "",
