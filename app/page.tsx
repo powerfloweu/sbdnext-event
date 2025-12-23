@@ -1,994 +1,13 @@
-// temp: trigger staging redeploy
-"use client";
-
-import {
-  useEffect,
-  useMemo,
-  useState,
-  useRef,
-  type ReactNode,
-  type ChangeEvent,
-} from "react";
-import { motion } from "framer-motion";
-import {
-  CalendarDays,
-  MapPin,
-  Timer,
-  Info,
-  Mail,
-  Dumbbell,
-  TicketCheck,
-  ShieldCheck,
-  ChevronRight,
-  ExternalLink,
-  CheckCircle2,
-  AlertCircle,
-  Link as LinkIcon,
-  Trophy,
-  HandHeart,
-  ArrowRight,
-} from "lucide-react";
-
-import type { ComponentType } from "react";
-
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
-
-// ====== KAPACITÁS / NEVEZÉS ÁLLAPOT ======
-const CAP_LIMIT = 220;
-const CAP_USED = Number(process.env.NEXT_PUBLIC_CAP_USED ?? "0");
-const CAP_FULL_FLAG =
-  (process.env.NEXT_PUBLIC_CAP_FULL ?? "").toLowerCase() === "true";
-const CAP_REMAINING = Math.max(0, CAP_LIMIT - CAP_USED);
-const CAP_FULL = CAP_FULL_FLAG || CAP_REMAINING <= 0;
-const FORCE_REG_OPEN =
-  (process.env.NEXT_PUBLIC_FORCE_REG_OPEN ?? "").toLowerCase() === "true";
-const SHOW_VOLUNTEERS = false;
-
-// A nevezés indulásának fix időpontja (CET)
-const REG_OPEN_AT = new Date("2025-11-20T20:00:00+01:00");
-const REG_DEADLINE_AT = new Date("2026-01-07T23:59:00+01:00");
-
-// ====== ESEMÉNY ADATOK ======
-const HERO_IMAGES = [
-  "/sheffield_25_34.jpg",
-  "/sheffield_25_9.jpg",
-  "/ena_2025_worlds.jpeg",
-  "/pana_2025.jpeg",
-  "/aron_2025_vb.jpeg",
-] as const;
-
-const EVENT = {
-  title: "SBD Next – Nyílt erőemelő verseny",
-  subtitle: "A következő szint",
-  date: "2026. február 14–15.",
-  time: "7:00–19:00 (mindkét nap)",
-  location: {
-    name: "Thor Gym (Újbuda)",
-    address: "Budapest, Nándorfejérvári út 40, 1116",
-    mapEmbedSrc:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4748.762520334373!2d19.04355177770303!3d47.46025827117686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4741dda23e15b409%3A0x59fe623bd00aa0be!2sThor%20Gym!5e1!3m2!1shu!2shu!4v1762941118132!5m2!1shu!2hu",
-  },
-  concept:
-    "Szabadidős esemény újoncoknak kötöttségek nélkül, erőemelő versenyzőknek pedig gyakorlásképp!",
-  layout: "2 nap, 2 platform",
-  federation:
-    "IPF szabályrendszer. Nem kell klubtagság és sportorvosi engedély.",
-  equipmentNote:
-    "Versenyző kategóriában a MERSZ szabályai szerint kell versenyezni. Újonc kategóriában NEM kötelező a kantáros erőemelő mez, elegendő testhez simuló rövid- vagy hosszúnadrág és felső.",
-  deadlines: {
-    regOpen: "2025. november 20.",
-    regClose: "2026. január 7. 23:59",
-  },
-  fees: {
-    entry: 29990,
-    spectator: 1000,
-    premium: 24990,
-    currency: "HUF",
-  },
-  contact: {
-    email: "powerlifting@sbdnext.hu",
-  },
-  social: {
-    igSbd: "https://instagram.com/sbd.hungary",
-    igPowerflow: "https://instagram.com/powerfloweu",
-  },
-  divisions: ["Újonc", "Versenyző"],
-  scoring: "Eredményhirdetés IPF pontszám alapján (nincsenek súlycsoportok).",
-  eventType: "Háromfogásos, full power (SBD) verseny.",
-  streams: {
-    saturdayA: "https://www.youtube.com/@sbdhungary7034",
-    saturdayB: "https://www.youtube.com/@sbdhungary7034",
-    sundayA: "https://www.youtube.com/@sbdhungary7034",
-    sundayB: "https://www.youtube.com/@sbdhungary7034",
-  },
-  cap: CAP_LIMIT,
-};
-
-function Section({
-  id,
-  icon: Icon,
-  title,
-  children,
-}: {
-  id: string;
-  icon?: ComponentType<{ className?: string }>;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section id={id} className="scroll-mt-24 py-10">
-      <div className="mb-4 flex items-center gap-2">
-        {Icon && <Icon className="h-5 w-5 text-red-500" />}
-        <h2 className="text-xl font-semibold">{title}</h2>
-      </div>
-      <div className="grid gap-4">{children}</div>
-    </section>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  Icon,
-}: {
-  label: string;
-  value: string;
-  Icon: ComponentType<{ className?: string }>;
-}) {
-  return (
-    <Card className="rounded-2xl border border-red-900/50 bg-black/40 text-red-50">
-      <CardContent className="flex items-center gap-3 p-4">
-        {Icon && <Icon className="h-5 w-5 text-red-400" />}
-        <div>
-          <div className="text-xs uppercase tracking-widest text-red-400">
-            {label}
-          </div>
-          <div className="text-sm font-semibold">{value}</div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function PriceRow({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: string;
-  note?: string;
-}) {
-  return (
-    <div className="flex items-start justify-between border-b border-red-900/40 py-2">
-      <div className="font-medium text-neutral-100">{label}</div>
-      <div className="text-right">
-        <div className="font-semibold text-primary">{value}</div>
-        {note && <div className="text-xs text-neutral-400">{note}</div>}
-      </div>
-    </div>
-  );
-}
-
-interface RegistrationData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  birthYear: string;
-  weight: string;
-  club: string;
-  sex: string;
-  division: string;
-  bestTotal: string;
-  openerSquat: string;
-  openerBench: string;
-  openerDeadlift: string;
-  shirtCut: string; // Női / Férfi
-  shirtSize: string; // XS–4XL
-  mcNotes: string; // bemondó szöveg
-  otherNotes: string; // megjegyzés, kérés
-  consent: boolean;
-  premium: boolean;
-  honeypot: string;
-}
-
-type TimeLeft = {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-};
-
-type VolunteerFormState = {
-  name: string;
-  day14: boolean;
-  day15: boolean;
-  shirtCut: string;
-  shirtSize: string;
-  submitting: boolean;
-  done: boolean;
-  error: string | null;
-  honeypot: string;
-};
-
-function validateRegistration(data: RegistrationData): string | null {
-  if (!data.lastName.trim()) {
-    return "Kérlek add meg a vezetékneved.";
-  }
-  if (!data.firstName.trim()) {
-    return "Kérlek add meg a keresztneved.";
-  }
-  if (!data.email.trim()) {
-    return "Kérlek add meg az e-mail címed.";
-  }
-  if (!/.+@.+\..+/.test(data.email)) {
-    return "Kérlek valós e-mail címet adj meg.";
-  }
-
-    const birthYearRaw = data.birthYear.trim();
-  if (!birthYearRaw) {
-    return "Kérlek add meg a születési éved.";
-  }
-  if (!/^\d{4}$/.test(birthYearRaw)) {
-    return "A születési év négy számjegy legyen (pl. 1995).";
-  }
-  const birthYearNum = Number(birthYearRaw);
-  if (Number.isNaN(birthYearNum) || birthYearNum < 1925 || birthYearNum > 2011) {
-    return "A születési évnek 1925 és 2011 közé kell esnie (14–100 éves korhatár).";
-  }
-
-  if (!data.sex) {
-    return "Kérlek válaszd ki a nemed.";
-  }
-  if (!data.division) {
-    return "Kérlek válaszd ki, hogy Újonc vagy Versenyző kategóriában indulsz.";
-  }
-
-  const weightRaw = data.weight.trim().replace(",", ".");
-  if (!weightRaw) {
-    return "Kérlek add meg a versenyen tervezett testsúlyod (kg).";
-  }
-  const weight = Number(weightRaw);
-  if (Number.isNaN(weight) || weight < 30 || weight > 250) {
-    return "A versenyen tervezett testsúlyod 30 és 250 kg közé essen.";
-  }
-
-  const squatRaw = data.openerSquat.trim().replace(",", ".");
-  if (!squatRaw) {
-    return "Kérlek add meg a guggolás nevezési súlyát (kg).";
-  }
-  const squat = Number(squatRaw);
-  if (Number.isNaN(squat) || squat < 20 || squat > 400) {
-    return "A guggolás nevezési súlyát 20 és 400 kg közé add meg.";
-  }
-
-  const benchRaw = data.openerBench.trim().replace(",", ".");
-  if (!benchRaw) {
-    return "Kérlek add meg a fekvenyomás nevezési súlyát (kg).";
-  }
-  const bench = Number(benchRaw);
-  if (Number.isNaN(bench) || bench < 20 || bench > 400) {
-    return "A fekvenyomás nevezési súlyát 20 és 400 kg közé add meg.";
-  }
-
-  const deadliftRaw = data.openerDeadlift.trim().replace(",", ".");
-  if (!deadliftRaw) {
-    return "Kérlek add meg a felhúzás nevezési súlyát (kg).";
-  }
-  const deadlift = Number(deadliftRaw);
-  if (Number.isNaN(deadlift) || deadlift < 20 || deadlift > 400) {
-    return "A felhúzás nevezési súlyát 20 és 400 kg közé add meg.";
-  }
-
-  if (!data.shirtCut) {
-    return "Kérlek válaszd ki, hogy női vagy férfi pólót kérsz.";
-  }
-  if (!data.shirtSize) {
-    return "Kérlek válaszd ki a pólóméreted (SBD póló).";
-  }
-  if (!data.consent) {
-    return "A nevezéshez el kell fogadnod az adatkezelést és a versenyszabályzatot.";
-  }
-  return null;
-}
-
-// ====== REGISZTRÁCIÓ ======
-function RegistrationForm() {
-  // Stripe Payment Linkek (új)
-  const PAYMENT_LINK_BASE =
-    "https://buy.stripe.com/cNi8wQ4jJfhkh2jc3d1ck04"; // csak nevezés
-
-  const PAYMENT_LINK_PREMIUM =
-    "https://buy.stripe.com/3cI14obMbfhkcM30kv1ck05"; // nevezés + prémium média
-
-    const WEBHOOK_URL =
-    "https://hook.eu1.make.com/6vbe2dxien274ohy91ew22lp9bbfzrl3";
-
-  const [waitlisted, setWaitlisted] = useState(false);
-  const [data, setData] = useState<RegistrationData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    birthYear: "",
-    weight: "",
-    club: "",
-    sex: "",
-    division: "",
-    bestTotal: "",
-    openerSquat: "",
-    openerBench: "",
-    openerDeadlift: "",
-    shirtCut: "",
-    shirtSize: "",
-    mcNotes: "",
-    otherNotes: "",
-    consent: false,
-    premium: false,
-    honeypot: "",
-  });
-
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
-  const [regOpen, setRegOpen] = useState(false);
-  const effectiveRegOpen = FORCE_REG_OPEN || regOpen;
-
-  useEffect(() => {
-    function updateTimeLeft() {
-      const diff = REG_OPEN_AT.getTime() - Date.now();
-      if (diff <= 0) {
-        setRegOpen(true);
-        setTimeLeft(null);
-        return;
-      }
-      const totalSeconds = Math.floor(diff / 1000);
-      const days = Math.floor(totalSeconds / (24 * 3600));
-      const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      setTimeLeft({ days, hours, minutes, seconds });
-      setRegOpen(false);
-    }
-
-    updateTimeLeft();
-    const id = setInterval(updateTimeLeft, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<1 | 2>(1);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    // Step 1: csak továbbléptetünk a részletes adatokhoz
-    if (step === 1) {
-      setError(null);
-      setStep(2);
-      return;
-    }
-
-    // Step 2: teljes validáció + webhook + Stripe (meglévő logika)
-    if (!effectiveRegOpen) {
-      setError("A nevezés ezen a felületen jelenleg nincs nyitva.");
-      return;
-    }
-    if (data.honeypot.trim().length > 0) return;
-
-    const validationError = validateRegistration(data);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      const registrationId =
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `reg_${Date.now()}`;
-
-      const isWaitlist = effectiveRegOpen && CAP_FULL;
-
-      const target = isWaitlist
-        ? null
-        : data.premium
-        ? PAYMENT_LINK_PREMIUM
-        : PAYMENT_LINK_BASE;
-
-      const utm =
-        typeof window !== "undefined" ? window.location.search || "" : "";
-
-      const fullName = `${data.lastName.trim()} ${data.firstName.trim()}`.trim();
-
-      const payload = {
-        timestamp: new Date().toISOString(),
-        registrationId,
-        name: fullName,
-        ...data,
-        paymentOption: data.premium ? "premium" : "base",
-        stripeLink: target ?? "",
-        page: "/",
-        utm,
-        status: isWaitlist ? "waitlist" : "pending_payment",
-        statusText: isWaitlist ? "várólistán" : "fizetésre vár",
-        cap: {
-          limit: CAP_LIMIT,
-          used: CAP_USED,
-          remaining: CAP_REMAINING,
-          full: CAP_FULL,
-        },
-      };
-
-      await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }).catch(() => {});
-
-      if (isWaitlist) {
-        setWaitlisted(true);
-        setDone(true);
-        return;
-      }
-
-      if (target) {
-        const url = new URL(target);
-        if (data.email) url.searchParams.set("prefilled_email", data.email);
-        window.location.href = url.toString();
-      }
-
-      setDone(true);
-    } catch {
-      setError(
-        "A jelentkezés nem sikerült. Próbáld újra, vagy írj nekünk e-mailt."
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  // 🔒 Ha még NEM nyitott ki a nevezés: info + visszaszámláló
-  if (!effectiveRegOpen && !done) {
-    return (
-      <div className="space-y-4 rounded-2xl border border-red-500/40 bg-red-950/40 p-6 text-sm">
-        <div className="flex items-center gap-2 font-semibold text-red-200">
-          <AlertCircle className="h-5 w-5" />
-          A nevezés még nem indult el.
-        </div>
-
-        <p className="text-red-100/90">
-          A nevezési időszak:{" "}
-          <b>{EVENT.deadlines.regOpen}</b> – <b>{EVENT.deadlines.regClose}</b>
-        </p>
-
-        {timeLeft && (
-          <div className="rounded-xl border border-red-500/40 bg-black/40 p-3">
-            <div className="text-xs uppercase tracking-[0.18em] text-red-200/80">
-              Várható indulásig
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-sm text-red-50">
-              <span>{timeLeft.days} nap</span>
-              <span>
-                {timeLeft.hours.toString().padStart(2, "0")} óra
-              </span>
-              <span>
-                {timeLeft.minutes.toString().padStart(2, "0")} perc
-              </span>
-              <span>
-                {timeLeft.seconds.toString().padStart(2, "0")} mp
-              </span>
-            </div>
-          </div>
-        )}
-
-        <p className="text-red-100/60">
-          Kövesd az Instát a friss infókért:{" "}
-          <a
-            href={EVENT.social.igPowerflow}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-red-200 underline hover:text-red-100"
-          >
-            @powerfloweu
-          </a>{" "}
-          és{" "}
-          <a
-            href={EVENT.social.igSbd}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-red-200 underline hover:text-red-100"
-          >
-            @sbd.hungary
-          </a>
-          .
-        </p>
-      </div>
-    );
-  }
-
-  // ====== WAITLIST DONE ======
-  if (done) {
-    if (waitlisted) {
-      return (
-        <div className="rounded-2xl border border-red-500/40 bg-red-950/40 p-6 text-center">
-          <CheckCircle2 className="mx-auto h-10 w-10 text-red-300" />
-          <h3 className="mt-4 text-lg font-semibold text-red-100">
-            Felkerültél a várólistára.
-          </h3>
-          <p className="mt-1 text-sm text-red-100/80">
-            A nevezői létszám betelt, de a jelentkezésed{" "}
-            <b>várólistára került</b>. Ha felszabadul hely, e-mailben keresünk.
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="rounded-2xl border border-green-500/40 bg-green-950/40 p-6 text-center">
-        <CheckCircle2 className="mx-auto h-10 w-10 text-green-400" />
-        <h3 className="mt-4 text-lg font-semibold text-green-100">
-          Átirányítás a fizetéshez…
-        </h3>
-      </div>
-    );
-  }
-
-  // ====== FORM (nevezés nyitva) ======
-  return (
-    <form onSubmit={onSubmit} noValidate className="grid gap-4">
-      {error && (
-        <div className="flex items-center gap-2 text-sm text-red-400">
-          <AlertCircle className="h-4 w-4" /> {error}
-        </div>
-      )}
-
-      {/* HONEYPOT */}
-      <div className="hidden" aria-hidden="true">
-        <label>Ne töltsd ki ezt a mezőt</label>
-        <Input
-          tabIndex={-1}
-          autoComplete="off"
-          value={data.honeypot}
-          onChange={(e) => setData({ ...data, honeypot: e.target.value })}
-          placeholder="Hagyja üresen"
-        />
-      </div>
-
-      {/* STEP 1 – Alapadatok */}
-      {step === 1 && (
-        <>
-          <div className="mb-1 text-neutral-300">
-            <span className="text-lg sm:text-xl font-extrabold text-red-400 tracking-wide">
-              1. Alapadatok
-            </span>
-          </div>
-
-          <div className="mb-4 flex items-center gap-3 text-neutral-300">
-            <span className="text-xs text-neutral-500 whitespace-nowrap">
-              1 / 2 lépés
-            </span>
-            <div className="h-1.5 w-full rounded-full bg-neutral-900/80">
-              <div className="h-full w-1/2 rounded-full bg-red-500 shadow-[0_0_12px_rgba(248,113,113,0.8)] transition-all duration-300" />
-            </div>
-          </div>
-
-          {/* NÉV */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="text-sm font-semibold text-red-400">
-                Vezetéknév <span className="text-red-500">*</span>
-              </label>
-              <Input
-                className="border-red-500"
-                value={data.lastName}
-                onChange={(e) => setData({ ...data, lastName: e.target.value })}
-                placeholder="Vezetéknév"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-red-400">
-                Keresztnév <span className="text-red-500">*</span>
-              </label>
-              <Input
-                className="border-red-500"
-                value={data.firstName}
-                onChange={(e) =>
-                  setData({ ...data, firstName: e.target.value })
-                }
-                placeholder="Keresztnév"
-                required
-              />
-            </div>
-          </div>
-
-          {/* E-MAIL */}
-          <div>
-            <label className="text-sm font-semibold text-red-400">
-              E-mail <span className="text-red-500">*</span>
-            </label>
-            <Input
-              className="border-red-500"
-              type="email"
-              value={data.email}
-              onChange={(e) => setData({ ...data, email: e.target.value })}
-              placeholder="nev@email.hu"
-              required
-            />
-          </div>
-
-          {/* SZÜLETÉSI ÉV */}
-          <div>
-            <label className="text-sm font-semibold text-red-400">
-              Születési év <span className="text-red-500">*</span>
-            </label>
-            <Input
-              className="border-red-500"
-              inputMode="numeric"
-              maxLength={4}
-              placeholder="pl. 1995"
-              value={data.birthYear}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  birthYear: (e.target as HTMLInputElement).value,
-                })
-              }
-              required
-            />
-          </div>
-
-          {/* NEM */}
-          <div>
-            <label className="text-sm font-semibold text-red-400">
-              Nem <span className="text-red-500">*</span>
-            </label>
-            <Select
-              onValueChange={(v) => setData({ ...data, sex: v })}
-              value={data.sex}
-            >
-              <SelectTrigger className="border-red-500">
-                <SelectValue placeholder="Válassz" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Nő">Nő</SelectItem>
-                <SelectItem value="Férfi">Férfi</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-                    {/* Újonc / Versenyző */}
-          <div className="mt-2">
-            <label className="text-sm font-semibold text-red-400">
-              Újonc / Versenyző <span className="text-red-500">*</span>
-            </label>
-
-            <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-start">
-              <div className="sm:w-2/5">
-                <Select
-                  onValueChange={(v) => setData({ ...data, division: v })}
-                  value={data.division}
-                >
-                  <SelectTrigger className="border-red-500 w-full">
-                    <SelectValue placeholder="Válassz" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EVENT.divisions.map((d) => (
-                      <SelectItem key={d} value={d}>
-                        {d}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <p className="text-[11px] text-neutral-400 leading-snug sm:w-3/5">
-                Újonc: nem versenyeztél még Magyar Országos Bajnokságon (open, I. osztály).<br />
-                Versenyző: az elmúlt 2 évben versenyeztél Magyar Országos Bajnokságon és/vagy
-                elérted a minősítési szintet.
-              </p>
-            </div>
-          </div>
-
-                  {/* SHIRT */}
-          <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="text-sm font-semibold text-red-400">
-                Póló fazon <span className="text-red-500">*</span>
-              </label>
-              <Select
-                onValueChange={(v) => setData({ ...data, shirtCut: v })}
-                value={data.shirtCut}
-              >
-                <SelectTrigger className="border-red-500">
-                  <SelectValue placeholder="Válassz" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Női">Női</SelectItem>
-                  <SelectItem value="Férfi">Férfi</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="mt-1 text-[11px] text-neutral-400">
-                Női póló: XS–3XL • Férfi póló: XS–4XL.
-              </p>
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-red-400">
-                Pólóméret (SBD póló) <span className="text-red-500">*</span>
-              </label>
-              <Select
-                onValueChange={(v) => setData({ ...data, shirtSize: v })}
-                value={data.shirtSize}
-              >
-                <SelectTrigger className="border-red-500">
-                  <SelectValue placeholder="Válassz" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="XS">XS</SelectItem>
-                  <SelectItem value="S">S</SelectItem>
-                  <SelectItem value="M">M</SelectItem>
-                  <SelectItem value="L">L</SelectItem>
-                  <SelectItem value="XL">XL</SelectItem>
-                  <SelectItem value="2XL">2XL</SelectItem>
-                  <SelectItem value="3XL">3XL</SelectItem>
-                  <SelectItem value="4XL">4XL</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-</div>
-        </>
-      )}
-      {/* STEP 2 – Részletes nevezési adatok */}
-      {step === 2 && (
-        <>
-          <div className="mb-1 text-neutral-300">
-            <span className="text-lg sm:text-xl font-extrabold text-red-400 tracking-wide">
-              2. Sportolói adatok
-            </span>
-          </div>
-
-          <div className="mb-4 flex items-center gap-3 text-neutral-300">
-            <span className="text-xs text-neutral-500 whitespace-nowrap">
-              2 / 2 lépés
-            </span>
-            <div className="h-1.5 w-full rounded-full bg-neutral-900/80">
-              <div className="h-full w-full rounded-full bg-red-500 shadow-[0_0_12px_rgba(248,113,113,0.8)] transition-all duration-300" />
-            </div>
-          </div>
-
-                    {/* TESTSÚLY + KLUB EGY SORBAN */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            {/* TESTSÚLY */}
-            <div>
-              <label className="text-sm font-semibold text-red-400">
-                Testsúly (kg) <span className="text-red-500">*</span>
-              </label>
-              <Input
-                className="border-red-500"
-                inputMode="numeric"
-                placeholder="pl. 83"
-                value={data.weight}
-                onChange={(e) =>
-                  setData({
-                    ...data,
-                    weight: (e.target as HTMLInputElement).value,
-                  })
-                }
-                required
-              />
-              <p className="mt-1 text-[11px] text-neutral-400">
-                A versenyen tervezett testsúlyod, nagyjából ±3 kg pontossággal. A
-                beosztás miatt nagyon fontos adat!
-              </p>
-            </div>
-
-            {/* KLUB */}
-            <div>
-              <label className="text-sm">Egyesület / Klub (nem kötelező)</label>
-              <Input
-                value={data.club}
-                onChange={(e) => setData({ ...data, club: e.target.value })}
-                placeholder="—"
-              />
-            </div>
-          </div>
-
-          {/* NEVEZÉSI SÚLYOK */}
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <label className="text-sm font-semibold text-red-400">
-                Guggolás – nevezési súly (kg){" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <Input
-                className={!data.openerSquat.trim() ? "border-red-500" : ""}
-                inputMode="numeric"
-                placeholder="pl. 180"
-                value={data.openerSquat}
-                onChange={(e) =>
-                  setData({
-                    ...data,
-                    openerSquat: (e.target as HTMLInputElement).value,
-                  })
-                }
-                required
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-red-400">
-                Fekvenyomás – nevezési súly (kg)
-                <span className="text-red-500">*</span>
-              </label>
-              <Input
-                className={!data.openerBench.trim() ? "border-red-500" : ""}
-                inputMode="numeric"
-                placeholder="pl. 120"
-                value={data.openerBench}
-                onChange={(e) =>
-                  setData({
-                    ...data,
-                    openerBench: (e.target as HTMLInputElement).value,
-                  })
-                }
-                required
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-red-400">
-                Felhúzás – nevezési súly (kg){" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <Input
-                className={!data.openerDeadlift.trim() ? "border-red-500" : ""}
-                inputMode="numeric"
-                placeholder="pl. 220"
-                value={data.openerDeadlift}
-                onChange={(e) =>
-                  setData({
-                    ...data,
-                    openerDeadlift: (e.target as HTMLInputElement).value,
-                  })
-                }
-                required
-              />
-            </div>
-
-            <p className="sm:col-span-3 mt-1 text-xs text-neutral-400">
-              Maradjunk a realitások talaján, a versenybeosztás miatt nagyon
-              fontos adat!
-            </p>
-
-            {/* MC + MEGJEGYZÉS EGY SORBAN */}
-            <div className="sm:col-span-3 mt-1 grid gap-3 sm:grid-cols-2">
-              {/* MC NOTES */}
-              <div>
-                <label className="text-sm">
-                  Rólad / bemondó szöveg (nem kötelező)
-                </label>
-                <Textarea
-                  value={data.mcNotes}
-                  onChange={(e) =>
-                    setData({ ...data, mcNotes: e.target.value })
-                  }
-                  placeholder="Pl. mióta edzel, miért jelentkeztél, milyen céljaid vannak."
-                />
-              </div>
-
-              {/* OTHER NOTES */}
-              <div>
-                <label className="text-sm">
-                  Megjegyzés, kérés a szervezőknek (nem kötelező)
-                </label>
-                <Textarea
-                  value={data.otherNotes}
-                  onChange={(e) =>
-                    setData({ ...data, otherNotes: e.target.value })
-                  }
-                  placeholder="Pl. külön kérés vagy egészségügyi infó."
-                />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-       {/* SUBMIT + CHECKBOXOK RENDEZVE */}
-      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
-        {/* Bal oszlop: adatkezelés + prémium (csak a 2. lépésen) */}
-        {step === 2 && (
-          <div className="space-y-3 max-w-md sm:w-1/2">
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="consent"
-                checked={data.consent}
-                onCheckedChange={(v: boolean | "indeterminate") =>
-                  setData({ ...data, consent: Boolean(v) })
-                }
-              />
-              <label htmlFor="consent" className="text-sm text-red-400">
-                Hozzájárulok az adataim kezeléséhez és elfogadom a verseny
-                szabályzatát. Tudomásul veszem, hogy a nevezés a{" "}
-                <b>fizetéssel</b> válik véglegessé.
-                <span className="text-red-500"> *</span>
-              </label>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="premium"
-                checked={data.premium}
-                onCheckedChange={(v: boolean | "indeterminate") =>
-                  setData({ ...data, premium: Boolean(v) })
-                }
-              />
-              <label htmlFor="premium" className="text-sm">
-                Prémium média csomag (+24 990 Ft): 3 fotó + 3 videó, kiemelt
-                válogatás.
-              </label>
-            </div>
-
-            <Button
-              type="button"
-              onClick={() => setStep(1)}
-              className="w-full sm:w-auto h-11 sm:h-12 rounded-3xl border border-neutral-700 bg-black/60 px-6 text-sm sm:text-base font-semibold text-neutral-100 hover:border-red-500 hover:text-red-300 transition-all duration-200"
-            >
-              Vissza az alapadatokhoz
-            </Button>
-          </div>
-        )}
-
-        {/* Jobb oszlop: gomb(ok) + díj szöveg */}
-        <div className="flex flex-col items-start gap-3 w-full sm:w-auto">
-          <Button
-            type="submit"
-            disabled={submitting || !effectiveRegOpen}
-            className="self-start w-fit h-12 sm:h-14 rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 sm:px-12 text-sm sm:text-base font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
-          >
-            <ChevronRight className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-            {step === 1
-              ? "Folytatom a nevezést"
-              : submitting
-              ? "Tovább a fizetéshez…"
-              : "Nevezés és fizetés"}
-          </Button>
-
-          <div className="text-xs text-muted-foreground max-w-md text-left">
-            A nevezési díj: 29 990 Ft — tartalmazza a <b>media csomagot</b> és az{" "}
-            <b>egyedi SBD versenypólót</b>.
-          </div>
-        </div>
-      </div>
-
-      {CAP_FULL && (
-        <p className="mt-2 text-xs text-red-300">
-          A nevezői létszám jelenleg betelt, az űrlap kitöltésével{" "}
-          <b>várólistára</b> tudsz jelentkezni. Fizetni csak akkor kell, ha
-          e-mailben visszaigazoljuk.
-        </p>
-      )}
-    </form>
-  );
-}
-
-
-
+import React, { useState, useEffect, ReactNode } from "react";
+import { ArrowRight, AlertCircle, ChevronRight, Trophy, CalendarDays, Timer, MapPin, ExternalLink, Dumbbell, Info, ShieldCheck, LinkIcon, Mail } from "lucide-react";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../components/ui/select";
+import { Checkbox } from "../components/ui/checkbox";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import Link from "next/link";
+import { EVENT, REG_DEADLINE_AT, CAP_FULL, IS_STAGING, SHOW_VOLUNTEERS, HERO_IMAGES, effectiveRegOpen } from "../lib/utils";
 // ====== LEADERBOARD (online nevezési lista – TABOS, CSV) ======
 
 type LeaderboardRow = {
@@ -1114,213 +133,6 @@ function LeaderboardTable({
         )}
       </CardContent>
     </Card>
-  );
-}
-
-function VolunteerForm() {
-  const WEBHOOK_URL = process.env.NEXT_PUBLIC_VOLUNTEER_WEBHOOK || "";
-  const [state, setState] = useState<VolunteerFormState>({
-    name: "",
-    day14: false,
-    day15: false,
-    shirtCut: "",
-    shirtSize: "",
-    submitting: false,
-    done: false,
-    error: null,
-    honeypot: "",
-  });
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (state.honeypot) return;
-
-    const name = state.name.trim();
-    if (!name) {
-      setState((s) => ({ ...s, error: "Kérlek add meg a neved." }));
-      return;
-    }
-
-    if (!state.day14 && !state.day15) {
-      setState((s) => ({
-        ...s,
-        error: "Válaszd ki, melyik napon tudsz segíteni.",
-      }));
-      return;
-    }
-
-    if (!state.shirtCut) {
-      setState((s) => ({ ...s, error: "Válaszd ki a póló fazonját." }));
-      return;
-    }
-
-    if (!state.shirtSize) {
-      setState((s) => ({ ...s, error: "Válaszd ki a pólóméretet." }));
-      return;
-    }
-
-    setState((s) => ({ ...s, submitting: true, error: null }));
-
-    const days = [];
-    if (state.day14) days.push("2026-02-14");
-    if (state.day15) days.push("2026-02-15");
-
-    const payload = {
-      timestamp: new Date().toISOString(),
-      name,
-      days,
-      shirtCut: state.shirtCut,
-      shirtSize: state.shirtSize,
-      page: "volunteer",
-    };
-
-    try {
-      if (WEBHOOK_URL) {
-        await fetch(WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }).catch(() => {});
-      }
-      setState((s) => ({ ...s, done: true }));
-    } catch {
-      setState((s) => ({
-        ...s,
-        error: "A beküldés nem sikerült, próbáld újra.",
-      }));
-    } finally {
-      setState((s) => ({ ...s, submitting: false }));
-    }
-  };
-
-  if (state.done) {
-    return (
-      <div className="rounded-2xl border border-green-600/60 bg-black/70 p-5 text-sm text-green-100">
-        <div className="flex items-center gap-2 font-semibold">
-          <CheckCircle2 className="h-5 w-5 text-green-400" />
-          Köszönjük, rögzítettük az önkéntes jelentkezésed.
-        </div>
-        <p className="mt-2 text-[12px] text-neutral-300">
-          Hamarosan e-mailben keresünk a részletekkel.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
-      <div className="hidden" aria-hidden="true">
-        <label>Ne töltsd ki ezt a mezőt</label>
-        <Input
-          tabIndex={-1}
-          autoComplete="off"
-          value={state.honeypot}
-          onChange={(e) => setState((s) => ({ ...s, honeypot: e.target.value }))}
-          placeholder="Hagyja üresen"
-        />
-      </div>
-
-      {state.error && (
-        <div className="flex items-center gap-2 text-sm text-red-400">
-          <AlertCircle className="h-4 w-4" /> {state.error}
-        </div>
-      )}
-
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Név <span className="text-red-500">*</span>
-        </label>
-        <Input
-          className="border-red-500"
-          value={state.name}
-          onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
-          placeholder="Vezetéknév Keresztnév"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Melyik napokon tudsz segíteni? <span className="text-red-500">*</span>
-        </label>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          <label className="flex items-center gap-3 text-sm">
-            <Checkbox
-              checked={state.day14}
-              onCheckedChange={(v: boolean | "indeterminate") =>
-                setState((s) => ({ ...s, day14: Boolean(v) }))
-              }
-            />
-            <span>02.14 (szombat)</span>
-          </label>
-          <label className="flex items-center gap-3 text-sm">
-            <Checkbox
-              checked={state.day15}
-              onCheckedChange={(v: boolean | "indeterminate") =>
-                setState((s) => ({ ...s, day15: Boolean(v) }))
-              }
-            />
-            <span>02.15 (vasárnap)</span>
-          </label>
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Póló fazon <span className="text-red-500">*</span>
-          </label>
-          <Select
-            onValueChange={(v) => setState((s) => ({ ...s, shirtCut: v }))}
-            value={state.shirtCut}
-          >
-            <SelectTrigger className="border-red-500">
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Női">Női</SelectItem>
-              <SelectItem value="Férfi">Férfi</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Pólóméret <span className="text-red-500">*</span>
-          </label>
-          <Select
-            onValueChange={(v) => setState((s) => ({ ...s, shirtSize: v }))}
-            value={state.shirtSize}
-          >
-            <SelectTrigger className="border-red-500">
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="XS">XS</SelectItem>
-              <SelectItem value="S">S</SelectItem>
-              <SelectItem value="M">M</SelectItem>
-              <SelectItem value="L">L</SelectItem>
-              <SelectItem value="XL">XL</SelectItem>
-              <SelectItem value="2XL">2XL</SelectItem>
-              <SelectItem value="3XL">3XL</SelectItem>
-              <SelectItem value="4XL">4XL</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Button
-        type="submit"
-        disabled={state.submitting}
-        className="h-12 rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 text-sm sm:text-base font-extrabold shadow-[0_0_50px_rgba(248,113,113,0.8)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
-      >
-        {state.submitting ? "Küldés…" : "Önkéntes jelentkezés elküldése"}
-      </Button>
-
-      <p className="text-[11px] text-neutral-400">
-        A megadott adatokat csak a verseny szervezése kapcsán használjuk fel és megosztjuk a szervezőcsapattal.
-      </p>
-    </form>
   );
 }
 
@@ -1562,9 +374,9 @@ export default function EventLanding() {
                 GYIK
               </a>
               {SHOW_VOLUNTEERS && (
-                <a href="#volunteers" className="hover:text-red-300">
+                <Link href="/volunteers" className="hover:text-red-300">
                   Önkéntesek
-                </a>
+                </Link>
               )}
             </div>
 
@@ -1583,6 +395,23 @@ export default function EventLanding() {
           </div>
         </div>
       </nav>
+
+      {/* STAGING-ONLY CTA – Prémium média utólagos vásárlás */}
+      {IS_STAGING && (
+        <div className="mx-auto max-w-5xl px-4 py-3">
+          <div className="flex flex-col gap-2 rounded-2xl border border-red-900/50 bg-black/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-neutral-200">
+              <span className="font-semibold text-red-300">Prémium média csomag</span> — utólagos vásárlás sportolóknak.
+            </div>
+            <Link href="/premium-media" className="inline-flex">
+              <Button className="inline-flex items-center rounded-full bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-bold">
+                Prémium média csomag vásárlása
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* HERO */}
       <header className="relative text-white">
@@ -2013,7 +842,7 @@ export default function EventLanding() {
                 <PriceRow
                   label="Nevezési díj"
                   value={`${priceEntry} ${EVENT.fees.currency}`}
-                  note="Tartalmazza a media csomagot (menő fotók rólad) és az egyedi SBD pólót. A profi fotókról és videókról 5 fős csapat gondoskodik."
+                  note="Tartalmazza a media csomagot (menő fotók rólad) és az egyedi SBD pólót. A profi fotókról és videókról 4 fős csapat gondoskodik."
                 />
 
                 <PriceRow
@@ -2025,8 +854,23 @@ export default function EventLanding() {
                 <PriceRow
                   label="Prémium média csomag (nem kötelező)"
                   value={`${pricePremium} ${EVENT.fees.currency}`}
-                  note="3 fotó + 3 videó. A profi fotókról és videókról 5 fős csapat gondoskodik!"
+                  note="3 fotó + 3 videó. A profi fotókról és videókról 4 fős csapat gondoskodik!"
                 />
+                
+                {IS_STAGING && (
+                  <div className="mt-4 rounded-lg border border-red-500/40 bg-red-950/20 p-4 text-center max-w-md mx-auto">
+                    <p className="mb-3 text-sm text-neutral-300">
+                      Már neveztél, de szeretnéd utólag megvásárolni a prémium média csomagot?
+                    </p>
+                    <Link href="/premium-media">
+                      <Button className="w-full rounded-full bg-red-600 hover:bg-red-700 font-semibold">
+                        Prémium média csomag vásárlása
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+                
                 <div className="mt-4 text-xs text-neutral-300">
                   A dobogósok – helyezéstől függően – SBD vásárlási utalványt, táplálék-kiegészítőket, PowerFlow kurzust és konzultációt, valamint Avancus cipőt kapnak.
                 </div>
@@ -2085,24 +929,7 @@ export default function EventLanding() {
         </Section>
 
         <Section id="register" icon={Dumbbell} title="Nevezés">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-900/60 bg-black/60 px-3 py-1 text-[11px] text-red-200">
-            {CAP_FULL ? (
-              <>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
-                <span>
-                  A nevezői létszám jelenleg betelt. Az űrlap kitöltésével várólistára tudsz jelentkezni.
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
-                <span>
-                  Jelenleg {CAP_USED} / {CAP_LIMIT} nevezés érkezett, még{" "}
-                  {CAP_REMAINING} hely szabad.
-                </span>
-              </>
-            )}
-          </div>
+          {/* Kapacitás chip deaktiválva */}
 
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="p-6">
@@ -2119,25 +946,6 @@ export default function EventLanding() {
             érvényessé.
           </p>
         </Section>
-
-        {SHOW_VOLUNTEERS && (
-          <Section id="volunteers" icon={HandHeart} title="Önkéntes jelentkezés">
-            <div className="flex flex-col gap-3 rounded-2xl border border-neutral-800 bg-black/70 p-6 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-neutral-200">
-                  Ha önkéntesként segítenél, itt tudsz jelentkezni!
-                </p>
-              </div>
-              <a
-                href="/volunteers"
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-4 py-2.5 text-xs sm:text-sm font-bold text-neutral-50 shadow-[0_0_24px_rgba(248,113,113,0.7)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200 text-center"
-              >
-                Önkéntes jelentkezés
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
-            </div>
-          </Section>
-        )}
 
         <Section id="faq" icon={Info} title="GYIK">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
@@ -2232,6 +1040,63 @@ export default function EventLanding() {
 </CardContent>
           </Card>
         </Section>
+      {/* === CREATORS / STÁB === */}
+      <section className="max-w-3xl mx-auto mt-12 mb-8 px-4">
+        <h2 className="mb-4 text-xl font-semibold text-red-300">A stáb, akik készítik</h2>
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <h3 className="font-bold text-neutral-100">Fotósok:</h3>
+            <div className="flex items-center gap-3 mt-2">
+              <img
+                src="/visualsofkata.jpg"
+                alt="Hunyás Kata profilképe"
+                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
+              />
+              <div>
+                Hunyás Kata<br />
+                <a href="https://instagram.com/visualsofkata" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@visualsofkata</a>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-2">
+              <img
+                src="/bencelantos.jpg"
+                alt="Lantos Bence profilképe"
+                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
+              />
+              <div>
+                Lantos Bence<br />
+                <a href="https://instagram.com/bencelantos" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@bencelantos</a>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="font-bold text-neutral-100">Videósok:</h3>
+            <div className="flex items-center gap-3 mt-2">
+              <img
+                src="/mark_g_l_.jpg"
+                alt="Lakatos Márk profilképe"
+                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
+              />
+              <div>
+                Lakatos Márk<br />
+                <a href="https://instagram.com/mark_g_l_" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@mark_g_l_</a>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-2">
+              <img
+                src="/akos.schwalm.jpg"
+                alt="Schwalm Ákos profilképe"
+                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
+              />
+              <div>
+                Schwalm Ákos<br />
+                <a href="https://instagram.com/akos.schwalm" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@akos.schwalm</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       </main>
 
       <footer className="border-t border-red-900/70 bg-black">
