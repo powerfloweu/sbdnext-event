@@ -289,9 +289,7 @@ export function VolunteerForm() {
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="text-sm font-semibold text-red-400">
             Pólóméret <span className="text-red-500">*</span>
