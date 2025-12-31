@@ -1370,22 +1370,20 @@ export default function EventLanding() {
         </div>
       </nav>
 
-      {/* STAGING-ONLY CTA – Prémium média utólagos vásárlás */}
-      {IS_STAGING && (
-        <div className="mx-auto max-w-5xl px-4 py-3">
-          <div className="flex flex-col gap-2 rounded-2xl border border-red-900/50 bg-black/60 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-neutral-200">
-              <span className="font-semibold text-red-300">Prémium média csomag</span> — utólagos vásárlás sportolóknak.
-            </div>
-            <Link href="/premium-media" className="inline-flex">
-              <Button className="inline-flex items-center rounded-full bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-bold">
-                Prémium média csomag vásárlása
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+      {/* Prémium média utólagos vásárlás – mindig látható */}
+      <div className="mx-auto max-w-5xl px-4 py-3">
+        <div className="flex flex-col gap-2 rounded-2xl border border-red-900/50 bg-black/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-neutral-200">
+            <span className="font-semibold text-red-300">Prémium média csomag</span> — utólagos vásárlás sportolóknak.
           </div>
+          <Link href="/premium-media" className="inline-flex">
+            <Button className="inline-flex items-center rounded-full bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-bold">
+              Prémium média csomag vásárlása
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
-      )}
+      </div>
 
       {/* HERO */}
       <header className="relative text-white">
@@ -1830,19 +1828,17 @@ export default function EventLanding() {
                   note="3 fotó + 3 videó. A profi fotókról és videókról 4 fős csapat gondoskodik!"
                 />
                 
-                {IS_STAGING && (
-                  <div className="mt-4 rounded-lg border border-red-500/40 bg-red-950/20 p-4 text-center max-w-md mx-auto">
-                    <p className="mb-3 text-sm text-neutral-300">
-                      Már neveztél, de szeretnéd utólag megvásárolni a prémium média csomagot?
-                    </p>
-                    <Link href="/premium-media">
-                      <Button className="w-full rounded-full bg-red-600 hover:bg-red-700 font-semibold">
-                        Prémium média csomag vásárlása
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                <div className="mt-4 rounded-lg border border-red-500/40 bg-red-950/20 p-4 text-center max-w-md mx-auto">
+                  <p className="mb-3 text-sm text-neutral-300">
+                    Már neveztél, de szeretnéd utólag megvásárolni a prémium média csomagot?
+                  </p>
+                  <Link href="/premium-media">
+                    <Button className="w-full rounded-full bg-red-600 hover:bg-red-700 font-semibold">
+                      Prémium média csomag vásárlása
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
                 
                 <div className="mt-4 text-xs text-neutral-300">
                   A dobogósok – helyezéstől függően – SBD vásárlási utalványt, táplálék-kiegészítőket, PowerFlow kurzust és konzultációt, valamint Avancus cipőt kapnak.
