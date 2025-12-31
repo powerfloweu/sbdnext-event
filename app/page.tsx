@@ -159,6 +159,7 @@ function Stat({
           </div>
           <div className="text-sm font-semibold">{value}</div>
         </div>
+ 
       </CardContent>
     </Card>
   );
@@ -1364,6 +1365,7 @@ export default function EventLanding() {
                 Nevezés <ChevronRight className="ml-1 h-3 w-3" />
               </button>
             </a>
+
           </div>
         </div>
       </nav>
@@ -1439,20 +1441,18 @@ export default function EventLanding() {
                   </a>
                 </div>
 
-                <div className="flex justify-center">
-                  <a
-                    href="/docs/SBD_Next_versenykiiras.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="no-underline"
-                  >
-                    <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-100/80 bg-black/80 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white hover:border-red-400 hover:text-red-200 transition">
-                      <span className="h-2 w-2 rounded-full bg-red-400" />
-                      <span>Versenykiírás</span>
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </div>
-                  </a>
-                </div>
+                <a
+                  href="/docs/SBD_Next_versenykiiras.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="no-underline"
+                >
+                  <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-neutral-100/80 bg-black/80 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white hover:border-red-400 hover:text-red-200 transition">
+                    <span className="h-2 w-2 rounded-full bg-red-400" />
+                    <span>Versenykiírás</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </div>
+                </a>
 
 
                 {/* Versenykiírás – rövid magyarázat */}
@@ -1492,9 +1492,10 @@ export default function EventLanding() {
                     Nevezési díjak <ChevronRight className="h-4 w-4" />
                   </a>
                 </div>
+
               </CardContent>
-              </Card>
-            </div>
+            </Card>
+          </div>
 
             {/* Pulse chip + countdown to registration deadline */}
             <div className="mt-4 flex flex-row items-center justify-center gap-4 w-full max-w-5xl mx-auto">
@@ -1901,6 +1902,7 @@ export default function EventLanding() {
         </Section>
 
         <Section id="register" icon={Dumbbell} title="Nevezés">
+
           {/* Kapacitás chip deaktiválva */}
 
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
@@ -1917,6 +1919,17 @@ export default function EventLanding() {
             bekerülés a visszaigazolás és a nevezési díj befizetése után válik
             érvényessé.
           </p>
+
+          <div className="mt-6 flex justify-center">
+            <div className="rounded-2xl border border-red-400/60 bg-black/70 px-6 py-5 max-w-lg w-full text-center shadow-[0_0_30px_rgba(248,113,113,0.15)]">
+              <div className="mb-3 text-base font-semibold text-red-300">Ha Önkéntesként segítenél a versenyen, kattints ide a regisztrációhoz!</div>
+              <a href="/volunteers">
+                <Button className="rounded-full bg-red-400 px-8 py-2 text-white font-bold hover:bg-red-500 transition-all duration-200">
+                  Önkéntes jelentkezés
+                </Button>
+              </a>
+            </div>
+          </div>
         </Section>
 
         <Section id="faq" icon={Info} title="GYIK">
@@ -2012,62 +2025,7 @@ export default function EventLanding() {
 </CardContent>
           </Card>
         </Section>
-      {/* === CREATORS / STÁB === */}
-      <section className="max-w-3xl mx-auto mt-12 mb-8 px-4">
-        <h2 className="mb-4 text-xl font-semibold text-red-300">A stáb, akik készítik</h2>
-        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <h3 className="font-bold text-neutral-100">Fotósok:</h3>
-            <div className="flex items-center gap-3 mt-2">
-              <img
-                src="/visualsofkata.jpg"
-                alt="Hunyás Kata profilképe"
-                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
-              />
-              <div>
-                Hunyás Kata<br />
-                <a href="https://instagram.com/visualsofkata" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@visualsofkata</a>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <img
-                src="/bencelantos.jpg"
-                alt="Lantos Bence profilképe"
-                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
-              />
-              <div>
-                Lantos Bence<br />
-                <a href="https://instagram.com/bencelantos" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@bencelantos</a>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h3 className="font-bold text-neutral-100">Videósok:</h3>
-            <div className="flex items-center gap-3 mt-2">
-              <img
-                src="/mark_g_l_.jpg"
-                alt="Lakatos Márk profilképe"
-                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
-              />
-              <div>
-                Lakatos Márk<br />
-                <a href="https://instagram.com/mark_g_l_" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@mark_g_l_</a>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <img
-                src="/akos.schwalm.jpg"
-                alt="Schwalm Ákos profilképe"
-                className="h-12 w-12 rounded-full object-cover bg-neutral-800"
-              />
-              <div>
-                Schwalm Ákos<br />
-                <a href="https://instagram.com/akos.schwalm" target="_blank" rel="noopener noreferrer" className="text-xs text-red-400 hover:underline">@akos.schwalm</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       </main>
 

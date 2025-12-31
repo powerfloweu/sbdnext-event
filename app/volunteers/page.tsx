@@ -20,6 +20,11 @@ export default function VolunteersPage() {
             Önkéntes jelentkezés
           </div>
         </div>
+        <div className="mt-8 text-center">
+          <Link href="/" className="inline-block">
+            <button className="rounded-full px-6 py-2 bg-red-400 text-white font-semibold hover:bg-red-500 transition">Vissza a főoldalra</button>
+          </Link>
+        </div>
 
         <div className="rounded-3xl border border-red-900/60 bg-neutral-950/70 p-6 shadow-[0_0_40px_rgba(248,113,113,0.15)] sm:p-8">
           <div className="mb-6 rounded-xl border border-red-500/50 bg-red-950/30 p-4 text-center">
