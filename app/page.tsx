@@ -1909,12 +1909,7 @@ export default function EventLanding() {
           </Card>
 
           <p className="mt-4 text-xs text-neutral-400">
-            A nevezők maximális létszámának elérése után minden új jelentkező
-            automatikusan várólistára kerül. A felszabaduló helyeket a
-            várólistán szereplők jelentkezési sorrendben kapják meg, a
-            szervezők egyéni e-mailes értesítése alapján. A várólistáról való
-            bekerülés a visszaigazolás és a nevezési díj befizetése után válik
-            érvényessé.
+            A verseny napjáig kérdés, kérés esetén keress minket a <a href="mailto:powerlifting@sbdnext.hu" className="underline">powerlifting@sbdnext.hu</a> e-mail címen!
           </p>
 
           <div className="mt-6 flex justify-center">
