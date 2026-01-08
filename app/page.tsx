@@ -331,7 +331,9 @@ function RegistrationForm() {
 
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [regOpen, setRegOpen] = useState(false);
-  const effectiveRegOpen = FORCE_REG_OPEN || regOpen;
+  const now = new Date();
+  const afterDeadline = now > REG_DEADLINE_AT;
+  const effectiveRegOpen = (FORCE_REG_OPEN || regOpen) && !afterDeadline;
 
   useEffect(() => {
     function updateTimeLeft() {
@@ -452,21 +454,20 @@ function RegistrationForm() {
     }
   }
 
-  // 🔒 Ha még NEM nyitott ki a nevezés: info + visszaszámláló
-  if (!effectiveRegOpen && !done) {
+  // 🔒 Ha még NEM nyitott ki a nevezés vagy LEZÁRULT: info
+  if ((!effectiveRegOpen && !done) || afterDeadline) {
     return (
       <div className="space-y-4 rounded-2xl border border-red-500/40 bg-red-950/40 p-6 text-sm">
         <div className="flex items-center gap-2 font-semibold text-red-200">
           <AlertCircle className="h-5 w-5" />
-          A nevezés még nem indult el.
+          {afterDeadline ? "A nevezés lezárult." : "A nevezés még nem indult el."}
         </div>
 
         <p className="text-red-100/90">
-          A nevezési időszak:{" "}
-          <b>{EVENT.deadlines.regOpen}</b> – <b>{EVENT.deadlines.regClose}</b>
+          A nevezési időszak: <b>{EVENT.deadlines.regOpen}</b> – <b>{EVENT.deadlines.regClose}</b>
         </p>
 
-        {timeLeft && (
+        {!afterDeadline && timeLeft && (
           <div className="rounded-xl border border-red-500/40 bg-black/40 p-3">
             <div className="text-xs uppercase tracking-[0.18em] text-red-200/80">
               Várható indulásig
@@ -487,7 +488,7 @@ function RegistrationForm() {
         )}
 
         <p className="text-red-100/60">
-          Kövesd az Instát a friss infókért:{" "}
+          Kövesd az Instát a friss infókért: {" "}
           <a
             href={EVENT.social.igPowerflow}
             target="_blank"
