@@ -1,4 +1,5 @@
 "use client";
+import { CountdownTimer } from "@/components/ui/countdown-timer";
 import {
   useEffect,
   useMemo,
@@ -74,8 +75,8 @@ const HERO_IMAGES = [
 const EVENT = {
   title: "SBD Next – Nyílt erőemelő verseny",
   subtitle: "A következő szint",
-  date: "2026. február 14–15.",
-  time: "7:00–19:00 (mindkét nap)",
+  date: "2026. február 14.",
+  time: "7:00–19:00",
   location: {
     name: "Thor Gym (Újbuda)",
     address: "Budapest, Nándorfejérvári út 40, 1116",
@@ -84,7 +85,7 @@ const EVENT = {
   },
   concept:
     "Szabadidős esemény újoncoknak kötöttségek nélkül, erőemelő versenyzőknek pedig gyakorlásképp!",
-  layout: "2 nap, 2 platform",
+  layout: "1 nap, 2 platform",
   federation:
     "IPF szabályrendszer. Nem kell klubtagság és sportorvosi engedély.",
   equipmentNote:
@@ -112,8 +113,6 @@ const EVENT = {
   streams: {
     saturdayA: "https://www.youtube.com/@sbdhungary7034",
     saturdayB: "https://www.youtube.com/@sbdhungary7034",
-    sundayA: "https://www.youtube.com/@sbdhungary7034",
-    sundayB: "https://www.youtube.com/@sbdhungary7034",
   },
   cap: CAP_LIMIT,
 };
@@ -1433,11 +1432,10 @@ export default function EventLanding() {
                 <CardContent className="space-y-5 p-5 text-sm text-neutral-100 text-center">
                 {/* Fő CTA: Nevezés */}
                 <div className="grid max-w-md mx-auto w-full">
-                  <a href="#register" className="block">
-                    <Button className="w-full rounded-3xl bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-12 py-4 text-lg font-extrabold shadow-[0_0_60px_rgba(248,113,113,1)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200">
-                      Nevezek most
-                    </Button>
-                  </a>
+                  <Card className="w-full rounded-3xl border border-red-500/80 bg-black/80 p-6 flex flex-col items-center justify-center">
+                    <div className="text-lg font-extrabold text-red-400 mb-2">Verseny kezdetéig</div>
+                    <CountdownTimer target="2026-02-14T07:00:00+01:00" className="text-2xl font-mono text-white" />
+                  </Card>
                 </div>
 
                 <a
@@ -1683,11 +1681,10 @@ export default function EventLanding() {
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
               <div>
-                Mindkét versenynap 7:00 és 19:00 között zajlik a két platformon.
+                A verseny 7:00 és 19:00 között zajlik a két platformon, egyetlen napon.
               </div>
               <div className="text-xs text-neutral-400">
-                A pontos flight- és platformbeosztást a nevezés lezárása után
-                tesszük közzé és itt is megtalálhatod majd!
+                A pontos flight- és platformbeosztást a nevezés lezárása után tesszük közzé és itt is megtalálhatod majd!
               </div>
 
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -1708,24 +1705,6 @@ export default function EventLanding() {
                 >
                   <LinkIcon className="h-4 w-4" />
                   Stream — Szombat, B platform
-                </a>
-                <a
-                  href={EVENT.streams.sundayA}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  Stream — Vasárnap, A platform
-                </a>
-                <a
-                  href={EVENT.streams.sundayB}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-primary underline underline-offset-4 hover:text-primary/80"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  Stream — Vasárnap, B platform
                 </a>
               </div>
               <div className="mt-3 text-xs text-neutral-400">
@@ -1913,14 +1892,20 @@ export default function EventLanding() {
           </p>
 
           <div className="mt-6 flex justify-center">
-            <div className="rounded-2xl border border-red-400/60 bg-black/70 px-6 py-5 max-w-lg w-full text-center shadow-[0_0_30px_rgba(248,113,113,0.15)]">
-              <div className="mb-3 text-base font-semibold text-red-300">Ha Önkéntesként segítenél a versenyen, kattints ide a regisztrációhoz!</div>
-              <a href="/volunteers">
-                <Button className="rounded-full bg-red-400 px-8 py-2 text-white font-bold hover:bg-red-500 transition-all duration-200">
-                  Önkéntes jelentkezés
-                </Button>
-              </a>
-            </div>
+            <Card className="w-full max-w-2xl rounded-2xl border-2 border-red-400/80 bg-black/80 shadow-[0_0_40px_rgba(248,113,113,0.18)]">
+              <CardContent className="flex flex-col items-center justify-center p-10 text-center gap-6">
+                <div className="flex flex-col items-center gap-2">
+                  <HandHeart className="h-10 w-10 text-red-400 mb-2" />
+                  <div className="text-2xl font-bold text-red-300 mb-1">Önkéntes jelentkezés</div>
+                  <div className="text-base text-neutral-200 mb-2">Ha segítenél a versenyen, kattints ide a regisztrációhoz!</div>
+                </div>
+                <a href="/volunteers">
+                  <Button className="rounded-full bg-red-400 px-12 py-4 text-lg font-bold hover:bg-red-500 transition-all duration-200">
+                    Jelentkezem önkéntesnek
+                  </Button>
+                </a>
+              </CardContent>
+            </Card>
           </div>
         </Section>
 

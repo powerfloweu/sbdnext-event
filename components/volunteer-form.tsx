@@ -19,8 +19,6 @@ export type VolunteerFormState = {
   name: string;
   email: string;
   day14: boolean;
-  day15: boolean;
-  bothDays: boolean;
   shirtCut: string;
   shirtSize: string;
   position: string;
@@ -39,8 +37,6 @@ export function VolunteerForm() {
     name: "",
     email: "",
     day14: false,
-    day15: false,
-    bothDays: false,
     shirtCut: "",
     shirtSize: "",
     position: "",
@@ -72,11 +68,10 @@ export function VolunteerForm() {
       return;
     }
 
-    const selectedDays = [state.day14, state.day15, state.bothDays].filter(Boolean).length;
-    if (selectedDays !== 1) {
+    if (!state.day14) {
       setState((s) => ({
         ...s,
-        error: "Válaszd ki pontosan egy opciót: 02.14, 02.15 vagy mindkét nap.",
+        error: "Válaszd ki a napot: 02.14.",
       }));
       return;
     }
@@ -99,12 +94,7 @@ export function VolunteerForm() {
     setState((s) => ({ ...s, submitting: true, error: null }));
 
     const days = [] as string[];
-    if (state.bothDays) {
-      days.push("2026-02-14", "2026-02-15");
-    } else {
-      if (state.day14) days.push("2026-02-14");
-      if (state.day15) days.push("2026-02-15");
-    }
+    if (state.day14) days.push("2026-02-14");
 
     const payload = {
       timestamp: new Date().toISOString(),
@@ -212,38 +202,18 @@ export function VolunteerForm() {
 
       <div>
         <label className="text-sm font-semibold text-red-400">
-          Melyik napokon tudsz segíteni? <span className="text-red-500">*</span>
+          Melyik napon tudsz segíteni? <span className="text-red-500">*</span>
         </label>
-        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+        <div className="mt-2">
           <label className="flex items-center gap-3 text-sm">
             <Checkbox
               checked={state.day14}
               onCheckedChange={(v: boolean | "indeterminate") => {
                 const next = Boolean(v);
-                setState((s) => ({ ...s, day14: next, day15: false, bothDays: false }));
+                setState((s) => ({ ...s, day14: next }));
               }}
             />
             <span>02.14 (szombat)</span>
-          </label>
-          <label className="flex items-center gap-3 text-sm">
-            <Checkbox
-              checked={state.day15}
-              onCheckedChange={(v: boolean | "indeterminate") => {
-                const next = Boolean(v);
-                setState((s) => ({ ...s, day14: false, day15: next, bothDays: false }));
-              }}
-            />
-            <span>02.15 (vasárnap)</span>
-          </label>
-          <label className="flex items-center gap-3 text-sm">
-            <Checkbox
-              checked={state.bothDays}
-              onCheckedChange={(v: boolean | "indeterminate") => {
-                const next = Boolean(v);
-                setState((s) => ({ ...s, day14: false, day15: false, bothDays: next }));
-              }}
-            />
-            <span>Mindkét napot tudom vállalni</span>
           </label>
         </div>
       </div>
