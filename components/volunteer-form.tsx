@@ -215,6 +215,9 @@ export function VolunteerForm() {
             />
             <span>02.14 (szombat)</span>
           </label>
+          <div className="ml-7 mt-1 text-xs text-neutral-400">
+            Az önkéntesség egész napos elfoglaltságot jelent! (7:00-19:00)
+          </div>
         </div>
       </div>
 
