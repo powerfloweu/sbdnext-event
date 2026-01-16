@@ -8,6 +8,7 @@ type Row = {
   name: string;
   club: string;
   total: number;
+  group: string;
 };
 
 // Google Sheets CSV URLs
@@ -23,7 +24,7 @@ const OPEN_FEMALE_URL =
 const OPEN_MALE_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa5DanERU2QFdihY7vLRKZCDY6U7MVBxN_r_YOEHXFuzB6_y1CYpddraoZvBie3pCRuQN7pX4uc00I/pub?gid=1696060010&single=true&output=csv";
 
-// Parse a simple 3-column CSV: Név, Egyesület, Nevezési total
+// Parse a simple CSV: Név, Egyesület, Nevezési total, Csoport
 function parseCsv(text: string): Row[] {
   const lines = text.trim().split("\n");
   const rows: Row[] = [];
@@ -36,12 +37,17 @@ function parseCsv(text: string): Row[] {
     const parts = line.split(",");
     const name = (parts[0] || "").trim();
     const club = (parts[1] || "").trim();
+
+    // If totals ever include decimal comma, normalize to dot
     const totalStr = (parts[2] || "").trim().replace(",", ".");
     const total = Number(totalStr) || 0;
 
+    // 4th column
+    const group = (parts[3] || "").trim();
+
     if (!name) continue;
 
-    rows.push({ name, club, total });
+    rows.push({ name, club, total, group });
   }
 
   return rows;
@@ -51,6 +57,20 @@ async function fetchRows(url: string): Promise<Row[]> {
   const res = await fetch(url, { cache: "no-store" });
   const text = await res.text();
   return parseCsv(text);
+}
+
+function normalizeGroupName(input: string): string {
+  return input
+    .replace(/(\d+)-(es|ös)/gi, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function splitGroups(groupCell: string): string[] {
+  return normalizeGroupName(groupCell)
+    .split(/[,;\n]+/)
+    .map((g) => g.trim())
+    .filter(Boolean);
 }
 
 export function Leaderboard({ view }: { view: View }) {
@@ -111,15 +131,48 @@ export function Leaderboard({ view }: { view: View }) {
               <th className="py-2 pr-4 text-left">#</th>
               <th className="py-2 pr-4 text-left">Név</th>
               <th className="py-2 pr-4 text-left">Egyesület</th>
+              <th className="py-2 pr-4 text-left">Csoport</th>
               <th className="py-2 pl-4 text-right">Nevezési total</th>
             </tr>
           </thead>
+
           <tbody>
             {rows.map((r, idx) => (
-              <tr key={`${r.name}-${idx}`} className="border-b border-zinc-900/70">
+              <tr
+                key={`${r.name}-${idx}`}
+                className="border-b border-zinc-900/70"
+              >
                 <td className="py-1 pr-4 text-zinc-500">{idx + 1}</td>
                 <td className="py-1 pr-4">{r.name}</td>
                 <td className="py-1 pr-4 text-zinc-400">{r.club}</td>
+
+                {/* GROUPS: stacked, no commas */}
+                <td className="py-1 pr-4 align-top">
+                  {(() => {
+                    if (!r.group) return <span className="text-zinc-500">—</span>;
+
+                    const groupList = splitGroups(r.group);
+
+                    return (
+                      <div className="flex flex-col gap-0.5">
+                        {groupList.map((groupName, i) => {
+                          const color = groupName.startsWith("Újonc")
+                            ? "text-red-300"
+                            : groupName.startsWith("Versenyző")
+                            ? "text-zinc-200"
+                            : "text-zinc-400";
+
+                          return (
+                            <div key={i} className={color}>
+                              {groupName}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </td>
+
                 <td className="py-1 pl-4 text-right font-semibold">{r.total}</td>
               </tr>
             ))}

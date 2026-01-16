@@ -1,5 +1,8 @@
 "use client";
+
 import { CountdownTimer } from "@/components/ui/countdown-timer";
+import { Schedule } from "@/components/ui/schedule";
+import { Leaderboard } from "@/components/ui/leaderboard";
 import {
   useEffect,
   useMemo,
@@ -76,7 +79,7 @@ const EVENT = {
   title: "SBD Next – Nyílt erőemelő verseny",
   subtitle: "A következő szint",
   date: "2026. február 14.",
-  time: "7:00–19:00",
+  time: "7:00–21:00",
   location: {
     name: "Thor Gym (Újbuda)",
     address: "Budapest, Nándorfejérvári út 40, 1116",
@@ -1131,7 +1134,7 @@ function LeaderboardTable({
   );
 }
 
-function Leaderboard() {
+function LeaderboardSection() {
   const [data, setData] = useState<
     Partial<Record<keyof typeof LEADERBOARD_SOURCES, LeaderboardRow[]>>
   >({});
@@ -1453,13 +1456,23 @@ export default function EventLanding() {
               <Card className="w-full max-w-5xl rounded-2xl border border-neutral-800 bg-black/80">
                 <CardContent className="space-y-5 p-5 text-sm text-neutral-100 text-center">
                 {/* Fő CTA: Nevezés */}
-                <div className="grid max-w-md mx-auto w-full">
-                  <Card className="w-full rounded-3xl border border-red-500/80 bg-black/80 p-6 flex flex-col items-center justify-center">
-                    <div className="text-lg font-extrabold text-red-400 mb-2">Verseny kezdetéig</div>
-                    <CountdownTimer target="2026-02-14T07:00:00+01:00" className="text-2xl font-mono text-white" />
-                  </Card>
-                </div>
-
+      <div className="grid max-w-md mx-auto w-full">
+        <Card className="w-full rounded-3xl border border-red-500/80 bg-black/80 p-6 flex flex-col items-center justify-center">
+          <div className="text-lg font-extrabold text-red-400 mb-2">Verseny kezdetéig</div>
+          <CountdownTimer target="2026-02-14T07:00:00+01:00" className="text-2xl font-mono text-white" />
+        </Card>
+      </div>
+      <div className="mt-10">
+        <Card className="w-full rounded-2xl border border-neutral-800 bg-black/80">
+          <CardContent className="p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-red-400" />
+              <h3 className="text-lg font-semibold text-red-300">Időrend és csoportbeosztás</h3>
+            </div>
+            <Schedule />
+          </CardContent>
+        </Card>
+      </div>
                 <a
                   href="/docs/SBD_Next_versenykiiras.pdf"
                   target="_blank"
@@ -1486,7 +1499,7 @@ export default function EventLanding() {
                 <div className="grid gap-3 sm:max-w-md mx-auto">
                   <a href="#leaderboard">
                     <Button className="w-full rounded-2xl border border-red-500/80 bg-black/80 px-6 py-3 text-sm font-semibold text-red-400 shadow-[0_0_18px_rgba(248,113,113,0.4)] hover:bg-red-600 hover:text-white">
-                      Nevezési lista (ideiglenes, aktualizált)
+                      Nevezési lista (végleges, csoportbeosztással)
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </a>
@@ -1643,7 +1656,7 @@ export default function EventLanding() {
   </CardContent>
 </Card>
 
-          <Leaderboard />
+          <LeaderboardSection />
         </Section>
         <Section id="info" icon={Info} title="Versenyinformációk">
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
@@ -1703,7 +1716,7 @@ export default function EventLanding() {
           <Card className="rounded-2xl border border-neutral-800 bg-black/70">
             <CardContent className="grid gap-3 p-6 text-sm text-neutral-100">
               <div>
-                A verseny 7:00 és 19:00 között zajlik a két platformon, egyetlen napon.
+                A verseny 7:00 és 21:00 között zajlik a két platformon, egyetlen napon.
               </div>
               <div className="text-xs text-neutral-400">
                 A pontos flight- és platformbeosztást a nevezés lezárása után tesszük közzé és itt is megtalálhatod majd!
