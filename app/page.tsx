@@ -987,6 +987,7 @@ type LeaderboardRow = {
   name: string;
   club: string;
   total: number;
+  group: string;
 };
 
 const LEADERBOARD_SOURCES = {
@@ -1003,22 +1004,36 @@ const LEADERBOARD_SOURCES = {
 function parseCsv(text: string): LeaderboardRow[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length < 2) return [];
-  const [, ...rows] = lines;
+  const [headerLine, ...rows] = lines;
+  const headers = headerLine.split(",").map((h) => h.trim());
+
+  // Find column indices by header name
+  const nameIdx = headers.findIndex((h) => h === "Név");
+  const clubIdx = headers.findIndex((h) => h === "Egyesület");
+  const totalIdx = headers.findIndex((h) => h === "Nevezési total");
+  const groupIdx = headers.findIndex((h) => h === "Csoport");
+
+  // Fail gracefully if any required column is missing
+  if (nameIdx === -1 || clubIdx === -1 || totalIdx === -1 || groupIdx === -1) {
+    return [];
+  }
 
   return rows
     .map((line) => {
       const cells = line.split(",");
-      const [nameRaw = "", clubRaw = "", totalRaw = ""] = cells;
-      const name = nameRaw.trim();
-      const club = clubRaw.trim();
-      const total = Number(
-        totalRaw.trim().replace(/\s/g, "").replace(",", ".")
-      );
+      // Defensive: allow for missing columns in row
+      const name = (cells[nameIdx] || "").trim();
+      const club = (cells[clubIdx] || "").trim();
+      const group = (cells[groupIdx] || "").trim();
+      let totalRaw = (cells[totalIdx] || "").trim();
+      // Convert total to number, handle comma/dot
+      const total = Number(totalRaw.replace(/\s/g, "").replace(",", "."));
       if (!name) return null;
       return {
         name,
         club,
         total: Number.isFinite(total) ? total : 0,
+        group,
       };
     })
     .filter((r): r is LeaderboardRow => r !== null);
@@ -1064,6 +1079,9 @@ function LeaderboardTable({
                   </div>
                   <div className="mt-1 font-semibold leading-tight">{row.name}</div>
                   <div className="text-[11px] text-neutral-300">{row.club || "—"}</div>
+                  <div className="text-[11px] font-semibold text-red-400">
+                    {row.group ? row.group : "—"}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1076,6 +1094,7 @@ function LeaderboardTable({
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Név</th>
                     <th className="px-3 py-2 text-left">Egyesület</th>
+                    <th className="px-3 py-2 text-left">Csoport</th>
                     <th className="px-3 py-2 text-right">Nevezési total</th>
                   </tr>
                 </thead>
@@ -1093,6 +1112,9 @@ function LeaderboardTable({
                       </td>
                       <td className="px-3 py-1.5 text-neutral-300">
                         {row.club || "—"}
+                      </td>
+                      <td className="px-3 py-1.5 text-red-400 font-semibold">
+                        {row.group ? row.group : "—"}
                       </td>
                       <td className="px-3 py-1.5 text-right tabular-nums text-neutral-100">
                         {row.total || "—"}
