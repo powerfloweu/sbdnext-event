@@ -1,52 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SBD Next
 
-## Getting Started
+Event site for the SBD Next powerlifting meet, built with Next.js (App Router), Tailwind v4 and
+a small shadcn-style component set.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Architecture (SBD Next 2 redesign)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `config/event.ts` — the single source of truth for every event-specific date, price, link and
+  cap. Update this file (and only this file) between events.
+- `lib/phase.ts` — derives the current phase (`announced` → `registration` → `closed` → `live` →
+  `post`) from `config/event.ts` and the current date. Every phase-dependent piece of UI reads
+  from this instead of calling `new Date()` directly.
+- `lib/sheets.ts` / `lib/csv.ts` — server-side fetch and parsing of the Google Sheets "publish to
+  web" CSV feeds (leaderboards, schedule), with a quoted-field-safe parser.
+- `components/site/*` — header (with mobile nav drawer), footer, section/stat/sponsor-grid
+  building blocks used across pages.
+- `components/event/*` — the landing page's sections (hero, key facts, lists, schedule, fees,
+  venue, FAQ, rules).
+- `components/forms/registration-wizard/*` — the 5-step registration flow at `/nevezes`, built
+  with `react-hook-form` + `zod`, with draft persistence to `localStorage`.
+- `app/api/register`, `app/api/volunteer`, `app/api/weight` — server-side routes that validate
+  input and forward to the organiser's Make webhook(s). Moving this server-side (rather than
+  calling the webhook from the browser, as the previous version did) means the webhook URL is
+  no longer shipped in the client bundle, and a failed webhook call now actually blocks the flow
+  instead of silently succeeding.
 
-## Learn More
+This implements the front-end phases of the companion UI/UX and robustness plan (see the
+`docs: UI/UX and robustness improvement plan for SBD Next 2` pull request for the full document).
+Intentionally still out of scope here: a Supabase-backed system of record, Stripe Checkout
+Sessions + webhook, transactional e-mail, and an admin panel — all of which need the organiser's
+own credentials to set up.
 
-To learn more about Next.js, take a look at the following resources:
+## Environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Everything works with no environment variables configured — forms and webhooks degrade
+gracefully (they validate and respond successfully, they just don't forward anywhere). See
+`.env.example` for the full list:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `PHASE_OVERRIDE` — force a specific phase for previewing (`announced` | `registration` |
+  `closed` | `live` | `post`).
+- `VOLUNTEER_WEBHOOK_URL`, `VOLUNTEER_MAKE_WEBHOOK_URL` — volunteer form webhook(s).
+- `WEIGHT_WEBHOOK_URL` — weight-update form webhook.
 
-## Deploy on Vercel
+The main registration webhook and the Stripe payment links are intentionally kept as the same
+values the live site already uses (see `app/api/register/route.ts` and `config/event.ts`) — ask
+before changing either, since they're wired to the organiser's real Make scenario and Stripe
+account.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Önkéntes webhookok (Make / Google Sheet)
-
-- `NEXT_PUBLIC_VOLUNTEER_WEBHOOK`: meglévő webhook (Make vagy más) az önkéntes adatokhoz.
-- `NEXT_PUBLIC_VOLUNTEER_MAKE_WEBHOOK`: opcionális második webhook (pl. Google Sheet-szinkron Make-ben).
-
-Beküldött payload (JSON):
-
-- `timestamp`: ISO dátum-idő
-- `name`: önkéntes neve
-- `days`: tömb, elemei `2026-02-14` és/vagy `2026-02-15`
-- `position`: kiválasztott pozíció
-- `shirtCut`: "Női" vagy "Férfi"
-- `shirtSize`: "XS"–"4XL"
-
-Mindkét webhook, ha meg van adva, párhuzamosan kapja ugyanazt a payloadot. Ha egyik sincs megadva, a kliens ettől függetlenül sikeresnek jelzi a beküldést (nincs hiba, csak nem megy ki webhook).
+Deploys via Vercel from this repository as usual. See the Next.js deployment docs for details.

@@ -1,133 +1,149 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Dark variant támogatás */
+/* Dark variant support (kept for parity with shadcn conventions; the site
+   itself only ships a dark theme, see :root below). */
 @custom-variant dark (&:is(.dark *));
 
-/* Tailwind v4 inline theme → a color-* utilok ezekre épülnek */
+/*
+ * SBD Next design tokens — Tailwind v4.
+ *
+ * IMPORTANT: colours are defined once, here, as real CSS colour values
+ * (oklch). The old file defined bare HSL triplets and the @theme block
+ * wrapped them in hsl(var(--x)) — for Tailwind v4 that produces an invalid
+ * `background-color: 0 0% 3%` in the compiled CSS, so every bg-background /
+ * bg-card / text-primary utility silently did nothing. Never repeat that:
+ * a token here must be a value the `color-*` property can use directly.
+ *
+ * Feature code should use these tokens (bg-card, text-primary,
+ * text-muted-foreground, border-border, ring-ring…) and never raw
+ * Tailwind palette classes (text-red-400, bg-black/70, border-neutral-800).
+ */
+:root {
+  --background: oklch(0.13 0 0);
+  --foreground: oklch(0.97 0 0);
+
+  --card: oklch(0.17 0.005 20);
+  --card-foreground: oklch(0.97 0 0);
+
+  --popover: oklch(0.15 0 0);
+  --popover-foreground: oklch(0.97 0 0);
+
+  /* SBD red, ~#E4222A */
+  --primary: oklch(0.58 0.24 27);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.97 0 0);
+
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+
+  --accent: oklch(0.25 0.02 20);
+  --accent-foreground: oklch(0.97 0 0);
+
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+
+  --success: oklch(0.7 0.17 150);
+  --success-foreground: oklch(0.13 0 0);
+
+  --warning: oklch(0.8 0.16 80);
+  --warning-foreground: oklch(0.13 0 0);
+
+  --border: oklch(0.28 0 0);
+  --input: oklch(0.3 0 0);
+  --ring: var(--primary);
+
+  --radius: 0.75rem;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
 
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
 
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-barlow-condensed);
+  --font-mono: var(--font-geist-mono);
 }
 
-/* === SBD piros-fekete téma (alap mód) === */
-:root {
-  /* háttér / szöveg */
-  --background: 0 0% 3%;    /* majdnem fekete */
-  --foreground: 0 0% 98%;   /* majdnem fehér */
-
-  /* SBD piros */
-  --primary: 0 100% 52%;
-  --primary-foreground: 0 0% 100%;
-
-  /* neutrális felületek */
-  --muted: 0 0% 16%;
-  --muted-foreground: 0 0% 72%;
-
-  --secondary: 0 0% 10%;
-  --secondary-foreground: 0 0% 100%;
-
-  --accent: 0 0% 16%;
-  --accent-foreground: 0 0% 96%;
-
-  /* hibák / figyelmeztetés */
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-
-  /* keretek, inputok, fókuszgyűrű */
-  --border: 0 0% 24%;
-  --input: 0 0% 24%;
-  --ring: 0 92% 50%;
-
-  /* kártyák */
-  --card: 0 0% 6%;
-  --card-foreground: 0 0% 96%;
-
-  --radius: 1rem;
-}
-
-/* Opcionális .dark override – ha később lesz külön dark mód */
-.dark {
-  --background: 0 0% 3%;
-  --foreground: 0 0% 98%;
-}
-
-/* === Alap reset + body === */
 @layer base {
   * {
+    @apply border-border;
     box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: dark;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
   }
-}
 
-/* === iOS / Safari Select bug fix — Radix Select === */
-[data-radix-select-content],
-[data-radix-select-content] * {
-  color: white !important;
-}
+  h1,
+  h2,
+  h3 {
+    @apply font-display uppercase tracking-wide;
+    line-height: 0.95;
+  }
 
-[data-radix-collection-item],
-[data-radix-collection-item] * {
-  color: white !important;
-}/* Minden narancs kiszedése – egységes SBD piros fekete dizájn */
-:root {
-  --primary: 0 100% 50%; /* SBD piros */
-}
+  h1 {
+    @apply text-4xl sm:text-5xl lg:text-7xl font-extrabold;
+  }
 
-/* Ha valahol még maradna narancs, azt lenyomjuk */
-[class*="text-orange"],
-[class*="text-amber"],
-[class*="text-yellow"],
-[class*="text-orange"] *,
-[class*="text-amber"] *,
-[class*="text-yellow"] * {
-  color: hsl(0 100% 50%) !important;
-}/* SBD: Narancs eltávolítása – egységes SBD piros (ED1C24) */
+  h2 {
+    @apply text-3xl sm:text-4xl font-bold;
+  }
 
-:root {
-  --primary: 0 100% 50% !important; /* SBD piros */
-}
+  h3 {
+    @apply text-xl sm:text-2xl font-bold;
+  }
 
-/* Minden narancs/amber/yellow override */
-[class*="text-orange"],
-[class*="text-amber"],
-[class*="text-yellow"],
-[class*="text-orange"] *,
-[class*="text-amber"] *,
-[class*="text-yellow"] * {
-  color: hsl(0 100% 50%) !important;
-}
+  /* Section eyebrow label — the small red uppercase tag above every h2 */
+  .eyebrow {
+    @apply font-display text-primary text-sm font-bold uppercase tracking-[0.14em];
+  }
 
-[class*="border-orange"],
-[class*="border-amber"],
-[class*="border-yellow"] {
-  border-color: hsl(0 100% 50%) !important;
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
