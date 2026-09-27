@@ -41,10 +41,9 @@ export const step3Schema = z.object({
 });
 
 export const step4Schema = z.object({
-  shirtCut: z.enum(["Női", "Férfi"], { message: "Válaszd ki a póló fazonját." }),
-  shirtSize: z.enum(EVENT.shirt.sizes as unknown as [string, ...string[]], {
-    message: "Válaszd ki a pólóméretet.",
-  }),
+  wantsShirt: z.boolean(),
+  shirtCut: z.enum(["Női", "Férfi"]).optional(),
+  shirtSize: z.enum(EVENT.shirt.sizes as unknown as [string, ...string[]]).optional(),
   premiumMedia: z.boolean(),
 });
 
@@ -57,7 +56,16 @@ export const registrationSchema = step1Schema
   .merge(step2Schema)
   .merge(step3Schema)
   .merge(step4Schema)
-  .merge(step5Schema);
+  .merge(step5Schema)
+  .superRefine((data, ctx) => {
+    if (!data.wantsShirt) return;
+    if (!data.shirtCut) {
+      ctx.addIssue({ code: "custom", path: ["shirtCut"], message: "Válaszd ki a póló fazonját." });
+    }
+    if (!data.shirtSize) {
+      ctx.addIssue({ code: "custom", path: ["shirtSize"], message: "Válaszd ki a pólóméretet." });
+    }
+  });
 
 export type RegistrationInput = z.infer<typeof registrationSchema>;
 
@@ -83,6 +91,7 @@ export const REGISTRATION_DEFAULTS: RegistrationInput = {
   openerDeadlift: "",
   mcText: "",
   notes: "",
+  wantsShirt: false,
   shirtCut: undefined as unknown as RegistrationInput["shirtCut"],
   shirtSize: undefined as unknown as RegistrationInput["shirtSize"],
   premiumMedia: false,

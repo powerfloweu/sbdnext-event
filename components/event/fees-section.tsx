@@ -12,17 +12,23 @@ export function FeesSection() {
     <Section id="fees" icon={TicketCheck} eyebrow="Díjak" title="Mit kapsz a nevezésért">
       <div className="grid gap-3">
         <Card className="border-primary/40">
-          <CardContent className="flex flex-col gap-3 p-6">
+          <CardContent className="flex flex-col gap-4 p-6">
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-lg font-semibold text-foreground">Nevezési díj</span>
               <span className="font-display text-3xl font-extrabold text-primary tabular-nums">
-                {formatHUF(EVENT.fees.entry)} {EVENT.fees.currency}
+                {formatHUF(EVENT.fees.entryBase)} {EVENT.fees.currency}
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between gap-3 border-t border-border pt-3">
+              <span className="text-sm font-semibold text-foreground">Nevezés + póló</span>
+              <span className="font-display text-xl font-bold tabular-nums">
+                {formatHUF(EVENT.fees.entryWithShirt)} {EVENT.fees.currency}
               </span>
             </div>
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>Média csomag: profi fotók rólad a platformon</li>
-              <li>Egyedi SBD versenypóló</li>
               <li>IPF szabályok szerinti bírói stáb</li>
+              <li>Egyedi SBD versenypóló igény szerint, felár ellenében</li>
             </ul>
           </CardContent>
         </Card>

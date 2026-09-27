@@ -46,14 +46,26 @@ export const EVENT = {
     closesAt: "2027-02-06T23:59:00+01:00",
   },
 
-  fees: { currency: "HUF", entry: 29990, spectator: 1000, premiumMedia: 24990 },
+  // Per the organiser (2026-09-27): the shirt is now a separate add-on
+  // instead of being bundled into a single entry fee.
+  fees: {
+    currency: "HUF",
+    entryBase: 27990,
+    entryWithShirt: 32990,
+    spectator: 1000,
+    premiumMedia: 24990,
+  },
 
-  // Kept from the live site so the preview's "pay" step still goes somewhere
-  // real. Replace with Stripe Checkout Session Price ids once Phase 2 is
-  // wired up (see docs/UI_UX_ROBUSTNESS_PLAN.md section 2.1).
+  // Entry + shirt + premium-media are now built as a Stripe Checkout Session
+  // (dynamic line items) instead of static Payment Links, since pricing has
+  // two independent add-on dimensions (shirt, premium media). Needs
+  // STRIPE_SECRET_KEY configured — see app/api/register/route.ts. Without
+  // it the wizard still works end-to-end in a "demo" mode (no real charge).
+  //
+  // premiumOnly is unchanged: a single fixed-price Payment Link for the
+  // standalone premium-media purchase (non-competitors), kept as-is since
+  // that price didn't change.
   stripe: {
-    base: "https://buy.stripe.com/cNi8wQ4jJfhkh2jc3d1ck04",
-    premium: "https://buy.stripe.com/3cI14obMbfhkcM30kv1ck05",
     premiumOnly: "https://buy.stripe.com/3cIdRabMbfhkeUb6IT1ck03",
   },
 

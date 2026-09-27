@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller, type Control, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, CheckCircle2, ChevronRight, Lock } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronRight, Lock, Camera } from "lucide-react";
+
+import { compressImageToDataUrl } from "@/lib/client-image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,10 +43,64 @@ function num(v: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+interface FacePhotoState {
+  previewUrl: string | null;
+  processing: boolean;
+  error: string | null;
+  showError: boolean;
+  onSelect: (file: File | null) => void;
+}
+
 // ---------- Step 1: alapadatok ----------
-function Step1({ control, errors }: { control: Ctrl; errors: Errs }) {
+function Step1({
+  control,
+  errors,
+  facePhoto,
+}: {
+  control: Ctrl;
+  errors: Errs;
+  facePhoto: FacePhotoState;
+}) {
   return (
     <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+        <label className="text-sm font-semibold text-foreground">
+          Arcfotó <span className="text-primary">*</span>
+        </label>
+        <p className="text-xs text-muted-foreground">
+          Egy tiszta, jól látható arcfotó kell, hogy a verseny után az AI-alapú fotóválogatónk
+          (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad készült képeket.
+        </p>
+        <div className="flex items-center gap-4">
+          <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-background">
+            {facePhoto.previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={facePhoto.previewUrl} alt="Feltöltött arcfotó előnézete" className="size-full object-cover" />
+            ) : (
+              <Camera className="size-6 text-muted-foreground" aria-hidden="true" />
+            )}
+          </div>
+          <label className="flex-1">
+            <span className="sr-only">Arcfotó kiválasztása</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => facePhoto.onSelect(e.target.files?.[0] ?? null)}
+              className="block w-full cursor-pointer rounded-lg border border-dashed border-border bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary-foreground"
+            />
+          </label>
+        </div>
+        {facePhoto.processing && (
+          <p className="text-xs text-muted-foreground">Feldolgozás…</p>
+        )}
+        {facePhoto.showError && facePhoto.error && (
+          <p role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+            <AlertCircle className="size-3.5" aria-hidden="true" />
+            {facePhoto.error}
+          </p>
+        )}
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Controller
           name="lastName"
@@ -269,51 +325,71 @@ function Step3({
 }
 
 // ---------- Step 4: póló & extrák ----------
-function Step4({ control, errors }: { control: Ctrl; errors: Errs }) {
+function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; wantsShirt: boolean }) {
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Controller
-          name="shirtCut"
-          control={control}
-          render={({ field }) => (
-            <Field id="shirtCut" label="Póló fazon" required error={errors.shirtCut?.message}>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="shirtCut" aria-invalid={!!errors.shirtCut}>
-                  <SelectValue placeholder="Válassz" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT.shirt.cuts.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          )}
-        />
-        <Controller
-          name="shirtSize"
-          control={control}
-          render={({ field }) => (
-            <Field id="shirtSize" label="Pólóméret" required error={errors.shirtSize?.message}>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="shirtSize" aria-invalid={!!errors.shirtSize}>
-                  <SelectValue placeholder="Válassz" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT.shirt.sizes.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          )}
-        />
-      </div>
+      <Controller
+        name="wantsShirt"
+        control={control}
+        render={({ field }) => (
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4">
+            <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(Boolean(v))} />
+            <span className="flex flex-col gap-0.5 text-sm">
+              <span className="font-semibold text-foreground">
+                Kérek pólót is (+{formatHUF(EVENT.fees.entryWithShirt - EVENT.fees.entryBase)} Ft)
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Ha nem kéred, a nevezési díj a póló nélküli áron marad.
+              </span>
+            </span>
+          </label>
+        )}
+      />
+
+      {wantsShirt && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Controller
+            name="shirtCut"
+            control={control}
+            render={({ field }) => (
+              <Field id="shirtCut" label="Póló fazon" required error={errors.shirtCut?.message}>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="shirtCut" aria-invalid={!!errors.shirtCut}>
+                    <SelectValue placeholder="Válassz" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT.shirt.cuts.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+          />
+          <Controller
+            name="shirtSize"
+            control={control}
+            render={({ field }) => (
+              <Field id="shirtSize" label="Pólóméret" required error={errors.shirtSize?.message}>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="shirtSize" aria-invalid={!!errors.shirtSize}>
+                    <SelectValue placeholder="Válassz" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT.shirt.sizes.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+          />
+        </div>
+      )}
 
       <Controller
         name="notes"
@@ -364,14 +440,17 @@ function Summary({
   showConsentError: boolean;
 }) {
   const total = num(data.openerSquat) + num(data.openerBench) + num(data.openerDeadlift);
-  const payable = EVENT.fees.entry + (data.premiumMedia ? EVENT.fees.premiumMedia : 0);
+  const entryFee = data.wantsShirt ? EVENT.fees.entryWithShirt : EVENT.fees.entryBase;
+  const payable = entryFee + (data.premiumMedia ? EVENT.fees.premiumMedia : 0);
 
   const rows: [string, string, number][] = [
     ["Név", `${data.lastName} ${data.firstName}`, 1],
     ["E-mail", data.email, 1],
     ["Kategória", `${data.division} · ${data.sex} · ${data.birthYear}`, 2],
     ["Testsúly / total", `${data.bodyweight || "—"} kg · ${total || "—"} kg`, 3],
-    ["Póló", `${data.shirtCut || "—"} · ${data.shirtSize || "—"}`, 4],
+    ...(data.wantsShirt
+      ? ([["Póló", `${data.shirtCut || "—"} · ${data.shirtSize || "—"}`, 4]] as [string, string, number][])
+      : []),
   ];
 
   return (
@@ -397,8 +476,8 @@ function Summary({
       <Card>
         <CardContent className="flex flex-col gap-2 p-5">
           <div className="flex justify-between text-sm">
-            <span>Nevezési díj</span>
-            <span className="tabular-nums">{formatHUF(EVENT.fees.entry)} Ft</span>
+            <span>Nevezési díj{data.wantsShirt ? " + póló" : ""}</span>
+            <span className="tabular-nums">{formatHUF(entryFee)} Ft</span>
           </div>
           {data.premiumMedia && (
             <div className="flex justify-between text-sm">
@@ -450,12 +529,66 @@ function Summary({
   );
 }
 
+const MAX_FACE_PHOTO_MB = 20;
+
 export function RegistrationWizard() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState(false);
+
+  const [facePhotoDataUrl, setFacePhotoDataUrl] = useState<string | null>(null);
+  const [facePhotoPreviewUrl, setFacePhotoPreviewUrl] = useState<string | null>(null);
+  const [facePhotoProcessing, setFacePhotoProcessing] = useState(false);
+  const [facePhotoError, setFacePhotoError] = useState<string | null>(null);
+  const [facePhotoAttempted, setFacePhotoAttempted] = useState(false);
+  const facePhotoObjectUrl = useRef<string | null>(null);
+
+  const handleFacePhotoSelect = useCallback(async (file: File | null) => {
+    if (facePhotoObjectUrl.current) {
+      URL.revokeObjectURL(facePhotoObjectUrl.current);
+      facePhotoObjectUrl.current = null;
+    }
+    if (!file) {
+      setFacePhotoDataUrl(null);
+      setFacePhotoPreviewUrl(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setFacePhotoError("Csak képfájlt tudunk elfogadni (jpg, png, heic).");
+      setFacePhotoDataUrl(null);
+      setFacePhotoPreviewUrl(null);
+      return;
+    }
+    if (file.size > MAX_FACE_PHOTO_MB * 1024 * 1024) {
+      setFacePhotoError(`A fájl túl nagy (max. ${MAX_FACE_PHOTO_MB} MB).`);
+      setFacePhotoDataUrl(null);
+      setFacePhotoPreviewUrl(null);
+      return;
+    }
+    setFacePhotoError(null);
+    setFacePhotoProcessing(true);
+    try {
+      const dataUrl = await compressImageToDataUrl(file);
+      setFacePhotoDataUrl(dataUrl);
+      const previewUrl = URL.createObjectURL(file);
+      facePhotoObjectUrl.current = previewUrl;
+      setFacePhotoPreviewUrl(previewUrl);
+    } catch {
+      setFacePhotoError("A fotó feldolgozása nem sikerült, próbálj egy másik képet.");
+      setFacePhotoDataUrl(null);
+      setFacePhotoPreviewUrl(null);
+    } finally {
+      setFacePhotoProcessing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (facePhotoObjectUrl.current) URL.revokeObjectURL(facePhotoObjectUrl.current);
+    };
+  }, []);
 
   const {
     control,
@@ -512,12 +645,19 @@ export function RegistrationWizard() {
   const goNext = useCallback(async () => {
     const fields = STEP_FIELDS[step - 1];
     const valid = await trigger(fields);
+    if (step === 1) {
+      setFacePhotoAttempted(true);
+      if (!facePhotoDataUrl) {
+        if (!facePhotoError) setFacePhotoError("Tölts fel egy arcfotót a folytatáshoz.");
+        return;
+      }
+    }
     if (valid) {
       setSubmitError(null);
       setStep((s) => Math.min(5, s + 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [step, trigger]);
+  }, [step, trigger, facePhotoDataUrl, facePhotoError]);
 
   const goBack = useCallback(() => {
     setStep((s) => Math.max(1, s - 1));
@@ -535,6 +675,7 @@ export function RegistrationWizard() {
         body: JSON.stringify({
           ...data,
           utm: typeof window !== "undefined" ? window.location.search : "",
+          facePhoto: facePhotoDataUrl,
         }),
       });
       const json = await res.json().catch(() => null);
@@ -622,10 +763,22 @@ export function RegistrationWizard() {
             />
           </div>
 
-          {step === 1 && <Step1 control={control} errors={errors} />}
+          {step === 1 && (
+            <Step1
+              control={control}
+              errors={errors}
+              facePhoto={{
+                previewUrl: facePhotoPreviewUrl,
+                processing: facePhotoProcessing,
+                error: facePhotoError,
+                showError: facePhotoAttempted,
+                onSelect: handleFacePhotoSelect,
+              }}
+            />
+          )}
           {step === 2 && <Step2 control={control} errors={errors} />}
           {step === 3 && <Step3 control={control} errors={errors} watchOpeners={openers} />}
-          {step === 4 && <Step4 control={control} errors={errors} />}
+          {step === 4 && <Step4 control={control} errors={errors} wantsShirt={!!values.wantsShirt} />}
           {step === 5 && (
             <Summary
               data={getValues()}
@@ -652,7 +805,12 @@ export function RegistrationWizard() {
             ) : (
               <Button type="button" size="lg" disabled={submitting} onClick={onSubmit}>
                 <Lock className="size-4" />
-                {submitting ? "Feldolgozás…" : `Fizetés – ${formatHUF(EVENT.fees.entry + (values.premiumMedia ? EVENT.fees.premiumMedia : 0))} Ft`}
+                {submitting
+                  ? "Feldolgozás…"
+                  : `Fizetés – ${formatHUF(
+                      (values.wantsShirt ? EVENT.fees.entryWithShirt : EVENT.fees.entryBase) +
+                        (values.premiumMedia ? EVENT.fees.premiumMedia : 0)
+                    )} Ft`}
               </Button>
             )}
             <p className="text-center text-xs text-muted-foreground">

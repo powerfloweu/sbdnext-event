@@ -48,6 +48,7 @@ export default async function HomePage() {
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}
           capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}
+          photosTeased={phase === "announced"}
         />
 
         <KeyFacts />
@@ -74,7 +75,7 @@ export default async function HomePage() {
           <VenueSection />
         </div>
 
-        <PhotoStrip />
+        <PhotoStrip teaser={phase === "announced"} />
 
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           <FaqSection />
