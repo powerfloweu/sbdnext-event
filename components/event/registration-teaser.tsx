@@ -22,20 +22,33 @@ const STEPS = [
   },
 ];
 
+const STRINGS = {
+  hu: { eyebrow: "Nevezés", title: "Szólunk, amint indul" },
+  en: { eyebrow: "Registration", title: "We'll let you know" },
+} as const;
+
 interface RegistrationTeaserProps {
   ctaLabel: string;
   ctaHref: string;
   note?: string;
   notifyForm?: boolean;
+  locale?: "hu" | "en";
 }
 
-export function RegistrationTeaser({ ctaLabel, ctaHref, note, notifyForm = false }: RegistrationTeaserProps) {
+export function RegistrationTeaser({
+  ctaLabel,
+  ctaHref,
+  note,
+  notifyForm = false,
+  locale = "hu",
+}: RegistrationTeaserProps) {
   if (notifyForm) {
+    const t = STRINGS[locale];
     return (
-      <Section id="register" icon={Dumbbell} eyebrow="Nevezés" title="Szólunk, amint indul">
+      <Section id="register" icon={Dumbbell} eyebrow={t.eyebrow} title={t.title}>
         <div className="flex max-w-md flex-col gap-4">
           {note && <p className="text-sm text-muted-foreground">{note}</p>}
-          <NotifySignupForm />
+          <NotifySignupForm locale={locale} />
           <a href={ctaHref} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline">
             {ctaLabel}
           </a>

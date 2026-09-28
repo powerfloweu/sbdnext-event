@@ -12,6 +12,7 @@ export interface HomeContent {
   timeLabel: string;
   badgeLabel: string;
   badgeTone: "open" | "neutral" | "closed";
+  description: string;
   primaryCta: { label: string; href: string };
   secondaryCta: { label: string; href: string } | null;
   countdown: { target: string; label: string } | null;
@@ -59,6 +60,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         timeLabel: "Részletek hamarosan",
         badgeLabel: "Nevezés és részletek hamarosan",
         badgeTone: "neutral",
+        description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Értesítést kérek", href: "#register" },
         secondaryCta: null,
         countdown: null,
@@ -82,6 +84,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         timeLabel,
         badgeLabel: `Nevezés nyitva · ${formatDate(EVENT.registration.closesAt)}-ig`,
         badgeTone: "open",
+        description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Nevezek", href: "/nevezes" },
         secondaryCta: { label: "Versenykiírás (PDF)", href: EVENT.docs.invitation },
         countdown: { target: EVENT.registration.closesAt, label: "Nevezési határidő" },
@@ -103,6 +106,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         timeLabel,
         badgeLabel: "Nevezés lezárult",
         badgeTone: "neutral",
+        description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Nevezési lista", href: "#lists" },
         secondaryCta: volunteersLive
           ? { label: "Önkéntesnek jelentkezem", href: "/volunteers" }
@@ -127,6 +131,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         timeLabel,
         badgeLabel: "Most zajlik a verseny",
         badgeTone: "open",
+        description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Élő közvetítés", href: "#schedule" },
         secondaryCta: { label: "Időrend", href: "#schedule" },
         countdown: null,
@@ -148,6 +153,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         timeLabel,
         badgeLabel: "A verseny lezárult",
         badgeTone: "neutral",
+        description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Nevezési lista", href: "#lists" },
         secondaryCta: { label: "Prémium média csomag", href: "/premium-media" },
         countdown: null,

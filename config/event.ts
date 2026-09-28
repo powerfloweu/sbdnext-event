@@ -27,7 +27,10 @@ export const EVENT = {
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4748.762520334373!2d19.04355177770303!3d47.46025827117686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4741dda23e15b409%3A0x59fe623bd00aa0be!2sThor%20Gym!5e1!3m2!1shu!2shu!4v1762941118132!5m2!1shu!2hu",
     parking:
       "Ingyenes parkolás a gyárépület területén belül (festékbolt előtt), illetve a Nándorfejérvári utcán.",
+    parkingEn:
+      "Free parking inside the factory grounds (in front of the paint shop), or on Nándorfejérvári utca.",
     amenities: "Öltöző és zuhany elérhető. Aldi, Tesco egy utcányira.",
+    amenitiesEn: "Changing rooms and showers available. Aldi and Tesco supermarkets one block away.",
   },
 
   // TODO(event-2): confirm the exact registration window.

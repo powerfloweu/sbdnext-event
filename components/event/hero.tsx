@@ -12,10 +12,13 @@ interface HeroProps {
   timeLabel: string;
   badgeLabel: string;
   badgeTone: "open" | "neutral" | "closed";
+  description: string;
   primaryCta: { label: string; href: string };
   secondaryCta: { label: string; href: string } | null;
   countdown: { target: string; label: string } | null;
   capacity: { used: number; limit: number } | null;
+  capacityUnitLabel?: string;
+  heroPhotoAlt?: string;
 }
 
 export function Hero({
@@ -23,10 +26,13 @@ export function Hero({
   timeLabel,
   badgeLabel,
   badgeTone,
+  description,
   primaryCta,
   secondaryCta,
   countdown,
   capacity,
+  capacityUnitLabel = "hely foglalt",
+  heroPhotoAlt = "Versenyző a felhúzás előtt az SBD Next első kiadásán",
 }: HeroProps) {
   return (
     <section className="relative overflow-hidden">
@@ -36,10 +42,7 @@ export function Hero({
           <h1>
             SBD Next <span className="text-primary">{EVENT.edition}</span>
           </h1>
-          <p className="max-w-md text-lg text-foreground/90">
-            {EVENT.tagline.hu}. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF
-            szabályok szerint.
-          </p>
+          <p className="max-w-md text-lg text-foreground/90">{description}</p>
           <div className="flex flex-wrap gap-3 text-sm text-foreground/90">
             <span className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
               <CalendarDays className="size-4 text-primary" aria-hidden="true" />
@@ -83,7 +86,7 @@ export function Hero({
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:h-[420px] lg:aspect-auto">
             <Image
               src="/photos/hero-desktop.jpg"
-              alt="Versenyző a felhúzás előtt az SBD Next első kiadásán"
+              alt={heroPhotoAlt}
               fill
               priority
               sizes="(min-width: 1024px) 560px, 100vw"
@@ -104,8 +107,7 @@ export function Hero({
                 {capacity && (
                   <div className="flex w-full flex-col gap-1.5 sm:w-48">
                     <span className="text-right text-xs text-muted-foreground">
-                      <b className="text-foreground">{capacity.used}</b> / {capacity.limit} hely
-                      foglalt
+                      <b className="text-foreground">{capacity.used}</b> / {capacity.limit} {capacityUnitLabel}
                     </span>
                     <Progress value={capacity.used} max={capacity.limit} />
                   </div>

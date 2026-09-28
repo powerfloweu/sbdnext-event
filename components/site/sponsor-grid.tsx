@@ -1,10 +1,16 @@
 import Image from "next/image";
 import { EVENT } from "@/config/event";
 
-export function SponsorGrid() {
+interface SponsorGridProps {
+  locale?: "hu" | "en";
+}
+
+export function SponsorGrid({ locale = "hu" }: SponsorGridProps) {
   return (
     <div className="flex flex-col items-center gap-4">
-      <span className="eyebrow text-muted-foreground">Szervezők és partnerek</span>
+      <span className="eyebrow text-muted-foreground">
+        {locale === "en" ? "Organisers and partners" : "Szervezők és partnerek"}
+      </span>
       <div className="flex flex-wrap items-center justify-center gap-10">
         {EVENT.sponsors.map((s) => (
           <a

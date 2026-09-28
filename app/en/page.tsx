@@ -1,34 +1,100 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Info, Globe2, ArrowLeft } from "lucide-react";
+import { Dumbbell, Info, ArrowLeft } from "lucide-react";
+
+import { Header } from "@/components/site/header";
+import { Footer } from "@/components/site/footer";
+import { SponsorGrid } from "@/components/site/sponsor-grid";
+import { Hero } from "@/components/event/hero";
+import { RegistrationTeaser } from "@/components/event/registration-teaser";
+import { FeesTeaser } from "@/components/event/fees-teaser";
+import { VenueSection } from "@/components/event/venue-section";
+import { PhotoStrip } from "@/components/event/photo-strip";
+
 import { EVENT } from "@/config/event";
+import { getPhase } from "@/lib/phase";
 
-export default function EnglishInfoPage() {
+export const revalidate = 60;
+
+// This page mirrors app/page.tsx, translated. It's only fully translated for
+// the "announced" teaser phase, since that's the only phase actually live
+// right now — the rest of the Hungarian site (heat sheets, rulebook, FAQ)
+// isn't localized yet. Once registration opens, this falls back to a
+// (still real, chrome-wrapped) English guide to the Hungarian entry form,
+// same as before, rather than showing a half-translated mix.
+export default function EnglishPage() {
+  const phase = getPhase();
+
+  if (phase === "announced") {
+    return (
+      <div className="relative min-h-screen">
+        <Header
+          ctaLabel="Notify me"
+          ctaHref="#register"
+          showVolunteerLink={false}
+          navLinks={[]}
+          locale="en"
+        />
+
+        <main id="main">
+          <Hero
+            dateLabel="Details coming soon"
+            timeLabel="Details coming soon"
+            badgeLabel="Registration and details coming soon"
+            badgeTone="neutral"
+            description="The next level. An open powerlifting competition for novice and competitive lifters, under IPF rules."
+            primaryCta={{ label: "Notify me", href: "#register" }}
+            secondaryCta={null}
+            countdown={null}
+            capacity={null}
+            heroPhotoAlt="A lifter before a deadlift at the first SBD Next"
+          />
+
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
+            <RegistrationTeaser
+              ctaLabel="Follow @sbd.hungary on Instagram"
+              ctaHref={EVENT.social.igSbd}
+              note="We'll announce the exact date and registration details soon. Sign up to be the first to know by e-mail the moment registration opens!"
+              notifyForm
+              locale="en"
+            />
+
+            <FeesTeaser locale="en" />
+
+            <VenueSection locale="en" />
+          </div>
+
+          <PhotoStrip locale="en" />
+
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
+            <div className="py-12">
+              <SponsorGrid locale="en" />
+            </div>
+          </div>
+        </main>
+
+        <Footer showInvitation={false} locale="en" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen">
-      <nav className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 text-sm">
-          <div className="flex items-center gap-2">
-            <Globe2 className="size-4 text-primary" aria-hidden="true" />
-            <span className="font-semibold">SBD Next – English guide</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button asChild variant="secondary" size="sm">
-              <Link href="/">
-                <ArrowLeft className="size-3.5" />
-                Hungarian page
-              </Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/#register">Go to registration</Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+    <div className="relative min-h-screen">
+      <Header
+        ctaLabel="Go to registration"
+        ctaHref="/#register"
+        showVolunteerLink={false}
+        navLinks={[]}
+        locale="en"
+      />
 
-      <main className="mx-auto max-w-4xl px-4 pb-16 pt-8">
+      <main id="main" className="mx-auto max-w-4xl px-4 pb-16 pt-10">
         <section className="mb-8 flex flex-col gap-3">
+          <Link href="/" className="inline-flex w-fit items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="size-3.5" aria-hidden="true" />
+            Hungarian page
+          </Link>
           <h1 className="text-2xl font-bold">SBD Next – English information for athletes</h1>
           <p className="text-sm text-foreground/90">
             This page explains the main details of the event in English and helps you fill out
@@ -143,6 +209,8 @@ export default function EnglishInfoPage() {
           </div>
         </section>
       </main>
+
+      <Footer locale="en" />
     </div>
   );
 }

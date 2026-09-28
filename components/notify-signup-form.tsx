@@ -11,7 +11,31 @@ import { notifySignupSchema, type NotifySignupInput } from "@/lib/validation/not
 
 const DEFAULTS: NotifySignupInput = { email: "", honeypot: "" };
 
-export function NotifySignupForm() {
+const STRINGS = {
+  hu: {
+    success: "Feliratkoztál — e-mailt küldünk, amint megnyílik a nevezés.",
+    submitError: "A feliratkozás nem sikerült, próbáld újra.",
+    invalidEmail: "Érvénytelen e-mail cím.",
+    emailAria: "E-mail cím",
+    submitLabel: "Értesítést kérek",
+    submittingLabel: "Küldés…",
+  },
+  en: {
+    success: "You're signed up — we'll e-mail you the moment registration opens.",
+    submitError: "Sign-up failed, please try again.",
+    invalidEmail: "Invalid e-mail address.",
+    emailAria: "E-mail address",
+    submitLabel: "Notify me",
+    submittingLabel: "Sending…",
+  },
+} as const;
+
+interface NotifySignupFormProps {
+  locale?: "hu" | "en";
+}
+
+export function NotifySignupForm({ locale = "hu" }: NotifySignupFormProps) {
+  const t = STRINGS[locale];
   const {
     control,
     handleSubmit,
@@ -32,10 +56,10 @@ export function NotifySignupForm() {
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) {
-        setError("root", { message: "A feliratkozás nem sikerült, próbáld újra." });
+        setError("root", { message: t.submitError });
       }
     } catch {
-      setError("root", { message: "A feliratkozás nem sikerült, próbáld újra." });
+      setError("root", { message: t.submitError });
     }
   });
 
@@ -43,9 +67,7 @@ export function NotifySignupForm() {
     return (
       <Alert variant="success">
         <CheckCircle2 className="size-5" aria-hidden="true" />
-        <span className="text-sm">
-          Feliratkoztál — e-mailt küldünk, amint megnyílik a nevezés.
-        </span>
+        <span className="text-sm">{t.success}</span>
       </Alert>
     );
   }
@@ -68,7 +90,7 @@ export function NotifySignupForm() {
             <Input
               type="email"
               placeholder="email@example.com"
-              aria-label="E-mail cím"
+              aria-label={t.emailAria}
               aria-invalid={!!errors.email}
               className="sm:w-64"
               {...field}
@@ -77,14 +99,14 @@ export function NotifySignupForm() {
         />
         <Button type="submit" size="lg" disabled={isSubmitting}>
           <BellRing className="size-4" />
-          {isSubmitting ? "Küldés…" : "Értesítést kérek"}
+          {isSubmitting ? t.submittingLabel : t.submitLabel}
         </Button>
       </div>
 
       {errors.email && (
         <p role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
           <AlertCircle className="size-3.5" aria-hidden="true" />
-          {errors.email.message}
+          {t.invalidEmail}
         </p>
       )}
       {errors.root && (

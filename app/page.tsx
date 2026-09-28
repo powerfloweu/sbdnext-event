@@ -35,7 +35,7 @@ export default async function HomePage() {
     content.showInfoSection && { href: "#info", label: "Infók" },
     content.showLists && { href: "#lists", label: "Nevezési lista" },
     content.showSchedule && { href: "#schedule", label: "Időrend" },
-    { href: "#fees", label: "Díjak" },
+    phase !== "announced" && { href: "#fees", label: "Díjak" },
     content.showFaq && { href: "#faq", label: "GYIK" },
   ].filter((l): l is { href: string; label: string } => Boolean(l));
 
@@ -54,6 +54,7 @@ export default async function HomePage() {
           timeLabel={content.timeLabel}
           badgeLabel={content.badgeLabel}
           badgeTone={content.badgeTone}
+          description={content.description}
           primaryCta={content.primaryCta}
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}

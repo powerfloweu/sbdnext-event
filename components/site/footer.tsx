@@ -3,32 +3,59 @@ import Link from "next/link";
 import { Instagram } from "lucide-react";
 import { EVENT } from "@/config/event";
 
+const STRINGS = {
+  hu: {
+    tagline: "SBD Hungary × PowerFlow · Budapest",
+    contact: "Kapcsolat",
+    documents: "Dokumentumok",
+    invitation: "Versenykiírás (PDF)",
+    rules: "IPF / MERSZ szabályzat",
+    privacy: "Adatkezelési tájékoztató",
+    language: "Nyelv",
+    currentLang: "Magyar",
+    otherLangHref: "/en",
+    otherLang: "English",
+  },
+  en: {
+    tagline: "SBD Hungary × PowerFlow · Budapest",
+    contact: "Contact",
+    documents: "Documents",
+    invitation: "Competition invitation (PDF, Hungarian)",
+    rules: "IPF / MERSZ rulebook (Hungarian)",
+    privacy: "Privacy notice (Hungarian)",
+    language: "Language",
+    currentLang: "English",
+    otherLangHref: "/",
+    otherLang: "Magyar",
+  },
+} as const;
+
 interface FooterProps {
   // False only during "announced": there's no SBD Next 2 versenykiírás yet
   // (last edition's PDF would be misleading), so the link is hidden until
   // registration actually opens. The general IPF/MERSZ rulebook stays —
   // it isn't event-specific.
   showInvitation?: boolean;
+  locale?: "hu" | "en";
 }
 
-export function Footer({ showInvitation = true }: FooterProps) {
+export function Footer({ showInvitation = true, locale = "hu" }: FooterProps) {
   const year = new Date().getFullYear();
+  const t = STRINGS[locale];
 
   return (
     <footer className="border-t border-border">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-8 lg:grid-cols-[2fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-2">
           <span className="font-display text-2xl font-extrabold uppercase">SBD Next</span>
-          <span className="text-sm text-muted-foreground">
-            SBD Hungary × PowerFlow · Budapest
-          </span>
+          <span className="text-sm text-muted-foreground">{t.tagline}</span>
           <span className="mt-3 text-xs text-muted-foreground">
             © {year} SBD Hungary &amp; PowerFlow
           </span>
         </div>
 
         <div className="flex flex-col gap-2 text-sm">
-          <span className="font-semibold text-foreground">Kapcsolat</span>
+          <span className="font-semibold text-foreground">{t.contact}</span>
           <a
             href={`mailto:${EVENT.contact.email}`}
             className="text-muted-foreground hover:text-foreground"
@@ -54,7 +81,7 @@ export function Footer({ showInvitation = true }: FooterProps) {
         </div>
 
         <div className="flex flex-col gap-2 text-sm">
-          <span className="font-semibold text-foreground">Dokumentumok</span>
+          <span className="font-semibold text-foreground">{t.documents}</span>
           {showInvitation && (
             <a
               href={EVENT.docs.invitation}
@@ -62,7 +89,7 @@ export function Footer({ showInvitation = true }: FooterProps) {
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground"
             >
-              Versenykiírás (PDF)
+              {t.invitation}
             </a>
           )}
           <a
@@ -71,19 +98,19 @@ export function Footer({ showInvitation = true }: FooterProps) {
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground"
           >
-            IPF / MERSZ szabályzat
+            {t.rules}
           </a>
           <Link href="/adatkezeles" className="text-muted-foreground hover:text-foreground">
-            Adatkezelési tájékoztató
+            {t.privacy}
           </Link>
         </div>
 
         <div className="flex flex-col gap-3">
-          <span className="text-sm font-semibold text-foreground">Nyelv</span>
+          <span className="text-sm font-semibold text-foreground">{t.language}</span>
           <div className="flex gap-3 text-sm">
-            <span className="text-foreground">Magyar</span>
-            <Link href="/en" className="text-muted-foreground hover:text-foreground">
-              English
+            <span className="text-foreground">{t.currentLang}</span>
+            <Link href={t.otherLangHref} className="text-muted-foreground hover:text-foreground">
+              {t.otherLang}
             </Link>
           </div>
           <div className="mt-2 flex items-center gap-4 opacity-80">
