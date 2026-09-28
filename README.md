@@ -57,11 +57,17 @@ Open [http://localhost:3000](http://localhost:3000).
   it. Upgrading to a Pro plan lets `vercel.json`'s schedule go as tight as every minute if that
   delay matters enough to be worth it.
 
-Before registration opens, the homepage shows real SBD Next 1 photos at full clarity (that's the
-whole point of the teaser — mood, not logistics) but withholds the exact competition date and
-every price in `FeesSection`, replacing them with "Hamarosan"/"Részletek hamarosan" — see
-`pricesRevealed` in `lib/home-content.ts`. This matches how the organiser's own newsletter and
-socials are teasing SBD Next 2 (recap + vibe, no concrete date or price yet).
+Before registration opens (the `announced` phase), the homepage is deliberately stripped down to
+just Hero + a rotating real-photo carousel (`PhotoStrip`, all 6 SBD Next 1 photos, auto-advancing)
++ `FeesTeaser` (photo/video/shirt as concepts, no prices) + the notify-me signup. Everything that
+implies an active registration process — `KeyFacts`, `InfoSection` (registration dates/capacity),
+`ListsSection` ("who's registered so far"), `ScheduleSection` (heat sheet), `RulesSection`
+(competition invitation PDF), `FaqSection`, and the footer's "Versenykiírás" link — is hidden via
+the `showKeyFacts`/`showInfoSection`/`showLists`/`showSchedule`/`showRules`/`showFaq` flags in
+`lib/home-content.ts` and `Footer`'s `showInvitation` prop, since none of it is real yet. The
+header nav (`navLinks` in `app/page.tsx`) is built from the same flags so it never links to a
+hidden section. This matches how the organiser's own newsletter and socials are teasing SBD Next 2
+(recap + vibe, no concrete date or price yet).
 
 This implements the front-end phases of the companion UI/UX and robustness plan (see the
 `docs: UI/UX and robustness improvement plan for SBD Next 2` pull request for the full document).

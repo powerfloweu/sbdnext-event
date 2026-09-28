@@ -30,6 +30,20 @@ interface RegistrationTeaserProps {
 }
 
 export function RegistrationTeaser({ ctaLabel, ctaHref, note, notifyForm = false }: RegistrationTeaserProps) {
+  if (notifyForm) {
+    return (
+      <Section id="register" icon={Dumbbell} eyebrow="Nevezés" title="Szólunk, amint indul">
+        <div className="flex max-w-md flex-col gap-4">
+          {note && <p className="text-sm text-muted-foreground">{note}</p>}
+          <NotifySignupForm />
+          <a href={ctaHref} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline">
+            {ctaLabel}
+          </a>
+        </div>
+      </Section>
+    );
+  }
+
   return (
     <Section
       id="register"
@@ -40,18 +54,9 @@ export function RegistrationTeaser({ ctaLabel, ctaHref, note, notifyForm = false
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr] lg:items-center">
         <div className="flex flex-col gap-4">
           {note && <p className="text-sm text-muted-foreground">{note}</p>}
-          {notifyForm ? (
-            <div className="flex flex-col gap-2">
-              <NotifySignupForm />
-              <a href={ctaHref} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline">
-                {ctaLabel}
-              </a>
-            </div>
-          ) : (
-            <Button asChild size="lg" className="self-start">
-              <a href={ctaHref}>{ctaLabel}</a>
-            </Button>
-          )}
+          <Button asChild size="lg" className="self-start">
+            <a href={ctaHref}>{ctaLabel}</a>
+          </Button>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
           {STEPS.map((s) => (

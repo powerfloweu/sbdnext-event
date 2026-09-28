@@ -13,7 +13,7 @@ export interface HomeContent {
   badgeLabel: string;
   badgeTone: "open" | "neutral" | "closed";
   primaryCta: { label: string; href: string };
-  secondaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string } | null;
   countdown: { target: string; label: string } | null;
   showCapacity: boolean;
   showRegistrationTeaser: boolean;
@@ -21,10 +21,16 @@ export interface HomeContent {
   registrationCtaLabel: string;
   registrationCtaHref: string;
   showVolunteerCta: boolean;
-  // False only during "announced": real event photos are shown at full
-  // clarity for hangulatkeltés, but the exact date and price stay
-  // unannounced until registration actually opens. See Hero/FeesSection.
-  pricesRevealed: boolean;
+  // All false only during "announced": nothing below is real yet — no one
+  // has registered, there's no schedule/heat sheet, no rulebook, no FAQ
+  // about a registration process that doesn't exist. The teaser phase is
+  // deliberately just Hero + photos + FeesTeaser + the notify signup.
+  showKeyFacts: boolean;
+  showInfoSection: boolean;
+  showLists: boolean;
+  showSchedule: boolean;
+  showRules: boolean;
+  showFaq: boolean;
 }
 
 export function getHomeContent(phase: Phase): HomeContent {
@@ -42,26 +48,33 @@ export function getHomeContent(phase: Phase): HomeContent {
     case "announced":
       // Deliberately vague: real SBD Next 1 photos build the mood, but the
       // exact date and price aren't announced yet (matches the organiser's
-      // own teaser emails/social posts — no logistics, just hype). There's
-      // no working notification signup yet, so the CTA points at the
-      // channel that's actually live today (Instagram) instead of
-      // promising an on-site "notify me" that doesn't exist.
+      // own teaser emails/social posts — no logistics, just hype). Every
+      // section below that implies an active registration process (capacity,
+      // "who's registered so far", heat sheet, rulebook, registration FAQ)
+      // is hidden — none of it exists yet, showing it as "hamarosan"
+      // everywhere just reads as broken. This phase is Hero + photos +
+      // FeesTeaser + the notify signup, nothing else.
       return {
         dateLabel: "Részletek hamarosan",
         timeLabel: "Részletek hamarosan",
         badgeLabel: "Nevezés és részletek hamarosan",
         badgeTone: "neutral",
         primaryCta: { label: "Értesítést kérek", href: "#register" },
-        secondaryCta: { label: "Versenykiírás (PDF)", href: EVENT.docs.invitation },
+        secondaryCta: null,
         countdown: null,
         showCapacity: false,
         showRegistrationTeaser: true,
         registrationNote:
           "A pontos időpontot és a nevezési részleteket hamarosan bejelentjük. Iratkozz fel, hogy e-mailben elsőként értesülj, amint megnyílik a nevezés!",
-        registrationCtaLabel: "Kövess Instagramon",
+        registrationCtaLabel: "Kövesd az @sbd.hungary Instagramot",
         registrationCtaHref: EVENT.social.igSbd,
         showVolunteerCta: false,
-        pricesRevealed: false,
+        showKeyFacts: false,
+        showInfoSection: false,
+        showLists: false,
+        showSchedule: false,
+        showRules: false,
+        showFaq: false,
       };
     case "registration":
       return {
@@ -77,7 +90,12 @@ export function getHomeContent(phase: Phase): HomeContent {
         registrationCtaLabel: "Nevezés indítása",
         registrationCtaHref: "/nevezes",
         showVolunteerCta: false,
-        pricesRevealed: true,
+        showKeyFacts: true,
+        showInfoSection: true,
+        showLists: true,
+        showSchedule: true,
+        showRules: true,
+        showFaq: true,
       };
     case "closed":
       return {
@@ -96,7 +114,12 @@ export function getHomeContent(phase: Phase): HomeContent {
         registrationCtaLabel: "Nevezési lista megnézése",
         registrationCtaHref: "#lists",
         showVolunteerCta: volunteersLive,
-        pricesRevealed: true,
+        showKeyFacts: true,
+        showInfoSection: true,
+        showLists: true,
+        showSchedule: true,
+        showRules: true,
+        showFaq: true,
       };
     case "live":
       return {
@@ -112,7 +135,12 @@ export function getHomeContent(phase: Phase): HomeContent {
         registrationCtaLabel: "",
         registrationCtaHref: "#schedule",
         showVolunteerCta: false,
-        pricesRevealed: true,
+        showKeyFacts: true,
+        showInfoSection: true,
+        showLists: true,
+        showSchedule: true,
+        showRules: true,
+        showFaq: true,
       };
     case "post":
       return {
@@ -128,7 +156,12 @@ export function getHomeContent(phase: Phase): HomeContent {
         registrationCtaLabel: "",
         registrationCtaHref: "#lists",
         showVolunteerCta: false,
-        pricesRevealed: true,
+        showKeyFacts: true,
+        showInfoSection: true,
+        showLists: true,
+        showSchedule: true,
+        showRules: true,
+        showFaq: true,
       };
   }
 }

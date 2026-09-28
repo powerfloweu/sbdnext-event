@@ -13,7 +13,7 @@ interface HeroProps {
   badgeLabel: string;
   badgeTone: "open" | "neutral" | "closed";
   primaryCta: { label: string; href: string };
-  secondaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string } | null;
   countdown: { target: string; label: string } | null;
   capacity: { used: number; limit: number } | null;
 }
@@ -64,16 +64,18 @@ export function Hero({
                 {primaryCta.label}
               </a>
             </Button>
-            <Button asChild variant="secondary" size="lg">
-              <a
-                href={secondaryCta.href}
-                target={secondaryCta.href.startsWith("/") || secondaryCta.href.startsWith("#") ? undefined : "_blank"}
-                rel="noopener noreferrer"
-              >
-                {secondaryCta.label}
-                <ExternalLink className="size-4" />
-              </a>
-            </Button>
+            {secondaryCta && (
+              <Button asChild variant="secondary" size="lg">
+                <a
+                  href={secondaryCta.href}
+                  target={secondaryCta.href.startsWith("/") || secondaryCta.href.startsWith("#") ? undefined : "_blank"}
+                  rel="noopener noreferrer"
+                >
+                  {secondaryCta.label}
+                  <ExternalLink className="size-4" />
+                </a>
+              </Button>
+            )}
           </div>
         </div>
 

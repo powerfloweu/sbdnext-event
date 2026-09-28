@@ -3,7 +3,15 @@ import Link from "next/link";
 import { Instagram } from "lucide-react";
 import { EVENT } from "@/config/event";
 
-export function Footer() {
+interface FooterProps {
+  // False only during "announced": there's no SBD Next 2 versenykiírás yet
+  // (last edition's PDF would be misleading), so the link is hidden until
+  // registration actually opens. The general IPF/MERSZ rulebook stays —
+  // it isn't event-specific.
+  showInvitation?: boolean;
+}
+
+export function Footer({ showInvitation = true }: FooterProps) {
   const year = new Date().getFullYear();
 
   return (
@@ -47,14 +55,16 @@ export function Footer() {
 
         <div className="flex flex-col gap-2 text-sm">
           <span className="font-semibold text-foreground">Dokumentumok</span>
-          <a
-            href={EVENT.docs.invitation}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Versenykiírás (PDF)
-          </a>
+          {showInvitation && (
+            <a
+              href={EVENT.docs.invitation}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Versenykiírás (PDF)
+            </a>
+          )}
           <a
             href={EVENT.docs.rules}
             target="_blank"

@@ -7,17 +7,8 @@ import { Section } from "@/components/site/section";
 import { EVENT } from "@/config/event";
 import { formatHUF } from "@/lib/format";
 
-interface FeesSectionProps {
-  pricesRevealed: boolean;
-}
-
-export function FeesSection({ pricesRevealed }: FeesSectionProps) {
-  const amount = (value: number) =>
-    pricesRevealed ? (
-      `${formatHUF(value)} ${EVENT.fees.currency}`
-    ) : (
-      <span className="text-muted-foreground">Hamarosan</span>
-    );
+export function FeesSection() {
+  const amount = (value: number) => `${formatHUF(value)} ${EVENT.fees.currency}`;
 
   return (
     <Section id="fees" icon={TicketCheck} eyebrow="Díjak" title="Mit kapsz a nevezésért">
@@ -53,7 +44,7 @@ export function FeesSection({ pricesRevealed }: FeesSectionProps) {
               </span>
             </div>
             <span className="font-display text-xl font-bold tabular-nums">
-              {pricesRevealed ? `+${formatHUF(EVENT.fees.premiumMedia)} ${EVENT.fees.currency}` : amount(EVENT.fees.premiumMedia)}
+              +{formatHUF(EVENT.fees.premiumMedia)} {EVENT.fees.currency}
             </span>
           </CardContent>
         </Card>

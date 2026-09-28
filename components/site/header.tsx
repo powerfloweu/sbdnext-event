@@ -7,21 +7,14 @@ import { Menu, X, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-const NAV_LINKS = [
-  { href: "#info", label: "Infók" },
-  { href: "#lists", label: "Nevezési lista" },
-  { href: "#schedule", label: "Időrend" },
-  { href: "#fees", label: "Díjak" },
-  { href: "#faq", label: "GYIK" },
-];
-
 interface HeaderProps {
   ctaLabel: string;
   ctaHref: string;
   showVolunteerLink: boolean;
+  navLinks: { href: string; label: string }[];
 }
 
-export function Header({ ctaLabel, ctaHref, showVolunteerLink }: HeaderProps) {
+export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks }: HeaderProps) {
   const [open, setOpen] = useState(false);
 
   // Lock body scroll while the mobile drawer is open.
@@ -35,8 +28,8 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink }: HeaderProps) {
   }, [open]);
 
   const links = showVolunteerLink
-    ? [...NAV_LINKS, { href: "#volunteer", label: "Önkéntes" }]
-    : NAV_LINKS;
+    ? [...navLinks, { href: "#volunteer", label: "Önkéntes" }]
+    : navLinks;
 
   return (
     <>

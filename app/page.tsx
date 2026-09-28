@@ -10,6 +10,7 @@ import { ListsSection } from "@/components/event/lists-section";
 import { ScheduleSection } from "@/components/event/schedule-section";
 import { RulesSection } from "@/components/event/rules-section";
 import { FeesSection } from "@/components/event/fees-section";
+import { FeesTeaser } from "@/components/event/fees-teaser";
 import { VenueSection } from "@/components/event/venue-section";
 import { PhotoStrip } from "@/components/event/photo-strip";
 import { FaqSection } from "@/components/event/faq-section";
@@ -30,12 +31,21 @@ export default async function HomePage() {
 
   const totalRegistered = Object.values(leaderboards).reduce((sum, rows) => sum + rows.length, 0);
 
+  const navLinks = [
+    content.showInfoSection && { href: "#info", label: "Infók" },
+    content.showLists && { href: "#lists", label: "Nevezési lista" },
+    content.showSchedule && { href: "#schedule", label: "Időrend" },
+    { href: "#fees", label: "Díjak" },
+    content.showFaq && { href: "#faq", label: "GYIK" },
+  ].filter((l): l is { href: string; label: string } => Boolean(l));
+
   return (
     <div className="relative min-h-screen">
       <Header
         ctaLabel={content.primaryCta.label}
         ctaHref={content.primaryCta.href}
         showVolunteerLink={volunteersOpen() || phase === "closed"}
+        navLinks={navLinks}
       />
 
       <main id="main">
@@ -50,7 +60,7 @@ export default async function HomePage() {
           capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}
         />
 
-        <KeyFacts />
+        {content.showKeyFacts && <KeyFacts />}
 
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           {content.showRegistrationTeaser && (
@@ -62,15 +72,15 @@ export default async function HomePage() {
             />
           )}
 
-          <ListsSection data={leaderboards} updatedLabel="Percenként frissül" />
+          {content.showLists && <ListsSection data={leaderboards} updatedLabel="Percenként frissül" />}
 
-          <InfoSection />
+          {content.showInfoSection && <InfoSection />}
 
-          <ScheduleSection rows={schedule} />
+          {content.showSchedule && <ScheduleSection rows={schedule} />}
 
-          <RulesSection />
+          {content.showRules && <RulesSection />}
 
-          <FeesSection pricesRevealed={content.pricesRevealed} />
+          {phase === "announced" ? <FeesTeaser /> : <FeesSection />}
 
           <VenueSection />
         </div>
@@ -78,7 +88,7 @@ export default async function HomePage() {
         <PhotoStrip />
 
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
-          <FaqSection />
+          {content.showFaq && <FaqSection />}
 
           {content.showVolunteerCta && <VolunteerCta />}
 
@@ -88,7 +98,7 @@ export default async function HomePage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer showInvitation={phase !== "announced"} />
 
       {phase === "registration" && (
         <>
