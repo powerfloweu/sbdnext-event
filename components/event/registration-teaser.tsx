@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/site/section";
+import { NotifySignupForm } from "@/components/notify-signup-form";
 import { Dumbbell } from "lucide-react";
 
 const STEPS = [
@@ -25,9 +26,10 @@ interface RegistrationTeaserProps {
   ctaLabel: string;
   ctaHref: string;
   note?: string;
+  notifyForm?: boolean;
 }
 
-export function RegistrationTeaser({ ctaLabel, ctaHref, note }: RegistrationTeaserProps) {
+export function RegistrationTeaser({ ctaLabel, ctaHref, note, notifyForm = false }: RegistrationTeaserProps) {
   return (
     <Section
       id="register"
@@ -38,9 +40,18 @@ export function RegistrationTeaser({ ctaLabel, ctaHref, note }: RegistrationTeas
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr] lg:items-center">
         <div className="flex flex-col gap-4">
           {note && <p className="text-sm text-muted-foreground">{note}</p>}
-          <Button asChild size="lg" className="self-start">
-            <a href={ctaHref}>{ctaLabel}</a>
-          </Button>
+          {notifyForm ? (
+            <div className="flex flex-col gap-2">
+              <NotifySignupForm />
+              <a href={ctaHref} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline">
+                {ctaLabel}
+              </a>
+            </div>
+          ) : (
+            <Button asChild size="lg" className="self-start">
+              <a href={ctaHref}>{ctaLabel}</a>
+            </Button>
+          )}
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
           {STEPS.map((s) => (

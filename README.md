@@ -46,6 +46,18 @@ Open [http://localhost:3000](http://localhost:3000).
   still completes end-to-end in "demo" mode (no real charge).
 - `lib/email.ts` — registration-received and payment-confirmed e-mails via Resend. No-ops
   without `RESEND_API_KEY`.
+- `app/api/notify` + `app/api/notify/dispatch` — a real "notify me when registration opens"
+  signup (`components/notify-signup-form.tsx`, shown on the homepage while the phase is
+  `announced`). Signups go into Supabase (`supabase/migrations/0002_notify_signups.sql`);
+  `dispatch` is called on a schedule by Vercel Cron (`vercel.json`) and is a no-op until the
+  phase actually becomes `registration`, at which point it emails everyone who signed up (once
+  each — idempotent, safe to call as often as it likes) with a direct link to `/nevezes`.
+
+Before registration opens, the homepage shows real SBD Next 1 photos at full clarity (that's the
+whole point of the teaser — mood, not logistics) but withholds the exact competition date and
+every price in `FeesSection`, replacing them with "Hamarosan"/"Részletek hamarosan" — see
+`pricesRevealed` in `lib/home-content.ts`. This matches how the organiser's own newsletter and
+socials are teasing SBD Next 2 (recap + vibe, no concrete date or price yet).
 
 This implements the front-end phases of the companion UI/UX and robustness plan (see the
 `docs: UI/UX and robustness improvement plan for SBD Next 2` pull request for the full document).
@@ -79,6 +91,8 @@ list:
   `checkout.session.completed`.
 - `RESEND_API_KEY`, `RESEND_FROM_EMAIL` — transactional e-mail; needs a verified sending domain
   (e.g. `sbdnext.hu`) in the Resend dashboard first.
+- `CRON_SECRET` — authenticates Vercel Cron's calls to `app/api/notify/dispatch`. Unset means
+  the endpoint is unauthenticated; set it before going live.
 
 The main registration webhook is intentionally kept as the same value the live site already
 uses (see `app/api/register/route.ts`) — ask before changing it, since it's wired to the

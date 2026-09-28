@@ -1,11 +1,13 @@
 import Image from "next/image";
 
-import { cn } from "@/lib/utils";
-import { PhotoMist } from "./photo-mist";
-
 // Source photos are full-body portrait shots; the object-position keeps the
 // lifter's face in frame instead of the default center crop, which cut off
 // heads when a tall portrait image covers a landscape 4:3 box.
+//
+// These are shown at full clarity even before registration/pricing details
+// are announced — real photos from SBD Next 1 are the point of the teaser
+// phase (mood, not logistics). See FeesSection / Hero for where the actual
+// date and price get withheld instead.
 const PHOTOS = [
   {
     src: "/photos/strip-1.jpg",
@@ -19,11 +21,7 @@ const PHOTOS = [
   },
 ];
 
-interface PhotoStripProps {
-  teaser?: boolean;
-}
-
-export function PhotoStrip({ teaser = false }: PhotoStripProps) {
+export function PhotoStrip() {
   return (
     <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-4 py-4 sm:px-8">
       {PHOTOS.map((p) => (
@@ -34,9 +32,8 @@ export function PhotoStrip({ teaser = false }: PhotoStripProps) {
             fill
             sizes="(min-width: 640px) 380px, 50vw"
             style={{ objectPosition: p.focus }}
-            className={cn("object-cover transition-all", teaser && "scale-110 blur-lg")}
+            className="object-cover"
           />
-          <PhotoMist active={teaser} />
         </div>
       ))}
     </div>

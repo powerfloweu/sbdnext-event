@@ -48,7 +48,6 @@ export default async function HomePage() {
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}
           capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}
-          photosTeased={phase === "announced"}
         />
 
         <KeyFacts />
@@ -59,6 +58,7 @@ export default async function HomePage() {
               ctaLabel={content.registrationCtaLabel}
               ctaHref={content.registrationCtaHref}
               note={content.registrationNote}
+              notifyForm={phase === "announced"}
             />
           )}
 
@@ -70,12 +70,12 @@ export default async function HomePage() {
 
           <RulesSection />
 
-          <FeesSection />
+          <FeesSection pricesRevealed={content.pricesRevealed} />
 
           <VenueSection />
         </div>
 
-        <PhotoStrip teaser={phase === "announced"} />
+        <PhotoStrip />
 
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           <FaqSection />

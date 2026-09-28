@@ -6,8 +6,6 @@ import { PhaseBanner } from "@/components/site/phase-banner";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { Progress } from "@/components/ui/progress";
 import { EVENT } from "@/config/event";
-import { cn } from "@/lib/utils";
-import { PhotoMist } from "./photo-mist";
 
 interface HeroProps {
   dateLabel: string;
@@ -18,7 +16,6 @@ interface HeroProps {
   secondaryCta: { label: string; href: string };
   countdown: { target: string; label: string } | null;
   capacity: { used: number; limit: number } | null;
-  photosTeased?: boolean;
 }
 
 export function Hero({
@@ -30,7 +27,6 @@ export function Hero({
   secondaryCta,
   countdown,
   capacity,
-  photosTeased = false,
 }: HeroProps) {
   return (
     <section className="relative overflow-hidden">
@@ -60,10 +56,20 @@ export function Hero({
           </div>
           <div className="flex flex-wrap gap-3 pt-2">
             <Button asChild size="lg">
-              <a href={primaryCta.href}>{primaryCta.label}</a>
+              <a
+                href={primaryCta.href}
+                target={primaryCta.href.startsWith("/") || primaryCta.href.startsWith("#") ? undefined : "_blank"}
+                rel="noopener noreferrer"
+              >
+                {primaryCta.label}
+              </a>
             </Button>
             <Button asChild variant="secondary" size="lg">
-              <a href={secondaryCta.href} target={secondaryCta.href.startsWith("/") ? undefined : "_blank"} rel="noopener noreferrer">
+              <a
+                href={secondaryCta.href}
+                target={secondaryCta.href.startsWith("/") || secondaryCta.href.startsWith("#") ? undefined : "_blank"}
+                rel="noopener noreferrer"
+              >
                 {secondaryCta.label}
                 <ExternalLink className="size-4" />
               </a>
@@ -79,13 +85,9 @@ export function Hero({
               fill
               priority
               sizes="(min-width: 1024px) 560px, 100vw"
-              className={cn(
-                "object-cover object-[50%_35%] transition-all",
-                photosTeased && "scale-110 blur-lg",
-              )}
+              className="object-cover object-[50%_35%]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/10 to-transparent" />
-            <PhotoMist active={photosTeased} />
             {(countdown || capacity) && (
               <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-5 sm:flex-row sm:items-end sm:justify-between">
                 {countdown && (

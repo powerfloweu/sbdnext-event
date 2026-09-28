@@ -72,3 +72,36 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
   });
   return true;
 }
+
+export async function sendNotifySignupConfirmedEmail(email: string): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: "SBD Next 2 — szólunk, amint nyílik a nevezés",
+    html: `<p>Szia!</p>
+       <p>Feliratkoztál, hogy elsőként értesülj a SBD Next 2 nevezés indulásáról. Amint
+       megnyílik a nevezés, ezen a címen kapsz egy e-mailt a linkkel.</p>
+       <p>Addig is kövess minket: <a href="${EVENT.social.igSbd}">Instagram</a></p>`,
+  });
+  return true;
+}
+
+export async function sendRegistrationOpenNotification(email: string): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: "SBD Next 2 — megnyílt a nevezés!",
+    html: `<p>Szia!</p>
+       <p>Megnyílt a nevezés a SBD Next 2 versenyre! Ha szeretnél indulni, ne várj sokat —
+       a helyek várhatóan gyorsan betelnek.</p>
+       <p><a href="${EVENT.siteUrl}/nevezes" style="font-weight:bold">Nevezek most</a></p>
+       <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`,
+  });
+  return true;
+}
