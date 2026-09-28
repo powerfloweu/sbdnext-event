@@ -52,6 +52,10 @@ Open [http://localhost:3000](http://localhost:3000).
   `dispatch` is called on a schedule by Vercel Cron (`vercel.json`) and is a no-op until the
   phase actually becomes `registration`, at which point it emails everyone who signed up (once
   each — idempotent, safe to call as often as it likes) with a direct link to `/nevezes`.
+  Currently runs once a day (08:00 UTC) — Vercel's Hobby plan only allows daily cron jobs, so
+  there's up to a ~24h delay between registration actually opening and this dispatch catching
+  it. Upgrading to a Pro plan lets `vercel.json`'s schedule go as tight as every minute if that
+  delay matters enough to be worth it.
 
 Before registration opens, the homepage shows real SBD Next 1 photos at full clarity (that's the
 whole point of the teaser — mood, not logistics) but withholds the exact competition date and
