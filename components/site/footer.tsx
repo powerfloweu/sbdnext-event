@@ -92,17 +92,9 @@ export function Footer({ showInvitation = true, locale = "hu" }: FooterProps) {
               {t.invitation}
             </a>
           )}
-          <a
-            href={EVENT.docs.rules}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            {t.rules}
-          </a>
-          <Link href="/adatkezeles" className="text-muted-foreground hover:text-foreground">
-            {t.privacy}
-          </Link>
+          {/* Not linked for now — no confirmed URL/final document yet. */}
+          <span className="text-muted-foreground">{t.rules}</span>
+          <span className="text-muted-foreground">{t.privacy}</span>
         </div>
 
         <div className="flex flex-col gap-3">
