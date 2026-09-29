@@ -8,6 +8,9 @@
 export const EVENT = {
   slug: "sbd-next-2",
   edition: 2,
+  // Displayed everywhere the edition number appears as branding (H1, page
+  // title, meta) — the organiser wants it as a Roman numeral there.
+  editionRoman: "II",
   name: "SBD Next",
   tagline: { hu: "A következő szint", en: "The next level" },
   timezone: "Europe/Budapest",

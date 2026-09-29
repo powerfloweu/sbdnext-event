@@ -46,7 +46,7 @@ export function Hero({
         <div className="flex flex-col gap-6 lg:col-span-6">
           <PhaseBanner label={badgeLabel} tone={badgeTone} className="self-start" />
           <h1>
-            SBD Next <span className="text-primary">{EVENT.edition}</span>
+            SBD Next <span className="text-primary">{EVENT.editionRoman}</span>
           </h1>
           <p className="max-w-md text-lg text-foreground/90">{description}</p>
           <FogCard className="grid gap-4 p-5 sm:grid-cols-3">

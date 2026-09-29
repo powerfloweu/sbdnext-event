@@ -7,6 +7,10 @@ function formatDate(iso: string): string {
   );
 }
 
+function formatMonthYear(iso: string): string {
+  return new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long" }).format(new Date(iso));
+}
+
 export interface HomeContent {
   dateLabel: string;
   timeLabel: string;
@@ -56,7 +60,7 @@ export function getHomeContent(phase: Phase): HomeContent {
       // everywhere just reads as broken. This phase is Hero + photos +
       // FeesTeaser + the notify signup, nothing else.
       return {
-        dateLabel: "Részletek hamarosan",
+        dateLabel: `${formatMonthYear(firstDay.date)} (pontosítás alatt)`,
         timeLabel: "Részletek hamarosan",
         badgeLabel: "Nevezés és részletek hamarosan",
         badgeTone: "neutral",

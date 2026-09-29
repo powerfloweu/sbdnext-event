@@ -43,7 +43,7 @@ export default function EnglishPage() {
 
         <main id="main">
           <Hero
-            dateLabel="Details coming soon"
+            dateLabel="February 2027 (to be finalized)"
             timeLabel="Details coming soon"
             badgeLabel="Registration and details coming soon"
             badgeTone="neutral"
@@ -124,7 +124,7 @@ export default function EnglishPage() {
             </div>
             <ul className="flex flex-col gap-1.5 text-sm text-foreground/90">
               <li>
-                <b>Event:</b> SBD Next {EVENT.edition} – Open Powerlifting Competition
+                <b>Event:</b> SBD Next {EVENT.editionRoman} – Open Powerlifting Competition
               </li>
               <li>
                 <b>Location:</b> {EVENT.venue.name}, Budapest ({EVENT.venue.address})

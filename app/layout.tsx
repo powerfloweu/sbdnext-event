@@ -30,11 +30,11 @@ const dateRangeLabel =
 
 export const metadata: Metadata = {
   metadataBase: new URL(EVENT.siteUrl),
-  title: `${EVENT.name} ${EVENT.edition} – Nyílt Erőemelő Verseny | ${EVENT.venue.name}, ${dateRangeLabel}`,
+  title: `${EVENT.name} ${EVENT.editionRoman} – Nyílt Erőemelő Verseny | ${EVENT.venue.name}, ${dateRangeLabel}`,
   description:
     "SBD Next – IPF szabályrendszer szerinti powerlifting esemény újoncoknak és versenyzőknek a Thor Gymben. Háromfogásos SBD verseny, media csomaggal és egyedi SBD versenypólóval.",
   openGraph: {
-    title: `${EVENT.name} ${EVENT.edition} – Nyílt Erőemelő Verseny`,
+    title: `${EVENT.name} ${EVENT.editionRoman} – Nyílt Erőemelő Verseny`,
     description:
       "IPF szabályrendszer szerinti SBD verseny újoncoknak és versenyzőknek a Thor Gymben.",
     url: EVENT.siteUrl,
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${EVENT.name} ${EVENT.edition} – Nyílt Erőemelő Verseny`,
+    title: `${EVENT.name} ${EVENT.editionRoman} – Nyílt Erőemelő Verseny`,
     description: "Háromfogásos SBD verseny újoncoknak és versenyzőknek.",
     images: ["/photos/hero-desktop.jpg"],
   },
