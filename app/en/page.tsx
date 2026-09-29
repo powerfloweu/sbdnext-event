@@ -12,7 +12,7 @@ import { RegistrationTeaser } from "@/components/event/registration-teaser";
 import { FeesTeaser } from "@/components/event/fees-teaser";
 import { VenueSection } from "@/components/event/venue-section";
 import { PhotoStrip } from "@/components/event/photo-strip";
-import { MoodVideoWide, PremiumMediaSample } from "@/components/event/mood-video";
+import { MoodVideoRow } from "@/components/event/mood-video";
 
 import { EVENT } from "@/config/event";
 import { getPhase } from "@/lib/phase";
@@ -66,12 +66,7 @@ export default function EnglishPage() {
 
             <FeesTeaser locale="en" />
 
-            <div className="grid gap-4 pb-4 sm:grid-cols-3">
-              <div className="sm:col-span-2">
-                <MoodVideoWide />
-              </div>
-              <PremiumMediaSample locale="en" />
-            </div>
+            <MoodVideoRow locale="en" />
 
             <VenueSection locale="en" />
           </div>

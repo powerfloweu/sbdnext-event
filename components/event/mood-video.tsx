@@ -13,8 +13,8 @@ const WIDE_CLIP = "YcvaBQHYg700N2UvaivLIh5FWVIRNL6p3hy2pucQMMB8";
 const TALL_CLIP = "XFu4KKs76zTtboo4tl02LPQ008hfFZgArfrxh2Z34ijRU";
 
 const PREMIUM_CAPTION = {
-  hu: "Így néz ki egy Prémium Média Csomagos felvétel",
-  en: "This is what a Premium Media Package recording looks like",
+  hu: "Prémium Média",
+  en: "Premium Media",
 } as const;
 
 interface AmbientVideoProps {
@@ -26,7 +26,7 @@ function AmbientVideo({ playbackId, className }: AmbientVideoProps) {
   const [ready, setReady] = useState(false);
 
   return (
-    <div className={`pointer-events-none relative overflow-hidden rounded-xl border border-border ${className ?? ""}`}>
+    <div className={`pointer-events-none relative size-full overflow-hidden ${className ?? ""}`}>
       <MuxPlayer
         playbackId={playbackId}
         streamType="on-demand"
@@ -51,27 +51,29 @@ interface LocaleProps {
   locale?: "hu" | "en";
 }
 
-// The general atmosphere clip — sits right under the "what's already
-// included" boxes (Fotó / Videó / Póló) in FeesTeaser, as a mood beat, not a
-// section with its own heading.
-export function MoodVideoWide() {
-  return <AmbientVideo playbackId={WIDE_CLIP} className="aspect-video w-full" />;
-}
-
-// The vertical clip specifically sold as a sample of the Video line item
-// from FeesTeaser ("extra prémium média csomagként rendelhető") — captioned
-// and linked to /premium-media so it reads as a preview, not just more mood.
-export function PremiumMediaSample({ locale = "hu" }: LocaleProps) {
+// A single fixed-height row (same convention as VenueSection's map box)
+// instead of two independently-sized aspect-ratio boxes — that's what made
+// this look like a pile of mismatched shapes before. The wide clip fills
+// whatever width is left; the vertical one keeps its true 9:16 shape
+// (shrink-0 + aspect ratio, not stretched into a column), so it still
+// visibly reads as vertical instead of being squashed toward square.
+export function MoodVideoRow({ locale = "hu" }: LocaleProps) {
   return (
-    <Link
-      href="/premium-media"
-      className="group flex flex-col gap-2 rounded-xl border border-primary/30 p-2 transition-colors hover:border-primary/60"
-    >
-      <AmbientVideo playbackId={TALL_CLIP} className="aspect-[9/16] w-full" />
-      <span className="flex items-center gap-1.5 px-1 pb-1 text-xs font-medium text-primary">
-        <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
-        <span className="group-hover:underline">{PREMIUM_CAPTION[locale]}</span>
-      </span>
-    </Link>
+    <div className="flex flex-col gap-4 pb-4 sm:h-[320px] sm:flex-row">
+      <div className="aspect-video overflow-hidden rounded-xl border border-border sm:aspect-auto sm:h-full sm:flex-1">
+        <AmbientVideo playbackId={WIDE_CLIP} />
+      </div>
+
+      <Link
+        href="/premium-media"
+        className="group relative mx-auto aspect-[9/16] w-44 shrink-0 overflow-hidden rounded-xl border border-primary/30 transition-colors hover:border-primary/60 sm:mx-0 sm:h-full sm:w-auto"
+      >
+        <AmbientVideo playbackId={TALL_CLIP} />
+        <span className="absolute inset-x-2 bottom-2 flex items-center gap-1.5 rounded-full bg-background/85 px-2.5 py-1 text-[11px] font-medium text-primary backdrop-blur-sm">
+          <Sparkles className="size-3 shrink-0" aria-hidden="true" />
+          <span className="truncate group-hover:underline">{PREMIUM_CAPTION[locale]}</span>
+        </span>
+      </Link>
+    </div>
   );
 }
