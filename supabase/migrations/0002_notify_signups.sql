@@ -7,6 +7,10 @@ create table if not exists public.notify_signups (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   email text not null unique,
+  -- Which page they signed up from — /nevezes ("hu") or /en ("en") — so the
+  -- eventual "registration is open" email goes out in the language they
+  -- were actually reading, see app/api/notify/dispatch.
+  locale text not null default 'hu' check (locale in ('hu', 'en')),
   notified_at timestamptz
 );
 

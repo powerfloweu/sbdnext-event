@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { notifySignupSchema, type NotifySignupInput } from "@/lib/validation/notify";
 
-const DEFAULTS: NotifySignupInput = { email: "", honeypot: "" };
+const DEFAULTS: NotifySignupInput = { email: "", locale: "hu", honeypot: "" };
 
 const STRINGS = {
   hu: {
@@ -52,7 +52,7 @@ export function NotifySignupForm({ locale = "hu" }: NotifySignupFormProps) {
       const res = await fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, locale }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) {

@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
   const { data: rows, error } = await admin
     .from("notify_signups")
-    .select("id, email")
+    .select("id, email, locale")
     .is("notified_at", null)
     .limit(BATCH_SIZE);
 
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
   for (const row of rows ?? []) {
     try {
-      await sendRegistrationOpenNotification(row.email);
+      await sendRegistrationOpenNotification(row.email, row.locale === "en" ? "en" : "hu");
       const { error: updateError } = await admin
         .from("notify_signups")
         .update({ notified_at: new Date().toISOString() })

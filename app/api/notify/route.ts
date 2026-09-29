@@ -52,13 +52,14 @@ export async function POST(req: NextRequest) {
   }
 
   const email = parsed.data.email.trim().toLowerCase();
+  const locale = parsed.data.locale ?? "hu";
 
   const admin = getSupabaseAdmin();
   if (admin) {
     // Upsert on email: signing up twice is a no-op, not an error.
     const { error } = await admin
       .from("notify_signups")
-      .upsert({ email }, { onConflict: "email", ignoreDuplicates: true });
+      .upsert({ email, locale }, { onConflict: "email", ignoreDuplicates: true });
     if (error) {
       console.error("notify signup insert failed:", error);
       return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await sendNotifySignupConfirmedEmail(email);
+    await sendNotifySignupConfirmedEmail(email, locale);
   } catch (err) {
     console.error("notify signup confirmation email failed:", err);
   }

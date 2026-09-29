@@ -73,35 +73,49 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
   return true;
 }
 
-export async function sendNotifySignupConfirmedEmail(email: string): Promise<boolean> {
+type Locale = "hu" | "en";
+
+export async function sendNotifySignupConfirmedEmail(email: string, locale: Locale = "hu"): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
 
-  await resend.emails.send({
-    from: FROM,
-    to: email,
-    subject: "SBD Next 2 — szólunk, amint nyílik a nevezés",
-    html: `<p>Szia!</p>
+  const subject =
+    locale === "en" ? "SBD Next 2 — we'll let you know when registration opens" : "SBD Next 2 — szólunk, amint nyílik a nevezés";
+  const html =
+    locale === "en"
+      ? `<p>Hi!</p>
+       <p>You signed up to be the first to know when SBD Next 2 registration opens. The moment it
+       does, you'll get an e-mail at this address with the link.</p>
+       <p>In the meantime, follow us: <a href="${EVENT.social.igSbd}">Instagram</a></p>`
+      : `<p>Szia!</p>
        <p>Feliratkoztál, hogy elsőként értesülj a SBD Next 2 nevezés indulásáról. Amint
        megnyílik a nevezés, ezen a címen kapsz egy e-mailt a linkkel.</p>
-       <p>Addig is kövess minket: <a href="${EVENT.social.igSbd}">Instagram</a></p>`,
-  });
+       <p>Addig is kövess minket: <a href="${EVENT.social.igSbd}">Instagram</a></p>`;
+
+  await resend.emails.send({ from: FROM, to: email, subject, html });
   return true;
 }
 
-export async function sendRegistrationOpenNotification(email: string): Promise<boolean> {
+export async function sendRegistrationOpenNotification(email: string, locale: Locale = "hu"): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
 
-  await resend.emails.send({
-    from: FROM,
-    to: email,
-    subject: "SBD Next 2 — megnyílt a nevezés!",
-    html: `<p>Szia!</p>
+  const subject = locale === "en" ? "SBD Next 2 — registration is open!" : "SBD Next 2 — megnyílt a nevezés!";
+  const html =
+    locale === "en"
+      ? `<p>Hi!</p>
+       <p>Registration for SBD Next 2 is now open! If you want to compete, don't wait too long —
+       spots are expected to fill up fast.</p>
+       <p><a href="${EVENT.siteUrl}/nevezes" style="font-weight:bold">Register now</a></p>
+       <p class="text-xs">The registration form itself is in Hungarian — see the
+       <a href="${EVENT.siteUrl}/en">English guide</a> for help filling it out.</p>
+       <p>Questions? Write to us: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`
+      : `<p>Szia!</p>
        <p>Megnyílt a nevezés a SBD Next 2 versenyre! Ha szeretnél indulni, ne várj sokat —
        a helyek várhatóan gyorsan betelnek.</p>
        <p><a href="${EVENT.siteUrl}/nevezes" style="font-weight:bold">Nevezek most</a></p>
-       <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`,
-  });
+       <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`;
+
+  await resend.emails.send({ from: FROM, to: email, subject, html });
   return true;
 }
