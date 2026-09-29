@@ -33,6 +33,11 @@
   --primary: oklch(0.58 0.24 27);
   --primary-foreground: oklch(1 0 0);
 
+  /* Warmer ember tone paired with --primary for the decorative hero glow
+     (FogGlow) — same family as the red stage lighting visible in the
+     event photos themselves, just a touch more orange. */
+  --glow-ember: oklch(0.62 0.19 55);
+
   --secondary: oklch(0.22 0 0);
   --secondary-foreground: oklch(0.97 0 0);
 
@@ -69,6 +74,7 @@
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-glow-ember: var(--glow-ember);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
 
@@ -96,6 +102,29 @@
   --font-sans: var(--font-geist-sans);
   --font-display: var(--font-barlow-condensed);
   --font-mono: var(--font-geist-mono);
+}
+
+/* Slow drifting blobs for FogGlow — a purely decorative, ambient haze behind
+   hero photos (never on top of them). @media (prefers-reduced-motion) below
+   already freezes any animation-* property, this included. */
+@keyframes fog-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4%, -5%) scale(1.1);
+  }
+}
+
+@keyframes fog-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate(-5%, 4%) scale(0.95);
+  }
 }
 
 @layer base {
