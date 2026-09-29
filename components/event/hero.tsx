@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { PhaseBanner } from "@/components/site/phase-banner";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { Progress } from "@/components/ui/progress";
-import { FogGlow } from "@/components/site/fog-glow";
 import { EVENT } from "@/config/event";
 
 interface HeroProps {
@@ -37,8 +36,7 @@ export function Hero({
 }: HeroProps) {
   return (
     <section className="relative overflow-hidden">
-      <FogGlow />
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-8 px-4 pt-8 pb-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:items-center lg:pb-16">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-8 pb-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:items-center lg:pb-16">
         <div className="flex flex-col gap-6 lg:col-span-6">
           <PhaseBanner label={badgeLabel} tone={badgeTone} className="self-start" />
           <h1>

@@ -2,6 +2,7 @@ import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { StickyMobileCta } from "@/components/site/sticky-cta";
 import { SponsorGrid } from "@/components/site/sponsor-grid";
+import { FogGlow } from "@/components/site/fog-glow";
 import { Hero } from "@/components/event/hero";
 import { KeyFacts } from "@/components/event/key-facts";
 import { RegistrationTeaser } from "@/components/event/registration-teaser";
@@ -41,6 +42,8 @@ export default async function HomePage() {
 
   return (
     <div className="relative min-h-screen">
+      {phase === "announced" && <FogGlow />}
+
       <Header
         ctaLabel={content.primaryCta.label}
         ctaHref={content.primaryCta.href}

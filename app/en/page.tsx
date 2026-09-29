@@ -6,6 +6,7 @@ import { Dumbbell, Info, ArrowLeft } from "lucide-react";
 import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { SponsorGrid } from "@/components/site/sponsor-grid";
+import { FogGlow } from "@/components/site/fog-glow";
 import { Hero } from "@/components/event/hero";
 import { RegistrationTeaser } from "@/components/event/registration-teaser";
 import { FeesTeaser } from "@/components/event/fees-teaser";
@@ -29,6 +30,8 @@ export default function EnglishPage() {
   if (phase === "announced") {
     return (
       <div className="relative min-h-screen">
+        <FogGlow />
+
         <Header
           ctaLabel="Notify me"
           ctaHref="#register"
