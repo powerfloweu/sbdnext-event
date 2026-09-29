@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/site/section";
 import { NotifySignupForm } from "@/components/notify-signup-form";
+import { FogCard } from "@/components/site/fog-card";
 import { Dumbbell } from "lucide-react";
 
 const STEPS = [
@@ -46,13 +47,13 @@ export function RegistrationTeaser({
     const t = STRINGS[locale];
     return (
       <Section id="register" icon={Dumbbell} eyebrow={t.eyebrow} title={t.title}>
-        <div className="flex max-w-md flex-col gap-4">
+        <FogCard className="flex max-w-md flex-col gap-4 p-6">
           {note && <p className="text-sm text-muted-foreground">{note}</p>}
           <NotifySignupForm locale={locale} />
           <a href={ctaHref} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline">
             {ctaLabel}
           </a>
-        </div>
+        </FogCard>
       </Section>
     );
   }

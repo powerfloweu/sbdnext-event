@@ -5,7 +5,13 @@ import { PhaseBanner } from "@/components/site/phase-banner";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { Progress } from "@/components/ui/progress";
 import { HeroPhoto } from "@/components/event/hero-photo";
+import { FogCard } from "@/components/site/fog-card";
 import { EVENT } from "@/config/event";
+
+const FACT_LABELS = {
+  hu: { date: "Dátum", time: "Idő", venue: "Helyszín" },
+  en: { date: "Date", time: "Time", venue: "Venue" },
+} as const;
 
 interface HeroProps {
   dateLabel: string;
@@ -43,20 +49,29 @@ export function Hero({
             SBD Next <span className="text-primary">{EVENT.edition}</span>
           </h1>
           <p className="max-w-md text-lg text-foreground/90">{description}</p>
-          <div className="flex flex-wrap gap-3 text-sm text-foreground/90">
-            <span className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
-              <CalendarDays className="size-4 text-primary" aria-hidden="true" />
-              {dateLabel}
-            </span>
-            <span className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
-              <Timer className="size-4 text-primary" aria-hidden="true" />
-              {timeLabel}
-            </span>
-            <span className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
-              <MapPin className="size-4 text-primary" aria-hidden="true" />
-              {EVENT.venue.name}
-            </span>
-          </div>
+          <FogCard className="grid gap-4 p-5 sm:grid-cols-3">
+            <div className="flex items-start gap-2.5">
+              <CalendarDays className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+              <div className="flex flex-col">
+                <span className="eyebrow">{FACT_LABELS[locale].date}</span>
+                <span className="font-semibold text-foreground">{dateLabel}</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Timer className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+              <div className="flex flex-col">
+                <span className="eyebrow">{FACT_LABELS[locale].time}</span>
+                <span className="font-semibold text-foreground">{timeLabel}</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+              <div className="flex flex-col">
+                <span className="eyebrow">{FACT_LABELS[locale].venue}</span>
+                <span className="font-semibold text-foreground">{EVENT.venue.name}</span>
+              </div>
+            </div>
+          </FogCard>
           <div className="flex flex-wrap gap-3 pt-2">
             <Button asChild size="lg">
               <a

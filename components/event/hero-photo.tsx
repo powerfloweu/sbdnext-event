@@ -3,40 +3,32 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-// Rotates through 2 photos with a man as the subject and 2 with a woman —
-// deliberately the 4 solo shots from the library (not the 2 that show a
-// mixed pair, so the split stays an unambiguous 2+2). Same "real photos,
-// no favoritism" principle as PhotoStrip below, just a smaller, slower set
-// sized for the hero's fixed-aspect box.
+// The hero's own set — 2 men, 2 women, all distinct from PhotoStrip below
+// (18 real photos total across both, none repeated) so the same face never
+// shows up twice on the page.
 const PHOTOS = [
   {
-    src: "/photos/hero-desktop.jpg",
-    focus: "50% 35%",
+    src: "/photos/versenyzoferfi1-20.jpg",
+    focus: "50% 20%",
     alt: {
-      hu: "Versenyző a felhúzás előtt az SBD Next első kiadásán",
-      en: "A lifter before a deadlift at the first SBD Next",
+      hu: "Versenyző ünnepli a sikeres emelést az SBD Next első kiadásán",
+      en: "A lifter celebrates a successful lift at the first SBD Next",
     },
   },
   {
-    src: "/photos/hero-mobile.jpg",
-    focus: "50% 10%",
-    alt: {
-      hu: "Versenyző a felhúzás előtt az SBD Next első kiadásán",
-      en: "A lifter before a deadlift at the first SBD Next",
-    },
-  },
-  {
-    src: "/photos/strip-4.jpg",
+    src: "/photos/versenyzonoi-27.jpg",
     focus: "50% 15%",
-    alt: { hu: "Krétázás a fellépés előtt", en: "Chalking up before stepping on the platform" },
+    alt: { hu: "Felhúzás az A platformon", en: "Deadlift on the A platform" },
   },
   {
-    src: "/photos/strip-1.jpg",
+    src: "/photos/versenyzoferfi2-30.jpg",
     focus: "50% 15%",
-    alt: {
-      hu: "Versenyzők a felhúzás előtt az SBD Next első kiadásán",
-      en: "Lifters before a deadlift at the first SBD Next",
-    },
+    alt: { hu: "Felhúzás előtti felállás az A platformon", en: "Setting up for a deadlift on the A platform" },
+  },
+  {
+    src: "/photos/ujoncnoi1-7.jpg",
+    focus: "50% 15%",
+    alt: { hu: "Fogás a rúdon guggolás előtt", en: "Taking grip on the bar before a squat" },
   },
 ];
 

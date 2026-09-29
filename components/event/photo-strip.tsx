@@ -10,7 +10,8 @@ import Image from "next/image";
 // These are shown at full clarity even before registration/pricing details
 // are announced — real photos from SBD Next 1 are the point of the teaser
 // phase (mood, not logistics). See FeesTeaser/Hero for where the actual
-// date and price get withheld instead.
+// date and price get withheld instead. 14 distinct photos, none repeated
+// from HeroPhoto's 4 — real variety, not the same two faces everywhere.
 const PHOTOS = [
   {
     src: "/photos/strip-1.jpg",
@@ -41,6 +42,46 @@ const PHOTOS = [
     src: "/photos/hero-mobile.jpg",
     focus: "50% 10%",
     alt: { hu: "Felhúzás az A platformon, csapat a háttérben", en: "Deadlift on the A platform, team in the background" },
+  },
+  {
+    src: "/photos/versenyzonoi-17.jpg",
+    focus: "50% 15%",
+    alt: { hu: "Krétázás a fellépés előtt", en: "Chalking up before stepping on the platform" },
+  },
+  {
+    src: "/photos/versenyzonoi-29.jpg",
+    focus: "50% 15%",
+    alt: { hu: "Versenyzők a színfalak mögött", en: "Lifters backstage" },
+  },
+  {
+    src: "/photos/ujoncnoi1-8.jpg",
+    focus: "50% 12%",
+    alt: { hu: "Guggolás a rakaton, segítővel", en: "Squat on the rack, with a spotter" },
+  },
+  {
+    src: "/photos/ujoncnoi1-9.jpg",
+    focus: "50% 12%",
+    alt: { hu: "Fogás a rúdon guggolás előtt", en: "Taking grip on the bar before a squat" },
+  },
+  {
+    src: "/photos/versenyzoferfi1-4.jpg",
+    focus: "50% 15%",
+    alt: { hu: "Versenyzők a rakat körül", en: "Lifters around the squat rack" },
+  },
+  {
+    src: "/photos/versenyzoferfi1-8.jpg",
+    focus: "50% 10%",
+    alt: { hu: "Versenyző felkészül a következő emelésre", en: "A lifter preparing for the next attempt" },
+  },
+  {
+    src: "/photos/versenyzoferfi2-9.jpg",
+    focus: "50% 10%",
+    alt: { hu: "Versenyző szíjazás közben", en: "A lifter wrapping up before an attempt" },
+  },
+  {
+    src: "/photos/versenyzoferfi2-20.jpg",
+    focus: "50% 15%",
+    alt: { hu: "Versenyző a platformon, csapat a háttérben", en: "A lifter on the platform, team in the background" },
   },
 ];
 

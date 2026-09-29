@@ -1,7 +1,8 @@
 import { Camera, Video, Shirt, TicketCheck } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Section } from "@/components/site/section";
+import { FogCard } from "@/components/site/fog-card";
 
 const STRINGS = {
   hu: {
@@ -36,7 +37,7 @@ export function FeesTeaser({ locale = "hu" }: FeesTeaserProps) {
   const t = STRINGS[locale];
   return (
     <Section id="fees" icon={TicketCheck} eyebrow={t.eyebrow} title={t.title}>
-      <Card>
+      <FogCard>
         <CardContent className="grid gap-6 p-6 sm:grid-cols-3">
           {t.items.map((item, idx) => {
             const Icon = ICONS[idx];
@@ -49,7 +50,7 @@ export function FeesTeaser({ locale = "hu" }: FeesTeaserProps) {
             );
           })}
         </CardContent>
-      </Card>
+      </FogCard>
       <p className="mt-3 text-xs text-muted-foreground">{t.footnote}</p>
     </Section>
   );
