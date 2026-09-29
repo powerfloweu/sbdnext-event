@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Menu, X, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { EVENT } from "@/config/event";
 
 const STRINGS = {
   hu: {
@@ -81,7 +82,7 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale 
               className="size-8 object-contain sm:size-10"
             />
             <span className="font-display text-xl font-extrabold uppercase tracking-wide sm:text-2xl">
-              SBD Next <span className="text-primary">2</span>
+              SBD Next <span className="text-primary">{EVENT.editionRoman}</span>
             </span>
           </Link>
 

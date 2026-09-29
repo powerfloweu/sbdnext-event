@@ -46,8 +46,14 @@ export function Footer({ showInvitation = true, locale = "hu" }: FooterProps) {
   return (
     <footer className="border-t border-border">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-8 lg:grid-cols-[2fr_1fr_1fr_1fr]">
-        <div className="flex flex-col gap-2">
-          <span className="font-display text-2xl font-extrabold uppercase">SBD Next</span>
+        <div className="flex flex-col gap-3">
+          <Image
+            src="/sbd_next_logo_footer.png"
+            alt="SBD Next"
+            width={900}
+            height={435}
+            className="h-14 w-auto object-contain object-left"
+          />
           <span className="text-sm text-muted-foreground">{t.tagline}</span>
           <span className="mt-3 text-xs text-muted-foreground">
             © {year} SBD Hungary &amp; PowerFlow
