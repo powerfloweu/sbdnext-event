@@ -14,7 +14,7 @@ import { FeesSection } from "@/components/event/fees-section";
 import { FeesTeaser } from "@/components/event/fees-teaser";
 import { VenueSection } from "@/components/event/venue-section";
 import { PhotoStrip } from "@/components/event/photo-strip";
-import { MoodVideo } from "@/components/event/mood-video";
+import { MoodVideoWide, PremiumMediaSample } from "@/components/event/mood-video";
 import { FaqSection } from "@/components/event/faq-section";
 import { VolunteerCta } from "@/components/event/volunteer-cta";
 
@@ -67,8 +67,6 @@ export default async function HomePage() {
 
         {content.showKeyFacts && <KeyFacts />}
 
-        <MoodVideo />
-
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           {content.showRegistrationTeaser && (
             <RegistrationTeaser
@@ -88,6 +86,13 @@ export default async function HomePage() {
           {content.showRules && <RulesSection />}
 
           {phase === "announced" ? <FeesTeaser /> : <FeesSection />}
+
+          <div className="grid gap-4 pb-4 sm:grid-cols-3">
+            <div className="sm:col-span-2">
+              <MoodVideoWide />
+            </div>
+            <PremiumMediaSample />
+          </div>
 
           <VenueSection />
         </div>
