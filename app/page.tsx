@@ -67,6 +67,8 @@ export default async function HomePage() {
 
         {content.showKeyFacts && <KeyFacts />}
 
+        <MoodVideo />
+
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           {content.showRegistrationTeaser && (
             <RegistrationTeaser
@@ -91,8 +93,6 @@ export default async function HomePage() {
         </div>
 
         <PhotoStrip />
-
-        <MoodVideo />
 
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           {content.showFaq && <FaqSection />}
