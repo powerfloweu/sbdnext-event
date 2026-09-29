@@ -12,6 +12,7 @@ import { RegistrationTeaser } from "@/components/event/registration-teaser";
 import { FeesTeaser } from "@/components/event/fees-teaser";
 import { VenueSection } from "@/components/event/venue-section";
 import { PhotoStrip } from "@/components/event/photo-strip";
+import { MoodVideo } from "@/components/event/mood-video";
 
 import { EVENT } from "@/config/event";
 import { getPhase } from "@/lib/phase";
@@ -69,6 +70,8 @@ export default function EnglishPage() {
           </div>
 
           <PhotoStrip locale="en" />
+
+          <MoodVideo locale="en" />
 
           <div className="mx-auto max-w-6xl px-4 sm:px-8">
             <div className="py-12">

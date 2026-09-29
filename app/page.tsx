@@ -14,6 +14,7 @@ import { FeesSection } from "@/components/event/fees-section";
 import { FeesTeaser } from "@/components/event/fees-teaser";
 import { VenueSection } from "@/components/event/venue-section";
 import { PhotoStrip } from "@/components/event/photo-strip";
+import { MoodVideo } from "@/components/event/mood-video";
 import { FaqSection } from "@/components/event/faq-section";
 import { VolunteerCta } from "@/components/event/volunteer-cta";
 
@@ -90,6 +91,8 @@ export default async function HomePage() {
         </div>
 
         <PhotoStrip />
+
+        <MoodVideo />
 
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           {content.showFaq && <FaqSection />}

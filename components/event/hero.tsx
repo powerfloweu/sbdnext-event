@@ -5,7 +5,6 @@ import { PhaseBanner } from "@/components/site/phase-banner";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { Progress } from "@/components/ui/progress";
 import { HeroPhoto } from "@/components/event/hero-photo";
-import { HeroVideo } from "@/components/event/hero-video";
 import { FogCard } from "@/components/site/fog-card";
 import { EVENT } from "@/config/event";
 
@@ -101,7 +100,6 @@ export function Hero({
         <div className="relative lg:col-span-6">
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:h-[420px] lg:aspect-auto">
             <HeroPhoto locale={locale} />
-            <HeroVideo />
             <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/10 to-transparent" />
             {(countdown || capacity) && (
               <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-5 sm:flex-row sm:items-end sm:justify-between">
