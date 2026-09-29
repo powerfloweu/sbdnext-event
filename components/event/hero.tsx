@@ -1,10 +1,10 @@
-import Image from "next/image";
 import { CalendarDays, MapPin, Timer, ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PhaseBanner } from "@/components/site/phase-banner";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { Progress } from "@/components/ui/progress";
+import { HeroPhoto } from "@/components/event/hero-photo";
 import { EVENT } from "@/config/event";
 
 interface HeroProps {
@@ -18,7 +18,7 @@ interface HeroProps {
   countdown: { target: string; label: string } | null;
   capacity: { used: number; limit: number } | null;
   capacityUnitLabel?: string;
-  heroPhotoAlt?: string;
+  locale?: "hu" | "en";
 }
 
 export function Hero({
@@ -32,7 +32,7 @@ export function Hero({
   countdown,
   capacity,
   capacityUnitLabel = "hely foglalt",
-  heroPhotoAlt = "Versenyző a felhúzás előtt az SBD Next első kiadásán",
+  locale = "hu",
 }: HeroProps) {
   return (
     <section className="relative overflow-hidden">
@@ -84,14 +84,7 @@ export function Hero({
 
         <div className="relative lg:col-span-6">
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:h-[420px] lg:aspect-auto">
-            <Image
-              src="/photos/hero-desktop.jpg"
-              alt={heroPhotoAlt}
-              fill
-              priority
-              sizes="(min-width: 1024px) 560px, 100vw"
-              className="object-cover object-[50%_35%]"
-            />
+            <HeroPhoto locale={locale} />
             <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/10 to-transparent" />
             {(countdown || capacity) && (
               <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-5 sm:flex-row sm:items-end sm:justify-between">

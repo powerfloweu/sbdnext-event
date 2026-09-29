@@ -51,7 +51,7 @@ export default function EnglishPage() {
             secondaryCta={null}
             countdown={null}
             capacity={null}
-            heroPhotoAlt="A lifter before a deadlift at the first SBD Next"
+            locale="en"
           />
 
           <div className="mx-auto max-w-6xl px-4 sm:px-8">

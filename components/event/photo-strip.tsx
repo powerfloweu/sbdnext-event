@@ -20,12 +20,12 @@ const PHOTOS = [
   {
     src: "/photos/strip-2.jpg",
     focus: "50% 10%",
-    alt: { hu: "Felhúzás az A platformon", en: "Deadlift on the A platform" },
+    alt: { hu: "Guggolás segítővel az A platformon", en: "Squat with a spotter on the A platform" },
   },
   {
     src: "/photos/strip-3.jpg",
     focus: "50% 10%",
-    alt: { hu: "Guggolás két segítővel az A platformon", en: "Squat with two spotters on the A platform" },
+    alt: { hu: "Guggolás segítővel az A platformon", en: "Squat with a spotter on the A platform" },
   },
   {
     src: "/photos/strip-4.jpg",
