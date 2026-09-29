@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Section } from "@/components/site/section";
 import { NotifySignupForm } from "@/components/notify-signup-form";
 import { FogCard } from "@/components/site/fog-card";
+import { Testimonials } from "@/components/event/testimonials";
 import { Dumbbell } from "lucide-react";
 
 const STEPS = [
@@ -47,13 +48,16 @@ export function RegistrationTeaser({
     const t = STRINGS[locale];
     return (
       <Section id="register" icon={Dumbbell} eyebrow={t.eyebrow} title={t.title}>
-        <FogCard className="flex max-w-md flex-col gap-4 p-6">
-          {note && <p className="text-sm text-muted-foreground">{note}</p>}
-          <NotifySignupForm locale={locale} />
-          <a href={ctaHref} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline">
-            {ctaLabel}
-          </a>
-        </FogCard>
+        <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr] lg:items-start">
+          <FogCard className="flex flex-col gap-4 p-6">
+            {note && <p className="text-sm text-muted-foreground">{note}</p>}
+            <NotifySignupForm locale={locale} />
+            <a href={ctaHref} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline">
+              {ctaLabel}
+            </a>
+          </FogCard>
+          {locale === "hu" && <Testimonials />}
+        </div>
       </Section>
     );
   }
