@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Barlow_Condensed } from "next/font/google";
+import { EVENT } from "@/config/event";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,22 +13,37 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+});
+
+const firstDay = EVENT.days[0];
+const lastDay = EVENT.days[EVENT.days.length - 1];
+const dateRangeLabel =
+  EVENT.days.length > 1
+    ? `${new Date(firstDay.date).getDate()}–${new Date(lastDay.date).getDate()}. ${new Intl.DateTimeFormat("hu-HU", { month: "long" }).format(new Date(firstDay.date))} (a 2. nap a nevezői létszámtól függ)`
+    : new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long", day: "numeric" }).format(
+        new Date(firstDay.date)
+      );
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://sbdnext-event.vercel.app"),
-  title: "SBD Next – Nyílt Erőemelő Verseny | Thor Gym, 2026. február 14–15.",
+  metadataBase: new URL(EVENT.siteUrl),
+  title: `${EVENT.name} ${EVENT.editionRoman} – Nyílt Erőemelő Verseny | ${EVENT.venue.name}, ${dateRangeLabel}`,
   description:
-    "SBD Next – 2 napos, IPF szabályrendszer szerinti powerlifting esemény újoncoknak és versenyzőknek a XI. kerületi Thor Gymben. Háromfogásos SBD verseny, media csomaggal és egyedi SBD versenypólóval.",
+    "SBD Next – IPF szabályrendszer szerinti powerlifting esemény újoncoknak és versenyzőknek a Thor Gymben. Háromfogásos SBD verseny, media csomaggal és egyedi SBD versenypólóval.",
   openGraph: {
-    title: "SBD Next – Nyílt Erőemelő Verseny",
+    title: `${EVENT.name} ${EVENT.editionRoman} – Nyílt Erőemelő Verseny`,
     description:
-      "2 nap, 2 platform, IPF szabályrendszer szerinti SBD verseny újoncoknak és versenyzőknek a Thor Gymben.",
-    url: "https://sbdnext-event.vercel.app",
-    siteName: "SBD Next",
+      "IPF szabályrendszer szerinti SBD verseny újoncoknak és versenyzőknek a Thor Gymben.",
+    url: EVENT.siteUrl,
+    siteName: EVENT.name,
     images: [
       {
-        url: "/hero_bg.jpg",
-        width: 1200,
-        height: 630,
+        url: "/photos/hero-desktop.jpg",
+        width: 1600,
+        height: 900,
         alt: "SBD Next – powerlifting verseny a Thor Gymben",
       },
     ],
@@ -36,18 +52,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "SBD Next – Nyílt Erőemelő Verseny",
-    description:
-      "Háromfogásos SBD verseny újoncoknak és versenyzőknek, media csomaggal és egyedi SBD pólóval.",
-    images: ["/hero_bg.jpg"],
-  },
-  icons: {
-    icon: "/favicon.ico",
+    title: `${EVENT.name} ${EVENT.editionRoman} – Nyílt Erőemelő Verseny`,
+    description: "Háromfogásos SBD verseny újoncoknak és versenyzőknek.",
+    images: ["/photos/hero-desktop.jpg"],
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#0B0B0C",
 };
 
 export default function RootLayout({
@@ -58,7 +70,7 @@ export default function RootLayout({
   return (
     <html lang="hu">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} ${barlowCondensed.variable} antialiased bg-background text-foreground`}
       >
         {children}
       </body>

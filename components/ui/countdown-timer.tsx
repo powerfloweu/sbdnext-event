@@ -1,52 +1,56 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
+import { getTimeLeft, pad2, type TimeLeft } from "@/lib/format";
 
 interface CountdownTimerProps {
   target: Date | string;
   className?: string;
+  doneLabel?: string;
 }
 
-function getTimeLeft(target: Date) {
-  const now = new Date();
-  const diff = target.getTime() - now.getTime();
-  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-  const totalSeconds = Math.floor(diff / 1000);
-  const days = Math.floor(totalSeconds / (24 * 3600));
-  const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return { days, hours, minutes, seconds };
-}
-
-export function CountdownTimer({ target, className }: CountdownTimerProps) {
-  const targetDate = typeof target === "string" ? new Date(target) : target;
-  const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(targetDate));
+export function CountdownTimer({ target, className, doneLabel }: CountdownTimerProps) {
+  const targetDate = useMemo(
+    () => (typeof target === "string" ? new Date(target) : target),
+    [target]
+  );
+  // null covers both "not mounted yet" and "countdown reached zero" — the
+  // `mounted` flag below tells them apart so the server-rendered markup and
+  // the first client render match (no hydration mismatch from a value
+  // computed at build/request time).
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const id = setInterval(() => {
+    // Both state updates below run from callbacks handed to browser timer
+    // APIs (setTimeout/setInterval), not synchronously in the effect body,
+    // so this only ever syncs with an external clock — never fires on
+    // render itself.
+    function tick() {
+      setMounted(true);
       setTimeLeft(getTimeLeft(targetDate));
-    }, 1000);
-    return () => clearInterval(id);
+    }
+    const firstTick = window.setTimeout(tick, 0);
+    const id = window.setInterval(tick, 1000);
+    return () => {
+      window.clearTimeout(firstTick);
+      window.clearInterval(id);
+    };
   }, [targetDate]);
 
-  if (
-    timeLeft.days === 0 &&
-    timeLeft.hours === 0 &&
-    timeLeft.minutes === 0 &&
-    timeLeft.seconds === 0
-  ) {
-    return <span className={className}>A verseny elkezdődött!</span>;
+  if (!mounted) {
+    return <span className={className}>&nbsp;</span>;
+  }
+
+  if (!timeLeft) {
+    return <span className={className}>{doneLabel ?? "Elkezdődött!"}</span>;
   }
 
   return (
     <span className={className}>
-      {timeLeft.days > 0 && (
-        <span>{timeLeft.days} nap </span>
-      )}
+      {timeLeft.days > 0 && <span>{timeLeft.days} nap </span>}
       <span>
-        {String(timeLeft.hours).padStart(2, "0")}:
-        {String(timeLeft.minutes).padStart(2, "0")}:
-        {String(timeLeft.seconds).padStart(2, "0")}
+        {pad2(timeLeft.hours)}:{pad2(timeLeft.minutes)}:{pad2(timeLeft.seconds)}
       </span>
     </span>
   );
