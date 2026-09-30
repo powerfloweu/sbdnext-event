@@ -45,24 +45,26 @@ function AmbientVideo({ playbackId, className }: AmbientVideoProps) {
 // A hand-drawn-style squiggly arrow pointing at the vertical clip, labeled
 // "egy példa" — a playful nod at the Videó line item above rather than a
 // pixel-anchored connector (the two live in different components, and a
-// straight ruler-line would look too literal anyway).
+// straight ruler-line would look too literal anyway). Long and winding on
+// purpose: it has to visually bridge the gap up to the fee boxes above, not
+// just sit as a short stub right next to the video.
 function ExampleArrow({ locale = "hu" as const }: { locale?: "hu" | "en" }) {
   return (
     <div
-      className="pointer-events-none absolute -top-14 -left-4 h-20 w-28 -rotate-3 text-primary sm:-top-16 sm:-left-10 sm:h-24 sm:w-32"
+      className="pointer-events-none absolute -top-24 -left-32 h-28 w-52 -rotate-2 text-primary sm:-top-32 sm:-left-48 sm:h-40 sm:w-72"
       aria-hidden="true"
     >
       <span className="absolute -top-1 left-0 -rotate-6 font-serif text-sm italic text-primary sm:text-base">
         {ARROW_LABEL[locale]}
       </span>
-      <svg viewBox="0 0 120 90" fill="none" className="absolute inset-0 size-full">
+      <svg viewBox="0 0 220 160" fill="none" className="absolute inset-0 size-full">
         <defs>
           <marker id="example-arrowhead" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
             <path d="M0 0 L7 3.5 L0 7 Z" fill="currentColor" />
           </marker>
         </defs>
         <path
-          d="M8 30 C 45 20, 30 68, 58 66 C 78 64, 74 42, 104 58"
+          d="M12 18 C 60 -6, 10 58, 66 52 C 104 48, 86 90, 132 94 C 162 97, 154 118, 204 134"
           stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
@@ -85,7 +87,7 @@ interface LocaleProps {
 // visibly reads as vertical instead of being squashed toward square.
 export function MoodVideoRow({ locale = "hu" }: LocaleProps) {
   return (
-    <div className="mt-10 flex flex-col gap-4 pb-4 sm:mt-14 sm:h-[320px] sm:flex-row">
+    <div className="mt-6 flex flex-col gap-4 pb-4 sm:mt-8 sm:h-[320px] sm:flex-row">
       <div className="aspect-video overflow-hidden rounded-xl border border-border sm:aspect-auto sm:h-full sm:flex-1">
         <AmbientVideo playbackId={WIDE_CLIP} />
       </div>
