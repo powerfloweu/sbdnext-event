@@ -7,3 +7,10 @@ export const notifySignupSchema = z.object({
 });
 
 export type NotifySignupInput = z.infer<typeof notifySignupSchema>;
+
+export const notifyFeedbackSchema = z.object({
+  email: z.string().trim().min(1).email("Érvénytelen e-mail cím."),
+  feedback: z.string().trim().min(1).max(2000),
+});
+
+export type NotifyFeedbackInput = z.infer<typeof notifyFeedbackSchema>;
