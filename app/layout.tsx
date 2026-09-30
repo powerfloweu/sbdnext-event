@@ -56,9 +56,6 @@ export const metadata: Metadata = {
     description: "Háromfogásos SBD verseny újoncoknak és versenyzőknek.",
     images: ["/photos/hero-desktop.jpg"],
   },
-  icons: {
-    icon: "/favicon.ico",
-  },
 };
 
 export const viewport: Viewport = {
