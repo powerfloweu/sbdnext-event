@@ -1,10 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { NewsletterFeedbackForm } from "@/components/forms/newsletter-feedback-form";
+import { NewsletterSignupFeedbackGate } from "@/components/forms/newsletter-signup-feedback-gate";
 import { EVENT } from "@/config/event";
 
 function Logo() {
@@ -52,18 +51,7 @@ export default async function NewsletterThankYouPage({
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
       <Logo />
-      <CheckCircle2 className="size-12 text-success" aria-hidden="true" />
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold">Feliratkoztál!</h1>
-        <p className="text-sm text-muted-foreground">
-          A(z) <b className="text-foreground">{email}</b> címre írunk, amint megnyílik a nevezés.
-        </p>
-      </div>
-      <Card className="w-full">
-        <CardContent className="p-5 text-left">
-          <NewsletterFeedbackForm email={email} />
-        </CardContent>
-      </Card>
+      <NewsletterSignupFeedbackGate email={email} />
       <Button asChild variant="secondary">
         <Link href="/">Vissza a főoldalra</Link>
       </Button>
