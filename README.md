@@ -79,8 +79,10 @@ This implements the front-end phases of the companion UI/UX and robustness plan 
 Supabase lookup) is written and ready — it just no-ops until a project exists. Once one does
 (created via the Supabase dashboard or a retried `create_project` call), apply
 `supabase/migrations/0001_registrations.sql` and set `SUPABASE_URL` /
-`SUPABASE_SERVICE_ROLE_KEY` to switch it on. Still out of scope: an admin panel (Supabase's own
-Table Editor already gives live visibility into registrations in the meantime).
+`SUPABASE_SERVICE_ROLE_KEY` to switch it on. An admin panel now exists at `/admin`
+(magic-link login, allowlisted in `config/admin.ts`) showing registrations, newsletter
+signups, and feedback, with search/filter, CSV export, pagination, and manual status
+overrides.
 
 ## Environment variables
 
@@ -95,6 +97,9 @@ list:
 - `WEIGHT_WEBHOOK_URL` — weight-update form webhook.
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — registrations system of record + face-photo
   storage.
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — the `/admin` magic-link auth
+  flow (`middleware.ts`, `lib/supabase/server-auth.ts`). Public/anon, separate from the
+  service-role key above, and only used for the admin login session, never for data access.
 - `STRIPE_SECRET_KEY` — creates the registration Checkout Session.
 - `STRIPE_WEBHOOK_SECRET` — verifies `app/api/stripe/webhook`; set once a webhook is registered
   in the Stripe dashboard pointing at `<deployed-url>/api/stripe/webhook` for
