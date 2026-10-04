@@ -20,7 +20,8 @@ const FROM = process.env.RESEND_FROM_EMAIL ?? "SBD Next <nevezes@sbdnext.hu>";
 
 // Appended to every outgoing email. Keep in sync with the organiser's own
 // copy of this signature if they update it elsewhere (it's not generated
-// from config/event.ts — the date/venue line below is static text).
+// from config/event.ts — the venue line below is static text). No date here
+// on purpose — last year's dates don't apply to this edition.
 const SIGNATURE_HTML = `
 <div style="margin-top:24px" data-spark-custom-html="true">
     <table cellpadding="0" cellspacing="0" style="background:#000000;border-left:4px solid #e52428;border-radius:8px;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
@@ -34,8 +35,7 @@ const SIGNATURE_HTML = `
                         SBD Next – Nyílt erőemelő verseny
                     </div>
                     <div>
-                        Budapest • Thor Gym (Újbuda)<br>
-                        2026. február 14–15.
+                        Budapest • Thor Gym (Újbuda)
                     </div>
                     <div style="margin-top:10px;font-weight:700;color:#ff3b3b;">
                         Kapcsolat:
