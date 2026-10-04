@@ -45,14 +45,21 @@ const SIGNATURE_HTML = `
                         <a href="https://www.sbdnext.hu" style="color:#ff3b3b;text-decoration:none;">www.sbdnext.hu</a>
                     </div>
                     <div style="margin-top:10px;">
-                        Instagram: @sbd.hungary<br>
-                        Instagram: @powerfloweu
+                        Instagram: <a href="${EVENT.social.igSbd}" style="color:#ff3b3b;text-decoration:none;">@sbd.hungary</a><br>
+                        Instagram: <a href="${EVENT.social.igPowerflow}" style="color:#ff3b3b;text-decoration:none;">@powerfloweu</a>
                     </div>
                 </td>
             </tr>
         </tbody>
     </table>
 </div>`;
+
+// A branded call-to-action button for email HTML. display:inline-block (not
+// a bare <a>) so it renders as a real tappable button in mobile clients,
+// not just bold text.
+function buttonHtml(href: string, label: string): string {
+  return `<p style="margin:20px 0;"><a href="${href}" style="display:inline-block;background:#e52428;color:#ffffff;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">${label}</a></p>`;
+}
 
 interface RegistrationEmailData {
   email: string;
@@ -142,14 +149,14 @@ export async function sendRegistrationOpenNotification(email: string, locale: Lo
       ? `<p>Hi!</p>
        <p>Registration for SBD Next 2 is now open! If you want to compete, don't wait too long —
        spots are expected to fill up fast.</p>
-       <p><a href="${EVENT.siteUrl}/nevezes" style="font-weight:bold">Register now</a></p>
+       ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Register now")}
        <p class="text-xs">The registration form itself is in Hungarian — see the
        <a href="${EVENT.siteUrl}/en">English guide</a> for help filling it out.</p>
        <p>Questions? Write to us: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`
       : `<p>Szia!</p>
        <p>Megnyílt a nevezés a SBD Next 2 versenyre! Ha szeretnél indulni, ne várj sokat —
        a helyek várhatóan gyorsan betelnek.</p>
-       <p><a href="${EVENT.siteUrl}/nevezes" style="font-weight:bold">Nevezek most</a></p>
+       ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Nevezek most")}
        <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`;
 
   await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
