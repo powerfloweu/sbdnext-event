@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 interface NewsletterFeedbackFormProps {
   email: string;
+  onDone: () => void;
 }
 
-export function NewsletterFeedbackForm({ email }: NewsletterFeedbackFormProps) {
+export function NewsletterFeedbackForm({ email, onDone }: NewsletterFeedbackFormProps) {
   const [feedback, setFeedback] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,19 +25,14 @@ export function NewsletterFeedbackForm({ email }: NewsletterFeedbackFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, feedback }),
       });
-      setStatus(res.ok ? "done" : "error");
+      if (res.ok) {
+        onDone();
+      } else {
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }
-  }
-
-  if (status === "done") {
-    return (
-      <div className="flex items-center gap-2 rounded-xl border border-success/40 bg-success/10 p-4 text-sm text-foreground">
-        <CheckCircle2 className="size-5 shrink-0 text-success" aria-hidden="true" />
-        Köszönjük a visszajelzést!
-      </div>
-    );
   }
 
   return (
@@ -52,9 +47,14 @@ export function NewsletterFeedbackForm({ email }: NewsletterFeedbackFormProps) {
         rows={4}
         placeholder="Írd le pár mondatban… (opcionális)"
       />
-      <Button type="submit" disabled={status === "submitting" || !feedback.trim()} className="self-start">
-        {status === "submitting" ? "Küldés…" : "Elküldöm"}
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button type="submit" disabled={status === "submitting" || !feedback.trim()}>
+          {status === "submitting" ? "Küldés…" : "Elküldöm"}
+        </Button>
+        <Button type="button" variant="ghost" onClick={onDone} disabled={status === "submitting"}>
+          Kihagyom
+        </Button>
+      </div>
       {status === "error" && (
         <p className="text-xs text-destructive">
           Hiba történt a küldés közben, próbáld újra, vagy írj a powerlifting@sbdnext.hu címre.

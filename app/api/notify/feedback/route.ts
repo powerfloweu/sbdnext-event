@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   if (admin) {
     const { error } = await admin
       .from("notify_signups")
-      .update({ feedback_text: parsed.data.feedback })
+      .update({ feedback_text: parsed.data.feedback, feedback_at: new Date().toISOString() })
       .eq("email", email);
     if (error) {
       console.error("notify feedback update failed:", error);

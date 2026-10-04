@@ -47,6 +47,7 @@ interface NotifySignupRow {
   locale: string;
   source: string;
   feedback_text: string | null;
+  feedback_at: string | null;
   notified_at: string | null;
 }
 
@@ -146,10 +147,10 @@ export default async function AdminPage({
     // the feedback list below always shows every submitted answer.
     admin
       .from("notify_signups")
-      .select("id, email, feedback_text")
+      .select("id, email, feedback_text, feedback_at")
       .not("feedback_text", "is", null)
-      .order("created_at", { ascending: false })
-      .returns<Pick<NotifySignupRow, "id" | "email" | "feedback_text">[]>(),
+      .order("feedback_at", { ascending: false })
+      .returns<Pick<NotifySignupRow, "id" | "email" | "feedback_text" | "feedback_at">[]>(),
   ]);
 
   const rows = registrations ?? [];
@@ -414,20 +415,34 @@ export default async function AdminPage({
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({feedbackRows.length})</h2>
-        {feedbackRows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Még nem érkezett visszajelzés.</p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {feedbackRows.map((n) => (
-              <Card key={n.id}>
-                <CardContent className="flex flex-col gap-1 p-4 text-sm">
-                  <span className="font-medium text-foreground">{n.email}</span>
-                  <span className="text-muted-foreground">{n.feedback_text}</span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        <Card className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-sm">
+            <thead className="border-b border-border text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="p-3">Beérkezett</th>
+                <th className="p-3">E-mail</th>
+                <th className="p-3">Visszajelzés</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {feedbackRows.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="p-4 text-center text-muted-foreground">
+                    Még nem érkezett visszajelzés.
+                  </td>
+                </tr>
+              ) : (
+                feedbackRows.map((n) => (
+                  <tr key={n.id}>
+                    <td className="p-3 whitespace-nowrap text-muted-foreground">{fmtDate(n.feedback_at)}</td>
+                    <td className="p-3">{n.email}</td>
+                    <td className="p-3 text-muted-foreground">{n.feedback_text}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </Card>
       </section>
     </div>
   );
