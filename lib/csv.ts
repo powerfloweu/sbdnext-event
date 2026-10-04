@@ -75,3 +75,23 @@ export function parseCsvRecords(text: string): Record<string, string>[] {
     return record;
   });
 }
+
+// --- CSV writer (admin exports) ---
+
+function csvEscape(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const str = String(value);
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+/**
+ * Builds a CSV string from a header row and data rows, prefixed with a BOM
+ * so Excel opens UTF-8 files (Hungarian accented characters) correctly.
+ */
+export function toCsv(headers: string[], rows: unknown[][]): string {
+  const lines = [headers, ...rows].map((row) => row.map(csvEscape).join(","));
+  return "﻿" + lines.join("\r\n") + "\r\n";
+}
