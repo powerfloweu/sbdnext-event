@@ -18,6 +18,42 @@ function getResend(): Resend | null {
 
 const FROM = process.env.RESEND_FROM_EMAIL ?? "SBD Next <nevezes@sbdnext.hu>";
 
+// Appended to every outgoing email. Keep in sync with the organiser's own
+// copy of this signature if they update it elsewhere (it's not generated
+// from config/event.ts — the date/venue line below is static text).
+const SIGNATURE_HTML = `
+<div style="margin-top:24px" data-spark-custom-html="true">
+    <table cellpadding="0" cellspacing="0" style="background:#000000;border-left:4px solid #e52428;border-radius:8px;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+        <tbody>
+            <tr>
+                <td style="padding:12px 16px 12px 16px;vertical-align:middle;">
+                    <img src="https://www.sbdnext.hu/small_sbd_next_logo_v4.0.png" alt="SBD Next" style="display:block;width:130px;max-width:130px;height:auto;">
+                </td>
+                <td style="padding:12px 20px 12px 8px;vertical-align:middle;font-size:13px;line-height:1.5;">
+                    <div style="font-weight:700;color:#ff3b3b;margin-bottom:4px;">
+                        SBD Next – Nyílt erőemelő verseny
+                    </div>
+                    <div>
+                        Budapest • Thor Gym (Újbuda)<br>
+                        2026. február 14–15.
+                    </div>
+                    <div style="margin-top:10px;font-weight:700;color:#ff3b3b;">
+                        Kapcsolat:
+                    </div>
+                    <div>
+                        powerlifting@sbdnext.hu<br>
+                        <a href="https://www.sbdnext.hu" style="color:#ff3b3b;text-decoration:none;">www.sbdnext.hu</a>
+                    </div>
+                    <div style="margin-top:10px;">
+                        Instagram: @sbd.hungary<br>
+                        Instagram: @powerfloweu
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>`;
+
 interface RegistrationEmailData {
   email: string;
   firstName: string;
@@ -46,7 +82,7 @@ export async function sendRegistrationReceivedEmail(data: RegistrationEmailData)
     from: FROM,
     to: data.email,
     subject,
-    html: `${body}<p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`,
+    html: `${body}<p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }
@@ -68,7 +104,7 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
     html: `<p>Szia ${data.firstName}!</p>
        <p>A(z) <b>${formatHUF(data.totalFee)} Ft</b> befizetésed megérkezett, a nevezésed
        <b>véglegesítve</b> van. Találkozunk a versenyen!</p>
-       <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`,
+       <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }
@@ -92,7 +128,7 @@ export async function sendNotifySignupConfirmedEmail(email: string, locale: Loca
        megnyílik a nevezés, ezen a címen kapsz egy e-mailt a linkkel.</p>
        <p>Addig is kövess minket: <a href="${EVENT.social.igSbd}">Instagram</a></p>`;
 
-  await resend.emails.send({ from: FROM, to: email, subject, html });
+  await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
   return true;
 }
 
@@ -116,6 +152,6 @@ export async function sendRegistrationOpenNotification(email: string, locale: Lo
        <p><a href="${EVENT.siteUrl}/nevezes" style="font-weight:bold">Nevezek most</a></p>
        <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`;
 
-  await resend.emails.send({ from: FROM, to: email, subject, html });
+  await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
   return true;
 }
