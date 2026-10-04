@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
-import { formatHUF } from "@/lib/format";
+import { formatHUF, formatKg } from "@/lib/format";
 import { updateRegistrationStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -33,10 +33,23 @@ interface RegistrationRow {
   last_name: string;
   first_name: string;
   email: string;
+  birth_year: number;
   division: string;
   sex: string;
   club: string | null;
+  bodyweight: number | null;
+  opener_squat: number | null;
+  opener_bench: number | null;
+  opener_deadlift: number | null;
+  mc_text: string | null;
+  notes: string | null;
+  wants_shirt: boolean;
+  shirt_cut: string | null;
+  shirt_size: string | null;
+  premium_media: boolean;
+  entry_fee: number;
   total_fee: number;
+  utm: string | null;
   paid_at: string | null;
 }
 
@@ -54,6 +67,15 @@ interface NotifySignupRow {
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
   return new Intl.DateTimeFormat("hu-HU", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
+}
+
+function fmtKg(value: number | null): string {
+  return value === null ? "—" : formatKg(value);
+}
+
+function openerTotal(r: Pick<RegistrationRow, "opener_squat" | "opener_bench" | "opener_deadlift">): number | null {
+  if (r.opener_squat === null || r.opener_bench === null || r.opener_deadlift === null) return null;
+  return r.opener_squat + r.opener_bench + r.opener_deadlift;
 }
 
 function firstValue(value: string | string[] | undefined): string | undefined {
@@ -108,9 +130,10 @@ export default async function AdminPage({
 
   let regQuery = admin
     .from("registrations")
-    .select("id, created_at, status, last_name, first_name, email, division, sex, club, total_fee, paid_at", {
-      count: "exact",
-    })
+    .select(
+      "id, created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, utm, paid_at",
+      { count: "exact" }
+    )
     .order("created_at", { ascending: false });
   if (status !== "all") regQuery = regQuery.eq("status", status);
   if (q) {
@@ -238,7 +261,7 @@ export default async function AdminPage({
         </form>
 
         <Card className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-left text-sm">
+          <table className="w-full min-w-[1180px] text-left text-sm">
             <thead className="border-b border-border text-xs uppercase text-muted-foreground">
               <tr>
                 <th className="p-3">Beérkezett</th>
@@ -247,6 +270,11 @@ export default async function AdminPage({
                 <th className="p-3">Kategória</th>
                 <th className="p-3">Nem</th>
                 <th className="p-3">Klub</th>
+                <th className="p-3">Testsúly</th>
+                <th className="p-3">Guggolás</th>
+                <th className="p-3">Fekvenyomás</th>
+                <th className="p-3">Felhúzás</th>
+                <th className="p-3">Nyitó total</th>
                 <th className="p-3">Státusz</th>
                 <th className="p-3">Összeg</th>
                 <th className="p-3">Művelet</th>
@@ -255,7 +283,7 @@ export default async function AdminPage({
             <tbody className="divide-y divide-border">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-4 text-center text-muted-foreground">
+                  <td colSpan={14} className="p-4 text-center text-muted-foreground">
                     Nincs a szűrésnek megfelelő nevezés.
                   </td>
                 </tr>
@@ -272,6 +300,11 @@ export default async function AdminPage({
                       <td className="p-3">{r.division}</td>
                       <td className="p-3">{r.sex}</td>
                       <td className="p-3 text-muted-foreground">{r.club || "—"}</td>
+                      <td className="p-3 whitespace-nowrap">{fmtKg(r.bodyweight)}</td>
+                      <td className="p-3 whitespace-nowrap">{fmtKg(r.opener_squat)}</td>
+                      <td className="p-3 whitespace-nowrap">{fmtKg(r.opener_bench)}</td>
+                      <td className="p-3 whitespace-nowrap">{fmtKg(r.opener_deadlift)}</td>
+                      <td className="p-3 whitespace-nowrap font-medium">{fmtKg(openerTotal(r))}</td>
                       <td className="p-3">{STATUS_LABELS[r.status] ?? r.status}</td>
                       <td className="p-3 whitespace-nowrap">{formatHUF(r.total_fee)} Ft</td>
                       <td className="p-3">
