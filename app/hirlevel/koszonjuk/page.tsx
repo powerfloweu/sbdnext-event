@@ -1,9 +1,28 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { NewsletterFeedbackForm } from "@/components/forms/newsletter-feedback-form";
+import { EVENT } from "@/config/event";
+
+function Logo() {
+  return (
+    <Link href="/" className="flex items-center gap-2.5" aria-label="SBD Next főoldal">
+      <Image
+        src="/sbd_next_logo_transparent.png"
+        alt=""
+        width={40}
+        height={40}
+        className="size-9 object-contain"
+      />
+      <span className="font-display text-xl font-extrabold uppercase tracking-wide">
+        SBD Next <span className="text-primary">{EVENT.editionRoman}</span>
+      </span>
+    </Link>
+  );
+}
 
 export default async function NewsletterThankYouPage({
   searchParams,
@@ -15,6 +34,7 @@ export default async function NewsletterThankYouPage({
   if (error || !email) {
     return (
       <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
+        <Logo />
         <AlertCircle className="size-12 text-destructive" aria-hidden="true" />
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold">Nem sikerült feliratkoztatni</h1>
@@ -31,6 +51,7 @@ export default async function NewsletterThankYouPage({
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
+      <Logo />
       <CheckCircle2 className="size-12 text-success" aria-hidden="true" />
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">Feliratkoztál!</h1>
