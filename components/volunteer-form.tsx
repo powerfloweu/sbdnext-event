@@ -1,12 +1,14 @@
-// Trigger Vercel redeploy - 2025-12-31
-
 "use client";
-import { useState } from "react";
+
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Alert } from "@/components/ui/alert";
+import { Field } from "@/components/forms/field";
 import {
   Select,
   SelectContent,
@@ -14,291 +16,207 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EVENT } from "@/config/event";
+import { volunteerSchema, type VolunteerInput } from "@/lib/validation/volunteer";
 
-export type VolunteerFormState = {
-  name: string;
-  email: string;
-  day14: boolean;
-  shirtCut: string;
-  shirtSize: string;
-  position: string;
-  submitting: boolean;
-  done: boolean;
-  error: string | null;
-  honeypot: string;
+const POSITIONS = ["higiéniai felelős", "terelő", "karszalag felelős", "admin", "biztonsági"];
+
+const DEFAULTS: VolunteerInput = {
+  name: "",
+  email: "",
+  day14: undefined as unknown as true,
+  position: "",
+  shirtCut: undefined as unknown as VolunteerInput["shirtCut"],
+  shirtSize: undefined as unknown as VolunteerInput["shirtSize"],
+  honeypot: "",
 };
 
 export function VolunteerForm() {
-  const WEBHOOK_URL = process.env.NEXT_PUBLIC_VOLUNTEER_WEBHOOK || "";
-  const MAKE_WEBHOOK_URL = process.env.NEXT_PUBLIC_VOLUNTEER_MAKE_WEBHOOK || "";
-  const WEBHOOKS = [WEBHOOK_URL, MAKE_WEBHOOK_URL].filter(Boolean);
-
-  const [state, setState] = useState<VolunteerFormState>({
-    name: "",
-    email: "",
-    day14: false,
-    shirtCut: "",
-    shirtSize: "",
-    position: "",
-    submitting: false,
-    done: false,
-    error: null,
-    honeypot: "",
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting, isSubmitSuccessful },
+    setError,
+  } = useForm<VolunteerInput>({
+    resolver: zodResolver(volunteerSchema),
+    defaultValues: DEFAULTS,
   });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (state.honeypot) return;
-
-    const name = state.name.trim();
-    if (!name) {
-      setState((s) => ({ ...s, error: "Kérlek add meg a neved." }));
-      return;
-    }
-
-    const email = state.email.trim();
-    if (!email) {
-      setState((s) => ({ ...s, error: "Kérlek add meg az e-mail címed." }));
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setState((s) => ({ ...s, error: "Kérlek add meg egy érvényes e-mail címet." }));
-      return;
-    }
-
-    if (!state.day14) {
-      setState((s) => ({
-        ...s,
-        error: "Válaszd ki a napot: 02.14.",
-      }));
-      return;
-    }
-
-    if (!state.position) {
-      setState((s) => ({ ...s, error: "Válaszd ki a preferált pozíciót." }));
-      return;
-    }
-
-    if (!state.shirtCut) {
-      setState((s) => ({ ...s, error: "Válaszd ki a póló fazonját." }));
-      return;
-    }
-
-    if (!state.shirtSize) {
-      setState((s) => ({ ...s, error: "Válaszd ki a pólóméretet." }));
-      return;
-    }
-
-    setState((s) => ({ ...s, submitting: true, error: null }));
-
-    const days = [] as string[];
-    if (state.day14) days.push("2026-02-14");
-
-    const payload = {
-      timestamp: new Date().toISOString(),
-      name,
-      email,
-      days,
-      position: state.position,
-      shirtCut: state.shirtCut,
-      shirtSize: state.shirtSize,
-    };
-
+  const onSubmit = handleSubmit(async (data) => {
+    if (data.honeypot) return;
     try {
-      if (WEBHOOKS.length > 0) {
-        const results = await Promise.allSettled(
-          WEBHOOKS.map((url) =>
-            fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            })
-          )
-        );
-
-        const anySuccess = results.some((r) => r.status === "fulfilled");
-        if (!anySuccess) {
-          setState((s) => ({
-            ...s,
-            error: "A beküldés nem sikerült, próbáld újra.",
-          }));
-          return;
-        }
+      const res = await fetch("/api/volunteer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        setError("root", { message: "A beküldés nem sikerült, próbáld újra." });
       }
-
-      setState((s) => ({ ...s, done: true }));
     } catch {
-      setState((s) => ({
-        ...s,
-        error: "A beküldés nem sikerült, próbáld újra.",
-      }));
-    } finally {
-      setState((s) => ({ ...s, submitting: false }));
+      setError("root", { message: "A beküldés nem sikerült, próbáld újra." });
     }
-  };
+  });
 
-  if (state.done) {
+  if (isSubmitSuccessful && !errors.root) {
     return (
-      <div className="rounded-2xl border border-green-600/60 bg-black/70 p-5 text-sm text-green-100">
-        <div className="flex items-center gap-2 font-semibold">
-          <CheckCircle2 className="h-5 w-5 text-green-400" />
-          Köszönjük, rögzítettük az önkéntes jelentkezésed.
+      <Alert variant="success">
+        <CheckCircle2 className="size-5" aria-hidden="true" />
+        <div className="flex flex-col gap-1">
+          <span className="font-semibold text-foreground">
+            Köszönjük, rögzítettük az önkéntes jelentkezésed.
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Hamarosan e-mailben keresünk a részletekkel.
+          </span>
         </div>
-        <p className="mt-2 text-[12px] text-neutral-300">
-          Hamarosan e-mailben keresünk a részletekkel.
-        </p>
-      </div>
+      </Alert>
     );
   }
 
   return (
-    <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
       <div className="hidden" aria-hidden="true">
-        <label>Ne töltsd ki ezt a mezőt</label>
-        <Input
-          tabIndex={-1}
-          autoComplete="off"
-          value={state.honeypot}
-          onChange={(e) => setState((s) => ({ ...s, honeypot: e.target.value }))}
-          placeholder="Hagyja üresen"
+        <Controller
+          name="honeypot"
+          control={control}
+          render={({ field }) => <input tabIndex={-1} autoComplete="off" {...field} />}
         />
       </div>
 
-      {state.error && (
-        <div className="flex items-center gap-2 text-sm text-red-400">
-          <AlertCircle className="h-4 w-4" /> {state.error}
-        </div>
+      {errors.root && (
+        <Alert variant="destructive">
+          <AlertCircle className="size-4" aria-hidden="true" />
+          <span>{errors.root.message}</span>
+        </Alert>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Név <span className="text-red-500">*</span>
-          </label>
-          <Input
-            className="border-red-500"
-            value={state.name}
-            onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
-            placeholder="Vezetéknév Keresztnév"
-            required
-          />
-        </div>
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            E-mail <span className="text-red-500">*</span>
-          </label>
-          <Input
-            className="border-red-500"
-            type="email"
-            value={state.email}
-            onChange={(e) => setState((s) => ({ ...s, email: e.target.value }))}
-            placeholder="email@example.com"
-            required
-          />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Controller
+          name="name"
+          control={control}
+          render={({ field }) => (
+            <Field id="v-name" label="Név" required error={errors.name?.message}>
+              <Input id="v-name" placeholder="Vezetéknév Keresztnév" aria-invalid={!!errors.name} {...field} />
+            </Field>
+          )}
+        />
+        <Controller
+          name="email"
+          control={control}
+          render={({ field }) => (
+            <Field id="v-email" label="E-mail" required error={errors.email?.message}>
+              <Input id="v-email" type="email" placeholder="email@example.com" aria-invalid={!!errors.email} {...field} />
+            </Field>
+          )}
+        />
       </div>
 
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Melyik napon tudsz segíteni? <span className="text-red-500">*</span>
-        </label>
-        <div className="mt-2">
-          <label className="flex items-center gap-3 text-sm">
-            <Checkbox
-              checked={state.day14}
-              onCheckedChange={(v: boolean | "indeterminate") => {
-                const next = Boolean(v);
-                setState((s) => ({ ...s, day14: next }));
-              }}
-            />
-            <span>02.14 (szombat)</span>
-          </label>
-          <div className="ml-7 mt-1 text-xs text-neutral-400">
-            Az önkéntesség egész napos elfoglaltságot jelent! (7:00-19:00)
+      <Controller
+        name="day14"
+        control={control}
+        render={({ field }) => (
+          <div className="flex flex-col gap-2">
+            <label className="flex items-start gap-3 text-sm">
+              <Checkbox
+                checked={field.value === true}
+                onCheckedChange={(v) => field.onChange(v === true)}
+                aria-invalid={!!errors.day14}
+              />
+              <span>
+                <span className="font-semibold text-foreground">
+                  Vállalom a teljes napot (2027. február 13., 7:00–19:00)
+                </span>
+              </span>
+            </label>
+            {errors.day14 && (
+              <p role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+                <AlertCircle className="size-3.5" aria-hidden="true" />
+                {errors.day14.message}
+              </p>
+            )}
           </div>
-        </div>
-      </div>
+        )}
+      />
 
-      <div>
-        <label className="text-sm font-semibold text-red-400">
-          Preferált pozíció <span className="text-red-500">*</span>
-        </label>
-        <Select
-          onValueChange={(v) => setState((s) => ({ ...s, position: v }))}
-          value={state.position}
-        >
-          <SelectTrigger className="border-red-500">
-            <SelectValue placeholder="Válassz" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="higiéniai felelős">higiéniai felelős</SelectItem>
-            <SelectItem value="terelő">terelő</SelectItem>
-            <SelectItem value="karszalag felelős">karszalag felelős</SelectItem>
-            <SelectItem value="admin">admin</SelectItem>
-            <SelectItem value="biztonsági">biztonsági</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="mt-1 text-xs text-neutral-400">
-          Minden pozícióra várunk jelentkezőt; ha valamelyikre nincs elég ember, a szervezők jelölik ki a beosztást.
-        </p>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Póló fazon <span className="text-red-500">*</span>
-          </label>
-          <Select
-            onValueChange={(v) => setState((s) => ({ ...s, shirtCut: v }))}
-            value={state.shirtCut}
+      <Controller
+        name="position"
+        control={control}
+        render={({ field }) => (
+          <Field
+            id="v-position"
+            label="Preferált pozíció"
+            required
+            hint="Minden pozícióra várunk jelentkezőt; ha nincs elég ember, a szervezők jelölik ki a beosztást."
+            error={errors.position?.message}
           >
-            <SelectTrigger className="border-red-500">
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Női">Női</SelectItem>
-              <SelectItem value="Férfi">Férfi</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger id="v-position" aria-invalid={!!errors.position}>
+                <SelectValue placeholder="Válassz" />
+              </SelectTrigger>
+              <SelectContent>
+                {POSITIONS.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
+      />
 
-        <div>
-          <label className="text-sm font-semibold text-red-400">
-            Pólóméret <span className="text-red-500">*</span>
-          </label>
-          <Select
-            onValueChange={(v) => setState((s) => ({ ...s, shirtSize: v }))}
-            value={state.shirtSize}
-          >
-            <SelectTrigger className="border-red-500">
-              <SelectValue placeholder="Válassz" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="XS">XS</SelectItem>
-              <SelectItem value="S">S</SelectItem>
-              <SelectItem value="M">M</SelectItem>
-              <SelectItem value="L">L</SelectItem>
-              <SelectItem value="XL">XL</SelectItem>
-              <SelectItem value="2XL">2XL</SelectItem>
-              <SelectItem value="3XL">3XL</SelectItem>
-              <SelectItem value="4XL">4XL</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Controller
+          name="shirtCut"
+          control={control}
+          render={({ field }) => (
+            <Field id="v-shirtCut" label="Póló fazon" required error={errors.shirtCut?.message}>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="v-shirtCut" aria-invalid={!!errors.shirtCut}>
+                  <SelectValue placeholder="Válassz" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EVENT.shirt.cuts.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+        <Controller
+          name="shirtSize"
+          control={control}
+          render={({ field }) => (
+            <Field id="v-shirtSize" label="Pólóméret" required error={errors.shirtSize?.message}>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="v-shirtSize" aria-invalid={!!errors.shirtSize}>
+                  <SelectValue placeholder="Válassz" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EVENT.shirt.sizes.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
       </div>
 
-      <Button
-        type="submit"
-        disabled={state.submitting}
-        className="h-12 rounded-full bg-gradient-to-r from-red-700 via-red-500 to-red-400 px-8 text-sm sm:text-base font-extrabold shadow-[0_0_50px_rgba(248,113,113,0.8)] border border-red-200/80 hover:from-red-600 hover:via-red-500 hover:to-red-300 transition-all duration-200"
-      >
-        {state.submitting ? "Küldés…" : "Önkéntes jelentkezés elküldése"}
+      <Button type="submit" size="lg" disabled={isSubmitting}>
+        {isSubmitting ? "Küldés…" : "Önkéntes jelentkezés elküldése"}
       </Button>
 
-      <p className="text-[11px] text-neutral-400">
-        A megadott adatokat csak a verseny szervezése kapcsán használjuk fel és megosztjuk a szervezőcsapattal.
+      <p className="text-xs text-muted-foreground">
+        A megadott adatokat csak a verseny szervezése kapcsán használjuk fel és megosztjuk a
+        szervezőcsapattal.
       </p>
     </form>
   );

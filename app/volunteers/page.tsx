@@ -1,49 +1,54 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, HandHeart } from "lucide-react";
+
+import { Card, CardContent } from "@/components/ui/card";
 import { VolunteerForm } from "@/components/volunteer-form";
+import { volunteersOpen } from "@/lib/phase";
+
+export const revalidate = 60;
 
 export default function VolunteersPage() {
+  const open = volunteersOpen();
+
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="mx-auto max-w-4xl px-4 py-10 space-y-6">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-300 hover:text-red-300"
-          >
-            <ArrowLeft className="h-4 w-4" /> Vissza a főoldalra
-          </Link>
-          <div className="flex items-center gap-2 rounded-full border border-red-900/60 bg-red-950/40 px-4 py-2 text-sm text-red-200">
-            <HandHeart className="h-4 w-4" />
-            Önkéntes jelentkezés
-          </div>
-        </div>
-        <div className="mt-8 text-center">
-          <Link href="/" className="inline-block">
-            <button className="rounded-full px-6 py-2 bg-red-400 text-white font-semibold hover:bg-red-500 transition">Vissza a főoldalra</button>
-          </Link>
-        </div>
+    <main className="min-h-screen">
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <Link
+          href="/"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" /> Vissza a főoldalra
+        </Link>
 
-        <div className="rounded-3xl border border-red-900/60 bg-neutral-950/70 p-6 shadow-[0_0_40px_rgba(248,113,113,0.15)] sm:p-8">
-          <div className="mb-6 rounded-xl border border-red-500/50 bg-red-950/30 p-4 text-center">
-            <p className="text-base font-semibold text-red-100">
-              🍔 Önkénteseknek étel-ital és póló jár! 👕
-            </p>
-          </div>
+        <Card>
+          <CardContent className="p-6 sm:p-8">
+            <div className="mb-6 flex items-center gap-2">
+              <HandHeart className="size-5 text-primary" aria-hidden="true" />
+              <span className="eyebrow">Önkéntes jelentkezés</span>
+            </div>
 
-          <div className="space-y-2 pb-4">
-            <p className="text-sm text-neutral-200">
-              Köszönjük, hogy segítenél a verseny lebonyolításában! Válaszd ki, melyik napokon tudsz jönni, milyen pozícióban dolgoznál, és add meg a póló adataidat.
-            </p>
-            <p className="text-xs text-neutral-400">
-              A jelentkezéseket visszaigazoljuk, és e-mailben küldjük a további részleteket.
-            </p>
-          </div>
-
-          <VolunteerForm />
-        </div>
+            {open ? (
+              <>
+                <div className="mb-6 rounded-xl border border-primary/40 bg-primary/10 p-4 text-center text-sm font-semibold text-foreground">
+                  Önkénteseknek étel-ital és póló jár!
+                </div>
+                <p className="mb-2 text-sm text-foreground">
+                  Köszönjük, hogy segítenél a verseny lebonyolításában! Válaszd ki, milyen
+                  pozícióban dolgoznál, és add meg a póló adataidat.
+                </p>
+                <p className="mb-6 text-xs text-muted-foreground">
+                  A jelentkezéseket visszaigazoljuk, és e-mailben küldjük a további részleteket.
+                </p>
+                <VolunteerForm />
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Az önkéntes jelentkezés januárban indul, közelebb a versenyhez. Nézz vissza akkor,
+                vagy kövesd az Instagramot a friss infókért.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
