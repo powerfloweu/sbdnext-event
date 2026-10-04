@@ -55,22 +55,38 @@ export async function POST(req: NextRequest) {
   const locale = parsed.data.locale ?? "hu";
 
   const admin = getSupabaseAdmin();
+  let alreadySubscribed = false;
+
   if (admin) {
-    // Upsert on email: signing up twice is a no-op, not an error.
-    const { error } = await admin
+    const { data: existing, error: lookupError } = await admin
       .from("notify_signups")
-      .upsert({ email, locale }, { onConflict: "email", ignoreDuplicates: true });
-    if (error) {
-      console.error("notify signup insert failed:", error);
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+    if (lookupError) {
+      console.error("notify signup lookup failed:", lookupError);
       return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
+    }
+
+    if (existing) {
+      alreadySubscribed = true;
+    } else {
+      const { error } = await admin.from("notify_signups").insert({ email, locale });
+      if (error) {
+        console.error("notify signup insert failed:", error);
+        return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
+      }
     }
   }
 
-  try {
-    await sendNotifySignupConfirmedEmail(email, locale);
-  } catch (err) {
-    console.error("notify signup confirmation email failed:", err);
+  // Don't re-send the confirmation on a repeat sign-up — they already got it.
+  if (!alreadySubscribed) {
+    try {
+      await sendNotifySignupConfirmedEmail(email, locale);
+    } catch (err) {
+      console.error("notify signup confirmation email failed:", err);
+    }
   }
 
-  return NextResponse.json({ ok: true, demo: !admin });
+  return NextResponse.json({ ok: true, demo: !admin, alreadySubscribed });
 }

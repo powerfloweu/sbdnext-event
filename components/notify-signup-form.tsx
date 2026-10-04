@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, BellRing } from "lucide-react";
@@ -14,6 +15,7 @@ const DEFAULTS: NotifySignupInput = { email: "", locale: "hu", honeypot: "" };
 const STRINGS = {
   hu: {
     success: "Feliratkoztál — e-mailt küldünk, amint megnyílik a nevezés.",
+    alreadySubscribed: "Ezzel az e-mail címmel már korábban feliratkoztál — szólunk, amint megnyílik a nevezés.",
     submitError: "A feliratkozás nem sikerült, próbáld újra.",
     invalidEmail: "Érvénytelen e-mail cím.",
     emailAria: "E-mail cím",
@@ -22,6 +24,7 @@ const STRINGS = {
   },
   en: {
     success: "You're signed up — we'll e-mail you the moment registration opens.",
+    alreadySubscribed: "You already signed up with this e-mail address — we'll let you know when registration opens.",
     submitError: "Sign-up failed, please try again.",
     invalidEmail: "Invalid e-mail address.",
     emailAria: "E-mail address",
@@ -36,6 +39,7 @@ interface NotifySignupFormProps {
 
 export function NotifySignupForm({ locale = "hu" }: NotifySignupFormProps) {
   const t = STRINGS[locale];
+  const [alreadySubscribed, setAlreadySubscribed] = useState(false);
   const {
     control,
     handleSubmit,
@@ -57,6 +61,8 @@ export function NotifySignupForm({ locale = "hu" }: NotifySignupFormProps) {
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) {
         setError("root", { message: t.submitError });
+      } else {
+        setAlreadySubscribed(!!json.alreadySubscribed);
       }
     } catch {
       setError("root", { message: t.submitError });
@@ -67,7 +73,7 @@ export function NotifySignupForm({ locale = "hu" }: NotifySignupFormProps) {
     return (
       <Alert variant="success">
         <CheckCircle2 className="size-5" aria-hidden="true" />
-        <span className="text-sm">{t.success}</span>
+        <span className="text-sm">{alreadySubscribed ? t.alreadySubscribed : t.success}</span>
       </Alert>
     );
   }
