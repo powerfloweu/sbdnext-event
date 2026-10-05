@@ -38,7 +38,8 @@ async function getRegisteredCount(): Promise<number> {
     const { count, error } = await admin
       .from("registrations")
       .select("id", { count: "exact", head: true })
-      .neq("status", "cancelled");
+      .neq("status", "cancelled")
+      .eq("is_preview_test", false);
     if (!error && typeof count === "number") return count;
     console.error("Supabase count failed, falling back to Sheets:", error);
   }
@@ -195,6 +196,10 @@ export async function POST(req: NextRequest) {
       face_photo_path: facePhotoPath,
       utm,
       raw: data,
+      // Preview deployments (e.g. this test branch) share the same Supabase
+      // project as production — flag these rows so they never count toward
+      // the real capacity cap and can be told apart from genuine entries.
+      is_preview_test: process.env.VERCEL_ENV === "preview",
     });
     if (error) {
       console.error("Supabase registration insert failed:", error);
