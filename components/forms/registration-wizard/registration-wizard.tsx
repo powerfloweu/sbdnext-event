@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Field } from "@/components/forms/field";
 import { WizardHeader } from "@/components/forms/registration-wizard/wizard-header";
+import { PremiumMediaPreview } from "@/components/forms/registration-wizard/premium-media-preview";
 
 import { EVENT } from "@/config/event";
 import { formatHUF } from "@/lib/format";
@@ -61,6 +62,8 @@ function Step1({
   errors: Errs;
   facePhoto: FacePhotoState;
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
@@ -80,15 +83,24 @@ function Step1({
               <Camera className="size-6 text-muted-foreground" aria-hidden="true" />
             )}
           </div>
-          <label className="flex-1">
-            <span className="sr-only">Arcfotó kiválasztása</span>
+          <div className="flex-1">
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={(e) => facePhoto.onSelect(e.target.files?.[0] ?? null)}
-              className="block w-full cursor-pointer rounded-lg border border-dashed border-border bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary-foreground"
+              className="sr-only"
+              aria-label="Arcfotó kiválasztása"
             />
-          </label>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {facePhoto.previewUrl ? "Fotó cseréje" : "Fotó kiválasztása"}
+            </Button>
+          </div>
         </div>
         {facePhoto.processing && (
           <p className="text-xs text-muted-foreground">Feldolgozás…</p>
@@ -341,6 +353,9 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
               <span className="text-xs text-muted-foreground">
                 Ha nem kéred, a nevezési díj a póló nélküli áron marad.
               </span>
+              <span className="text-xs text-muted-foreground">
+                A póló névre szóló lesz, rajta a neveddel.
+              </span>
             </span>
           </label>
         )}
@@ -416,6 +431,8 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
           </label>
         )}
       />
+
+      <PremiumMediaPreview />
     </div>
   );
 }
