@@ -180,7 +180,29 @@ function Step1({
 }
 
 // ---------- Step 2: kategória ----------
+// Suggestions only — the field stays free text, so typing a club that
+// isn't in the list is simply how you "add" it (see app/api/clubs).
+function useClubOptions(): string[] {
+  const [clubs, setClubs] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/clubs")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && Array.isArray(data?.clubs)) setClubs(data.clubs);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return clubs;
+}
+
 function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
+  const clubOptions = useClubOptions();
   return (
     <div className="flex flex-col gap-5">
       <Controller
@@ -239,7 +261,12 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
         control={control}
         render={({ field }) => (
           <Field id="club" label="Egyesület / Klub" hint="Nem kötelező">
-            <Input id="club" placeholder="—" {...field} />
+            <Input id="club" placeholder="—" list="club-options" autoComplete="off" {...field} />
+            <datalist id="club-options">
+              {clubOptions.map((club) => (
+                <option key={club} value={club} />
+              ))}
+            </datalist>
           </Field>
         )}
       />
