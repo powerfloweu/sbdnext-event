@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller, type Control, type FieldErrors } from "react-hook-form";
+import { useForm, useWatch, Controller, type Control, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, ChevronRight, Lock, Camera } from "lucide-react";
 
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Field } from "@/components/forms/field";
 import { WizardHeader } from "@/components/forms/registration-wizard/wizard-header";
+import { PremiumMediaPreview } from "@/components/forms/registration-wizard/premium-media-preview";
 
 import { EVENT } from "@/config/event";
 import { formatHUF } from "@/lib/format";
@@ -38,6 +39,24 @@ const DRAFT_KEY = "sbdnext2:registration-draft";
 type Ctrl = Control<RegistrationInput, unknown, RegistrationInput>;
 type Errs = FieldErrors<RegistrationInput>;
 
+type PriorYearPrefill = Pick<
+  RegistrationInput,
+  | "lastName"
+  | "firstName"
+  | "birthYear"
+  | "sex"
+  | "division"
+  | "club"
+  | "bodyweight"
+  | "openerSquat"
+  | "openerBench"
+  | "openerDeadlift"
+  | "premiumMedia"
+> & {
+  shirtCut?: RegistrationInput["shirtCut"];
+  shirtSize?: RegistrationInput["shirtSize"];
+};
+
 function num(v: string): number {
   const n = Number(v.replace(",", "."));
   return Number.isFinite(n) ? n : 0;
@@ -52,15 +71,73 @@ interface FacePhotoState {
 }
 
 // ---------- Step 1: alapadatok ----------
+type PriorLookupStatus = "idle" | "loading" | "found" | "not_found" | "error";
+
+function PriorYearLookup({
+  control,
+  onPrefill,
+}: {
+  control: Ctrl;
+  onPrefill: (data: PriorYearPrefill) => void;
+}) {
+  const email = useWatch({ control, name: "email" });
+  const [status, setStatus] = useState<PriorLookupStatus>("idle");
+
+  const lookup = useCallback(async () => {
+    const trimmed = (email ?? "").trim();
+    if (!trimmed.includes("@")) return;
+    setStatus("loading");
+    try {
+      const res = await fetch(`/api/prior-registration?email=${encodeURIComponent(trimmed)}`);
+      const json = await res.json().catch(() => null);
+      if (json?.found) {
+        onPrefill(json.data as PriorYearPrefill);
+        setStatus("found");
+      } else {
+        setStatus("not_found");
+      }
+    } catch {
+      setStatus("error");
+    }
+  }, [email, onPrefill]);
+
+  const disabled = !(email ?? "").trim().includes("@") || status === "loading";
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Button type="button" variant="secondary" size="sm" onClick={lookup} disabled={disabled}>
+        {status === "loading" ? "Keresés…" : "Tavaly már versenyeztél? Töltsd ki automatikusan"}
+      </Button>
+      {status === "found" && (
+        <p className="text-xs font-medium text-success">
+          Megtaláltuk a tavalyi adataidat, kitöltöttük neked — nézd át, és ahol kell, módosítsd.
+        </p>
+      )}
+      {status === "not_found" && (
+        <p className="text-xs text-muted-foreground">
+          Nem találtunk egyezést erre az e-mail címre, nyugodtan töltsd ki manuálisan.
+        </p>
+      )}
+      {status === "error" && (
+        <p className="text-xs text-muted-foreground">A keresés nem sikerült, töltsd ki manuálisan.</p>
+      )}
+    </div>
+  );
+}
+
 function Step1({
   control,
   errors,
   facePhoto,
+  onPrefill,
 }: {
   control: Ctrl;
   errors: Errs;
   facePhoto: FacePhotoState;
+  onPrefill: (data: PriorYearPrefill) => void;
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
@@ -80,15 +157,24 @@ function Step1({
               <Camera className="size-6 text-muted-foreground" aria-hidden="true" />
             )}
           </div>
-          <label className="flex-1">
-            <span className="sr-only">Arcfotó kiválasztása</span>
+          <div className="flex-1">
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={(e) => facePhoto.onSelect(e.target.files?.[0] ?? null)}
-              className="block w-full cursor-pointer rounded-lg border border-dashed border-border bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary-foreground"
+              className="sr-only"
+              aria-label="Arcfotó kiválasztása"
             />
-          </label>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {facePhoto.previewUrl ? "Fotó cseréje" : "Fotó kiválasztása"}
+            </Button>
+          </div>
         </div>
         {facePhoto.processing && (
           <p className="text-xs text-muted-foreground">Feldolgozás…</p>
@@ -132,6 +218,8 @@ function Step1({
         )}
       />
 
+      <PriorYearLookup control={control} onPrefill={onPrefill} />
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Controller
           name="birthYear"
@@ -168,7 +256,29 @@ function Step1({
 }
 
 // ---------- Step 2: kategória ----------
+// Suggestions only — the field stays free text, so typing a club that
+// isn't in the list is simply how you "add" it (see app/api/clubs).
+function useClubOptions(): string[] {
+  const [clubs, setClubs] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/clubs")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && Array.isArray(data?.clubs)) setClubs(data.clubs);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return clubs;
+}
+
 function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
+  const clubOptions = useClubOptions();
   return (
     <div className="flex flex-col gap-5">
       <Controller
@@ -227,7 +337,12 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
         control={control}
         render={({ field }) => (
           <Field id="club" label="Egyesület / Klub" hint="Nem kötelező">
-            <Input id="club" placeholder="—" {...field} />
+            <Input id="club" placeholder="—" list="club-options" autoComplete="off" {...field} />
+            <datalist id="club-options">
+              {clubOptions.map((club) => (
+                <option key={club} value={club} />
+              ))}
+            </datalist>
           </Field>
         )}
       />
@@ -341,6 +456,9 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
               <span className="text-xs text-muted-foreground">
                 Ha nem kéred, a nevezési díj a póló nélküli áron marad.
               </span>
+              <span className="text-xs text-muted-foreground">
+                A póló névre szóló lesz, rajta a neveddel.
+              </span>
             </span>
           </label>
         )}
@@ -416,6 +534,8 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
           </label>
         )}
       />
+
+      <PremiumMediaPreview />
     </div>
   );
 }
@@ -596,6 +716,7 @@ export function RegistrationWizard() {
     trigger,
     watch,
     reset,
+    setValue,
     getValues,
     formState: { errors, isSubmitted },
   } = useForm<RegistrationInput>({
@@ -641,6 +762,31 @@ export function RegistrationWizard() {
       // ignore
     }
   }, []);
+
+  const applyPriorYearPrefill = useCallback(
+    (data: PriorYearPrefill) => {
+      const fill = (name: keyof RegistrationInput, value: unknown) =>
+        setValue(name, value as never, { shouldValidate: true, shouldDirty: true });
+
+      fill("lastName", data.lastName);
+      fill("firstName", data.firstName);
+      fill("birthYear", data.birthYear);
+      fill("sex", data.sex);
+      fill("division", data.division);
+      fill("club", data.club);
+      fill("bodyweight", data.bodyweight);
+      fill("openerSquat", data.openerSquat);
+      fill("openerBench", data.openerBench);
+      fill("openerDeadlift", data.openerDeadlift);
+      fill("premiumMedia", data.premiumMedia);
+      if (data.shirtCut && data.shirtSize) {
+        fill("wantsShirt", true);
+        fill("shirtCut", data.shirtCut);
+        fill("shirtSize", data.shirtSize);
+      }
+    },
+    [setValue]
+  );
 
   const goNext = useCallback(async () => {
     const fields = STEP_FIELDS[step - 1];
@@ -774,6 +920,7 @@ export function RegistrationWizard() {
                 showError: facePhotoAttempted,
                 onSelect: handleFacePhotoSelect,
               }}
+              onPrefill={applyPriorYearPrefill}
             />
           )}
           {step === 2 && <Step2 control={control} errors={errors} />}

@@ -7,8 +7,10 @@ import type { MuxPlayerCSSProperties } from "@mux/mux-player-react";
 
 // Real hangulatvideó footage from SBD Next 1, hosted on Mux — muted/looped/
 // no-UI ambient background clips (not meant to be interacted with).
-const WIDE_CLIP = "YcvaBQHYg700N2UvaivLIh5FWVIRNL6p3hy2pucQMMB8";
-const TALL_CLIP = "XFu4KKs76zTtboo4tl02LPQ008hfFZgArfrxh2Z34ijRU";
+// Exported so other spots (e.g. the registration wizard's premium media
+// preview) can play the same clips with full, scrubbable controls instead.
+export const WIDE_CLIP = "YcvaBQHYg700N2UvaivLIh5FWVIRNL6p3hy2pucQMMB8";
+export const TALL_CLIP = "XFu4KKs76zTtboo4tl02LPQ008hfFZgArfrxh2Z34ijRU";
 
 const ARROW_LABEL = { hu: "egy példa", en: "an example" } as const;
 
