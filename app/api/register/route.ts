@@ -222,23 +222,28 @@ export async function POST(req: NextRequest) {
     },
   };
 
-  try {
-    const resp = await fetch(REGISTRATION_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!resp.ok) {
-      throw new Error(`webhook status ${resp.status}`);
-    }
-  } catch (err) {
-    console.error("registration webhook failed:", err);
-    // Only a hard failure if Supabase isn't already our system of record —
-    // once Supabase is configured the row above is the source of truth, so
-    // a Make/Sheets hiccup shouldn't block a real registration. See finding
-    // C2 in docs/UI_UX_ROBUSTNESS_PLAN.md for why this used to be fatal.
-    if (!supabaseAdmin) {
-      return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
+  // Preview deployments (e.g. a branch used to test the registration/payment
+  // flow before going live) must never write test entries into the real
+  // Google Sheet that Make forwards to.
+  if (process.env.VERCEL_ENV !== "preview") {
+    try {
+      const resp = await fetch(REGISTRATION_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!resp.ok) {
+        throw new Error(`webhook status ${resp.status}`);
+      }
+    } catch (err) {
+      console.error("registration webhook failed:", err);
+      // Only a hard failure if Supabase isn't already our system of record —
+      // once Supabase is configured the row above is the source of truth, so
+      // a Make/Sheets hiccup shouldn't block a real registration. See finding
+      // C2 in docs/UI_UX_ROBUSTNESS_PLAN.md for why this used to be fatal.
+      if (!supabaseAdmin) {
+        return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
+      }
     }
   }
 
