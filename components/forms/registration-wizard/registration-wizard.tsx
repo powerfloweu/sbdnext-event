@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller, type Control, type FieldErrors } from "react-hook-form";
+import { useForm, useWatch, Controller, type Control, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, ChevronRight, Lock, Camera } from "lucide-react";
 
@@ -39,6 +39,24 @@ const DRAFT_KEY = "sbdnext2:registration-draft";
 type Ctrl = Control<RegistrationInput, unknown, RegistrationInput>;
 type Errs = FieldErrors<RegistrationInput>;
 
+type PriorYearPrefill = Pick<
+  RegistrationInput,
+  | "lastName"
+  | "firstName"
+  | "birthYear"
+  | "sex"
+  | "division"
+  | "club"
+  | "bodyweight"
+  | "openerSquat"
+  | "openerBench"
+  | "openerDeadlift"
+  | "premiumMedia"
+> & {
+  shirtCut?: RegistrationInput["shirtCut"];
+  shirtSize?: RegistrationInput["shirtSize"];
+};
+
 function num(v: string): number {
   const n = Number(v.replace(",", "."));
   return Number.isFinite(n) ? n : 0;
@@ -53,14 +71,70 @@ interface FacePhotoState {
 }
 
 // ---------- Step 1: alapadatok ----------
+type PriorLookupStatus = "idle" | "loading" | "found" | "not_found" | "error";
+
+function PriorYearLookup({
+  control,
+  onPrefill,
+}: {
+  control: Ctrl;
+  onPrefill: (data: PriorYearPrefill) => void;
+}) {
+  const email = useWatch({ control, name: "email" });
+  const [status, setStatus] = useState<PriorLookupStatus>("idle");
+
+  const lookup = useCallback(async () => {
+    const trimmed = (email ?? "").trim();
+    if (!trimmed.includes("@")) return;
+    setStatus("loading");
+    try {
+      const res = await fetch(`/api/prior-registration?email=${encodeURIComponent(trimmed)}`);
+      const json = await res.json().catch(() => null);
+      if (json?.found) {
+        onPrefill(json.data as PriorYearPrefill);
+        setStatus("found");
+      } else {
+        setStatus("not_found");
+      }
+    } catch {
+      setStatus("error");
+    }
+  }, [email, onPrefill]);
+
+  const disabled = !(email ?? "").trim().includes("@") || status === "loading";
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Button type="button" variant="secondary" size="sm" onClick={lookup} disabled={disabled}>
+        {status === "loading" ? "Keresés…" : "Tavaly már versenyeztél? Töltsd ki automatikusan"}
+      </Button>
+      {status === "found" && (
+        <p className="text-xs font-medium text-success">
+          Megtaláltuk a tavalyi adataidat, kitöltöttük neked — nézd át, és ahol kell, módosítsd.
+        </p>
+      )}
+      {status === "not_found" && (
+        <p className="text-xs text-muted-foreground">
+          Nem találtunk egyezést erre az e-mail címre, nyugodtan töltsd ki manuálisan.
+        </p>
+      )}
+      {status === "error" && (
+        <p className="text-xs text-muted-foreground">A keresés nem sikerült, töltsd ki manuálisan.</p>
+      )}
+    </div>
+  );
+}
+
 function Step1({
   control,
   errors,
   facePhoto,
+  onPrefill,
 }: {
   control: Ctrl;
   errors: Errs;
   facePhoto: FacePhotoState;
+  onPrefill: (data: PriorYearPrefill) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -143,6 +217,8 @@ function Step1({
           </Field>
         )}
       />
+
+      <PriorYearLookup control={control} onPrefill={onPrefill} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Controller
@@ -640,6 +716,7 @@ export function RegistrationWizard() {
     trigger,
     watch,
     reset,
+    setValue,
     getValues,
     formState: { errors, isSubmitted },
   } = useForm<RegistrationInput>({
@@ -685,6 +762,31 @@ export function RegistrationWizard() {
       // ignore
     }
   }, []);
+
+  const applyPriorYearPrefill = useCallback(
+    (data: PriorYearPrefill) => {
+      const fill = (name: keyof RegistrationInput, value: unknown) =>
+        setValue(name, value as never, { shouldValidate: true, shouldDirty: true });
+
+      fill("lastName", data.lastName);
+      fill("firstName", data.firstName);
+      fill("birthYear", data.birthYear);
+      fill("sex", data.sex);
+      fill("division", data.division);
+      fill("club", data.club);
+      fill("bodyweight", data.bodyweight);
+      fill("openerSquat", data.openerSquat);
+      fill("openerBench", data.openerBench);
+      fill("openerDeadlift", data.openerDeadlift);
+      fill("premiumMedia", data.premiumMedia);
+      if (data.shirtCut && data.shirtSize) {
+        fill("wantsShirt", true);
+        fill("shirtCut", data.shirtCut);
+        fill("shirtSize", data.shirtSize);
+      }
+    },
+    [setValue]
+  );
 
   const goNext = useCallback(async () => {
     const fields = STEP_FIELDS[step - 1];
@@ -818,6 +920,7 @@ export function RegistrationWizard() {
                 showError: facePhotoAttempted,
                 onSelect: handleFacePhotoSelect,
               }}
+              onPrefill={applyPriorYearPrefill}
             />
           )}
           {step === 2 && <Step2 control={control} errors={errors} />}
