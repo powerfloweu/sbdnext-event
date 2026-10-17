@@ -15,11 +15,11 @@ export const EVENT = {
   tagline: { hu: "A következő szint", en: "The next level" },
   timezone: "Europe/Budapest",
 
-  // TODO(event-2): confirm exact dates/times. Day 2 is conditional on entry
-  // numbers, per the organiser (2026-09-26).
+  // Confirmed as a two-day event per the organiser (2026-10-17) — already
+  // announced on Instagram.
   days: [
     { date: "2027-02-13", start: "07:00", end: "21:00", confirmed: true },
-    { date: "2027-02-14", start: "07:00", end: "21:00", confirmed: false },
+    { date: "2027-02-14", start: "07:00", end: "21:00", confirmed: true },
   ],
 
   venue: {
