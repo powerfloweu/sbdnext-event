@@ -7,6 +7,19 @@ function formatDate(iso: string): string {
   );
 }
 
+// Renders a confirmed multi-day range as "2027. február 13–14." instead of
+// repeating the year and month per day ("2027. február 13. – 2027. február
+// 14.").
+function formatDateRange(days: readonly { date: string }[]): string {
+  if (days.length === 1) return formatDate(days[0].date);
+  const first = new Date(days[0].date);
+  const last = new Date(days[days.length - 1].date);
+  const sameMonth = first.getFullYear() === last.getFullYear() && first.getMonth() === last.getMonth();
+  if (!sameMonth) return days.map((d) => formatDate(d.date)).join(" – ");
+  const monthLabel = new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long" }).format(first);
+  return `${monthLabel} ${first.getDate()}–${last.getDate()}.`;
+}
+
 export interface HomeContent {
   dateLabel: string;
   timeLabel: string;
@@ -40,7 +53,7 @@ export function getHomeContent(phase: Phase): HomeContent {
   const dateLabel =
     secondDay && !secondDay.confirmed
       ? `${formatDate(firstDay.date)} (2. nap a nevezői létszámtól függ)`
-      : EVENT.days.map((d) => formatDate(d.date)).join(" – ");
+      : formatDateRange(EVENT.days);
   const timeLabel = `${firstDay.start}–${firstDay.end}`;
 
   const volunteersLive = volunteersOpen();
