@@ -7,8 +7,17 @@ function formatDate(iso: string): string {
   );
 }
 
-function formatMonthYear(iso: string): string {
-  return new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long" }).format(new Date(iso));
+// Renders a confirmed multi-day range as "2027. február 13–14." instead of
+// repeating the year and month per day ("2027. február 13. – 2027. február
+// 14.").
+function formatDateRange(days: readonly { date: string }[]): string {
+  if (days.length === 1) return formatDate(days[0].date);
+  const first = new Date(days[0].date);
+  const last = new Date(days[days.length - 1].date);
+  const sameMonth = first.getFullYear() === last.getFullYear() && first.getMonth() === last.getMonth();
+  if (!sameMonth) return days.map((d) => formatDate(d.date)).join(" – ");
+  const monthLabel = new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long" }).format(first);
+  return `${monthLabel} ${first.getDate()}–${last.getDate()}.`;
 }
 
 export interface HomeContent {
@@ -44,7 +53,7 @@ export function getHomeContent(phase: Phase): HomeContent {
   const dateLabel =
     secondDay && !secondDay.confirmed
       ? `${formatDate(firstDay.date)} (2. nap a nevezői létszámtól függ)`
-      : EVENT.days.map((d) => formatDate(d.date)).join(" – ");
+      : formatDateRange(EVENT.days);
   const timeLabel = `${firstDay.start}–${firstDay.end}`;
 
   const volunteersLive = volunteersOpen();
@@ -60,7 +69,7 @@ export function getHomeContent(phase: Phase): HomeContent {
       // everywhere just reads as broken. This phase is Hero + photos +
       // FeesTeaser + the notify signup, nothing else.
       return {
-        dateLabel: `${formatMonthYear(firstDay.date)} (pontosítás alatt)`,
+        dateLabel,
         timeLabel: "Részletek hamarosan",
         badgeLabel: "Nevezés és részletek hamarosan",
         badgeTone: "neutral",
@@ -71,7 +80,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         showCapacity: false,
         showRegistrationTeaser: true,
         registrationNote:
-          "A pontos időpontot és a nevezési részleteket hamarosan bejelentjük. Iratkozz fel, hogy e-mailben elsőként értesülj, amint megnyílik a nevezés!",
+          "A nevezési részleteket hamarosan bejelentjük. Iratkozz fel, hogy e-mailben elsőként értesülj, amint megnyílik a nevezés!",
         registrationCtaLabel: "Kövesd az @sbd.hungary Instagramot",
         registrationCtaHref: EVENT.social.igSbd,
         showVolunteerCta: false,

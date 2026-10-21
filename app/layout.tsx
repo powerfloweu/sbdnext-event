@@ -23,7 +23,9 @@ const firstDay = EVENT.days[0];
 const lastDay = EVENT.days[EVENT.days.length - 1];
 const dateRangeLabel =
   EVENT.days.length > 1
-    ? `${new Date(firstDay.date).getDate()}–${new Date(lastDay.date).getDate()}. ${new Intl.DateTimeFormat("hu-HU", { month: "long" }).format(new Date(firstDay.date))} (a 2. nap a nevezői létszámtól függ)`
+    ? lastDay.confirmed
+      ? `${new Date(firstDay.date).getDate()}–${new Date(lastDay.date).getDate()}. ${new Intl.DateTimeFormat("hu-HU", { month: "long" }).format(new Date(firstDay.date))}`
+      : `${new Date(firstDay.date).getDate()}–${new Date(lastDay.date).getDate()}. ${new Intl.DateTimeFormat("hu-HU", { month: "long" }).format(new Date(firstDay.date))} (a 2. nap a nevezői létszámtól függ)`
     : new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long", day: "numeric" }).format(
         new Date(firstDay.date)
       );
