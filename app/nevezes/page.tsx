@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 
@@ -17,6 +18,13 @@ function ClosedNotice() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
+      <Image
+        src="/sbd_next_logo_transparent.png"
+        alt="SBD Next"
+        width={56}
+        height={56}
+        className="size-12 object-contain"
+      />
       <AlertCircle className="size-10 text-primary" aria-hidden="true" />
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">{heading}</h1>

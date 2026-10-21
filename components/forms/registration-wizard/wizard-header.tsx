@@ -1,7 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+
+import { EVENT } from "@/config/event";
+import { formatDateRange } from "@/lib/format";
 
 const TOTAL_STEPS = 5;
 
@@ -29,9 +33,26 @@ export function WizardHeader({
             <ArrowLeft className="size-5" />
           </Link>
         )}
-        <span className="font-display text-xl font-extrabold uppercase tracking-wide">Nevezés</span>
+        <Link href="/" className="flex items-center gap-2" aria-label="SBD Next főoldal">
+          <Image
+            src="/sbd_next_logo_transparent.png"
+            alt=""
+            width={28}
+            height={28}
+            className="size-6 object-contain sm:size-7"
+          />
+          <span className="font-display text-lg font-extrabold uppercase tracking-wide sm:text-xl">
+            Nevezés
+          </span>
+        </Link>
         <span className="text-sm tabular-nums text-muted-foreground">
           {step} / {TOTAL_STEPS}
+        </span>
+      </div>
+      <div className="mx-auto flex max-w-xl items-center justify-center gap-1.5 px-4 pb-2 text-center">
+        <span className="text-[11px] font-medium text-muted-foreground sm:text-xs">
+          SBD Next <span className="text-primary">{EVENT.editionRoman}</span> · {formatDateRange(EVENT.days)} ·{" "}
+          {EVENT.venue.name}
         </span>
       </div>
       <div className="mx-auto grid max-w-xl grid-cols-5 gap-1.5 px-4 pb-3">
