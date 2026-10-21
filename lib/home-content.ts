@@ -7,10 +7,6 @@ function formatDate(iso: string): string {
   );
 }
 
-function formatMonthYear(iso: string): string {
-  return new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long" }).format(new Date(iso));
-}
-
 export interface HomeContent {
   dateLabel: string;
   timeLabel: string;
@@ -60,7 +56,7 @@ export function getHomeContent(phase: Phase): HomeContent {
       // everywhere just reads as broken. This phase is Hero + photos +
       // FeesTeaser + the notify signup, nothing else.
       return {
-        dateLabel: `${formatMonthYear(firstDay.date)} (pontosítás alatt)`,
+        dateLabel,
         timeLabel: "Részletek hamarosan",
         badgeLabel: "Nevezés és részletek hamarosan",
         badgeTone: "neutral",
@@ -71,7 +67,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         showCapacity: false,
         showRegistrationTeaser: true,
         registrationNote:
-          "A pontos időpontot és a nevezési részleteket hamarosan bejelentjük. Iratkozz fel, hogy e-mailben elsőként értesülj, amint megnyílik a nevezés!",
+          "A nevezési részleteket hamarosan bejelentjük. Iratkozz fel, hogy e-mailben elsőként értesülj, amint megnyílik a nevezés!",
         registrationCtaLabel: "Kövesd az @sbd.hungary Instagramot",
         registrationCtaHref: EVENT.social.igSbd,
         showVolunteerCta: false,

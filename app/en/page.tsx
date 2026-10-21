@@ -43,7 +43,7 @@ export default function EnglishPage() {
 
         <main id="main">
           <Hero
-            dateLabel="February 2027 (to be finalized)"
+            dateLabel="13-14 February 2027"
             timeLabel="Details coming soon"
             badgeLabel="Registration and details coming soon"
             badgeTone="neutral"
@@ -59,7 +59,7 @@ export default function EnglishPage() {
             <RegistrationTeaser
               ctaLabel="Follow @sbd.hungary on Instagram"
               ctaHref={EVENT.social.igSbd}
-              note="We'll announce the exact date and registration details soon. Sign up to be the first to know by e-mail the moment registration opens!"
+              note="We'll announce the registration details soon. Sign up to be the first to know by e-mail the moment registration opens!"
               notifyForm
               locale="en"
             />
