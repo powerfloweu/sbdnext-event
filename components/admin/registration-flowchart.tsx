@@ -3,97 +3,101 @@
 // JSX (no chart library): the shapes only need to communicate the pipeline,
 // not render real data, and this stays in sync with app/api/register/route.ts,
 // app/api/stripe/webhook/route.ts and app/admin/actions.ts by hand.
+//
+// Styled with the site's own design tokens (bg-card/border-border/text-primary
+// etc. from app/globals.css), not raw Tailwind palette colors, so it reads as
+// part of the SBD Next admin rather than a generic diagram pasted on top.
 
 interface FlowStep {
+  phase: string;
   title: string;
   detail: string;
-  tone: "collect" | "store" | "pay" | "notify" | "admin";
+  highlight?: boolean;
 }
-
-const TONE_CLASSES: Record<FlowStep["tone"], string> = {
-  collect: "border-blue-400/40 bg-blue-500/10",
-  store: "border-amber-400/40 bg-amber-500/10",
-  pay: "border-purple-400/40 bg-purple-500/10",
-  notify: "border-emerald-400/40 bg-emerald-500/10",
-  admin: "border-rose-400/40 bg-rose-500/10",
-};
-
-const TONE_LABELS: Record<FlowStep["tone"], string> = {
-  collect: "Adatfelvétel",
-  store: "Tárolás",
-  pay: "Fizetés",
-  notify: "Értesítés",
-  admin: "Admin",
-};
 
 const STEPS: FlowStep[] = [
   {
-    tone: "collect",
-    title: "1. Nevező kitölti a /nevezes űrlapot",
+    phase: "Adatfelvétel",
+    title: "Nevező kitölti a /nevezes űrlapot",
     detail:
-      "Név, e-mail, szül. év, nem, kategória, klub, testsúly, nyitó fogások, póló, prémium média, arcfotó.",
+      "Név, e-mail, szül. év, nem, kategória, klub, testsúly, nyitó fogások (guggolás/fekvenyomás/felhúzás), MC-szöveg, megjegyzés, póló, prémium média, arcfotó.",
   },
   {
-    tone: "store",
-    title: "2. Beírás a Supabase „registrations” táblába",
+    phase: "Tárolás",
+    title: "Beírás a Supabase „registrations” táblába",
     detail:
       "Státusz: pending_payment vagy waitlist (ha betelt a létszám). Az arcfotó külön, privát tárhelyre kerül. Service-role kulccsal, RLS mögött — nincs publikus hozzáférés.",
   },
   {
-    tone: "notify",
-    title: "3. „Jelentkezés megérkezett” e-mail",
+    phase: "Értesítés",
+    title: "„Jelentkezés megérkezett” e-mail",
     detail: "Automatikus visszaigazolás a megadott címre.",
   },
   {
-    tone: "pay",
-    title: "4. Stripe Checkout",
+    phase: "Fizetés",
+    title: "Stripe Checkout",
     detail: "A nevező a nevezési díjat (+ póló/média felár) online kártyával fizeti.",
   },
   {
-    tone: "store",
-    title: "5. Stripe webhook → státusz „paid”",
+    phase: "Tárolás",
+    title: "Stripe webhook → státusz „paid”",
     detail: "A webhook állítja a registrations sort fizetettre, menti a Stripe tranzakció-azonosítót.",
   },
   {
-    tone: "notify",
-    title: "6. „Fizetés megérkezett” e-mail",
+    phase: "Értesítés",
+    title: "„Fizetés megérkezett” e-mail",
     detail: "Végleges visszaigazolás a nevezőnek.",
   },
   {
-    tone: "admin",
-    title: "7. Admin felület (/admin)",
+    phase: "Admin",
+    title: "Admin felület (/admin)",
     detail:
       "Google-login + e-mail allowlist (jelenleg: trainer.pod@gmail.com, feketemiklos@gmail.com). Itt látható minden nevezés, kereshető/szűrhető, CSV-exportálható, és kézzel is állítható a státusz (pl. Fizetve / Lemondás — banki átutalásos fizetéshez).",
+    highlight: true,
   },
 ];
 
 export function RegistrationFlowchart() {
   return (
     <section className="mb-10">
-      <h2 className="mb-1 text-lg font-semibold">Nevezési folyamat</h2>
+      <div className="eyebrow mb-1">Áttekintés</div>
+      <h2 className="mb-1 text-xl">Nevezési folyamat</h2>
       <p className="mb-4 text-sm text-muted-foreground">
         Hogyan jut el egy nevezés a kitöltött űrlaptól a fizetett, admin által is látott státuszig.
       </p>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
         {STEPS.map((step, i) => (
-          <div key={step.title} className="flex items-start gap-3">
-            <div className={`w-full rounded-lg border p-3 ${TONE_CLASSES[step.tone]}`}>
-              <div className="mb-1 flex items-center gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {TONE_LABELS[step.tone]}
-                </span>
+          <div key={step.title} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <div
+                className={
+                  "flex size-8 shrink-0 items-center justify-center rounded-full border font-display text-sm font-bold " +
+                  (step.highlight
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-foreground")
+                }
+              >
+                {i + 1}
               </div>
-              <div className="text-sm font-medium">{step.title}</div>
-              <div className="mt-0.5 text-xs text-muted-foreground">{step.detail}</div>
+              {i < STEPS.length - 1 && <div className="my-1 w-px flex-1 bg-border" />}
             </div>
-            {i < STEPS.length - 1 && (
-              <span className="sr-only">majd</span>
-            )}
+            <div
+              className={
+                "mb-3 w-full rounded-lg border p-3 " +
+                (step.highlight ? "border-primary/40 bg-accent" : "border-border bg-card")
+              }
+            >
+              <span className="font-display text-xs font-bold uppercase tracking-[0.1em] text-primary">
+                {step.phase}
+              </span>
+              <div className="mt-1 text-sm font-semibold text-foreground">{step.title}</div>
+              <p className="mt-0.5 text-xs text-muted-foreground">{step.detail}</p>
+            </div>
           </div>
         ))}
       </div>
-      <div className="mt-4 rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">Jelenleg nincs önkiszolgáló szerkesztés:</span>{" "}
+      <div className="mt-2 rounded-lg border border-dashed border-border bg-card p-3 text-xs text-muted-foreground">
+        <span className="font-semibold text-foreground">Jelenleg nincs önkiszolgáló szerkesztés:</span>{" "}
         a nevező egy beküldött nevezését csak az admin tudja módosítani (a fenti 7. lépés), mert még
         nincs megépítve a visszaigazoló e-mailbeli „nevezés szerkesztése” link.
       </div>
