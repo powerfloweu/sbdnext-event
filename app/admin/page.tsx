@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogoutButton } from "@/components/admin/logout-button";
+import { RegistrationFlowchart } from "@/components/admin/registration-flowchart";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { formatHUF, formatKg } from "@/lib/format";
@@ -216,6 +217,8 @@ export default async function AdminPage({
           </Card>
         ))}
       </div>
+
+      <RegistrationFlowchart />
 
       <section className="mb-10">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
