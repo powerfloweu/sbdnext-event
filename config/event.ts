@@ -44,6 +44,12 @@ export const EVENT = {
     waitlist: true,
     minBirthYear: 1927,
     maxBirthYear: 2013,
+    // Self-service edit link (sent in the registration/payment e-mails).
+    // Per the organiser: shirt cut/size lock a month before the event
+    // (shirt orders need to go out), everything else stays editable until
+    // two weeks before.
+    editClosesAt: "2027-01-30T23:59:00+01:00",
+    shirtEditClosesAt: "2027-01-13T23:59:00+01:00",
   },
 
   // Volunteer recruitment window, per the organiser: January 2027.

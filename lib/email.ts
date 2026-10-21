@@ -66,6 +66,7 @@ interface RegistrationEmailData {
   firstName: string;
   waitlisted: boolean;
   totalFee: number;
+  editUrl: string;
 }
 
 export async function sendRegistrationReceivedEmail(data: RegistrationEmailData): Promise<boolean> {
@@ -89,7 +90,7 @@ export async function sendRegistrationReceivedEmail(data: RegistrationEmailData)
     from: FROM,
     to: data.email,
     subject,
-    html: `${body}<p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+    html: `${body}${buttonHtml(data.editUrl, "Nevezési adatok megtekintése / szerkesztése")}<p class="text-xs">Elírtad a nevedet, az osztályod vagy a pólóméreted? Ezen a linken utólag is javíthatod, 2027. január 30-ig (a pólóméret 2027. január 13-ig).</p><p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }
@@ -98,11 +99,16 @@ interface PaymentEmailData {
   email: string;
   firstName: string;
   totalFee: number;
+  editUrl?: string;
 }
 
 export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
+
+  const editSection = data.editUrl
+    ? `${buttonHtml(data.editUrl, "Nevezési adatok megtekintése / szerkesztése")}<p class="text-xs">Elírtad valamelyik adatodat? Ezen a linken utólag is javíthatod, 2027. január 30-ig (a pólóméret 2027. január 13-ig).</p>`
+    : "";
 
   await resend.emails.send({
     from: FROM,
@@ -111,7 +117,7 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
     html: `<p>Szia ${data.firstName}!</p>
        <p>A(z) <b>${formatHUF(data.totalFee)} Ft</b> befizetésed megérkezett, a nevezésed
        <b>véglegesítve</b> van. Találkozunk a versenyen!</p>
-       <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+       ${editSection}<p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }
