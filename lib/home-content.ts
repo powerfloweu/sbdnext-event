@@ -73,6 +73,36 @@ export function getHomeContent(phase: Phase): HomeContent {
         showRules: false,
         showFaq: false,
       };
+    case "early-access":
+      // The wizard is already live behind the early-access gate
+      // (app/nevezes, components/forms/early-access-gate.tsx) for
+      // notify_signups subscribers only, for one hour before the public
+      // opening. Most visitors land here — only they get the countdown +
+      // the "subscribers only for now" note; the primary CTA still points
+      // at /nevezes, which the gate handles.
+      return {
+        dateLabel,
+        timeLabel: "Részletek hamarosan",
+        badgeLabel: "Nevezés hírlevél-feliratkozóknak már most",
+        badgeTone: "open",
+        description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
+        primaryCta: { label: "Nevezek", href: "/nevezes" },
+        secondaryCta: null,
+        countdown: { target: EVENT.registration.opensAt, label: "Nevezés mindenkinek" },
+        showCapacity: false,
+        showRegistrationTeaser: true,
+        registrationNote:
+          "A hírlevél-feliratkozók már nevezhetnek — mindenki másnak hamarosan megnyílik.",
+        registrationCtaLabel: "Nevezés indítása",
+        registrationCtaHref: "/nevezes",
+        showVolunteerCta: false,
+        showKeyFacts: false,
+        showInfoSection: false,
+        showLists: false,
+        showSchedule: false,
+        showRules: false,
+        showFaq: false,
+      };
     case "registration":
       return {
         dateLabel,

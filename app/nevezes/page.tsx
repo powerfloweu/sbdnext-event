@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { RegistrationWizard } from "@/components/forms/registration-wizard/registration-wizard";
+import { EarlyAccessGate } from "@/components/forms/early-access-gate";
 import { EVENT } from "@/config/event";
 import { getPhase } from "@/lib/phase";
 
@@ -14,7 +15,7 @@ export const revalidate = 60;
 function ClosedNotice() {
   const phase = getPhase();
   const heading = phase === "closed" || phase === "live" || phase === "post" ? "A nevezés lezárult." : "A nevezés még nem indult el.";
-  const target = phase === "announced" ? EVENT.registration.opensAt : null;
+  const target = phase === "announced" ? EVENT.registration.earlyAccessOpensAt : null;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
@@ -46,10 +47,19 @@ function ClosedNotice() {
       {target && (
         <Card>
           <CardContent className="flex flex-col gap-1 p-5">
-            <span className="eyebrow">Várható indulásig</span>
+            <span className="eyebrow">Hírlevél-feliratkozóknak már itt</span>
             <CountdownTimer target={target} className="font-display text-3xl font-bold tabular-nums" />
           </CardContent>
         </Card>
+      )}
+      {phase === "announced" && (
+        <p className="text-xs text-muted-foreground">
+          A hírlevél-feliratkozók 1 órával korábban, {new Intl.DateTimeFormat("hu-HU", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }).format(new Date(EVENT.registration.earlyAccessOpensAt))}
+          -kor nevezhetnek.
+        </p>
       )}
       <Button asChild variant="secondary">
         <Link href="/">Vissza a főoldalra</Link>
@@ -60,6 +70,14 @@ function ClosedNotice() {
 
 export default function RegisterPage() {
   const phase = getPhase();
+
+  if (phase === "early-access") {
+    return (
+      <EarlyAccessGate opensAt={EVENT.registration.opensAt}>
+        <RegistrationWizard />
+      </EarlyAccessGate>
+    );
+  }
 
   if (phase !== "registration") {
     return <ClosedNotice />;

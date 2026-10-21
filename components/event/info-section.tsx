@@ -10,6 +10,10 @@ function formatDate(iso: string): string {
   );
 }
 
+function formatTime(iso: string): string {
+  return new Intl.DateTimeFormat("hu-HU", { hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+}
+
 export function InfoSection() {
   return (
     <Section id="info" icon={Info} eyebrow="Versenyinformációk" title="Amit érdemes tudni">
@@ -25,7 +29,12 @@ export function InfoSection() {
           </div>
           <div>
             <div className="text-xs text-muted-foreground">Jelentkezés kezdete</div>
-            <div className="font-semibold">{formatDate(EVENT.registration.opensAt)}</div>
+            <div className="font-semibold">
+              {formatDate(EVENT.registration.opensAt)}, {formatTime(EVENT.registration.opensAt)}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Hírlevél-feliratkozóknak már {formatTime(EVENT.registration.earlyAccessOpensAt)}-kor
+            </div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground">Nevezés határideje</div>

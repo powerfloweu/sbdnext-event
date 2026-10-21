@@ -29,6 +29,7 @@ import { PremiumMediaPreview } from "@/components/forms/registration-wizard/prem
 
 import { EVENT } from "@/config/event";
 import { formatHUF } from "@/lib/format";
+import { computeGLPoints } from "@/lib/gl-points";
 import {
   registrationSchema,
   REGISTRATION_DEFAULTS,
@@ -372,12 +373,18 @@ function Step3({
   control,
   errors,
   watchOpeners,
+  sex,
+  bodyweight,
 }: {
   control: Ctrl;
   errors: Errs;
   watchOpeners: { squat: string; bench: string; deadlift: string };
+  sex: RegistrationInput["sex"] | undefined;
+  bodyweight: string | undefined;
 }) {
   const total = num(watchOpeners.squat) + num(watchOpeners.bench) + num(watchOpeners.deadlift);
+  const glPoints =
+    sex && total > 0 ? computeGLPoints(sex, num(bodyweight ?? ""), total) : null;
 
   return (
     <div className="flex flex-col gap-5">
@@ -441,6 +448,16 @@ function Step3({
             {total || "—"} <span className="font-sans text-sm font-normal text-muted-foreground">kg</span>
           </span>
         </div>
+        {glPoints != null && (
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
+            <span className="text-sm text-muted-foreground">
+              GL pontszám <span className="text-xs">(tájékoztató, a nevezési súlyokból)</span>
+            </span>
+            <span className="font-display text-2xl font-bold tabular-nums">
+              {glPoints.toFixed(2)}
+            </span>
+          </div>
+        )}
       </fieldset>
 
       <Controller
@@ -943,7 +960,15 @@ export function RegistrationWizard() {
             />
           )}
           {step === 2 && <Step2 control={control} errors={errors} />}
-          {step === 3 && <Step3 control={control} errors={errors} watchOpeners={openers} />}
+          {step === 3 && (
+            <Step3
+              control={control}
+              errors={errors}
+              watchOpeners={openers}
+              sex={values.sex}
+              bodyweight={values.bodyweight}
+            />
+          )}
           {step === 4 && <Step4 control={control} errors={errors} wantsShirt={!!values.wantsShirt} />}
           {step === 5 && (
             <Summary
