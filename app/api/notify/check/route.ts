@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { getPhase } from "@/lib/phase";
+import { isEarlySubscriber } from "@/lib/early-access";
 
 // Checked by the early-access gate (components/forms/early-access-gate.tsx)
 // during the registration.earlyAccessOpensAt–opensAt window: lets someone
-// confirm their own e-mail is in notify_signups to unlock the wizard an
-// hour early. Only ever answers for the e-mail the caller already typed in
-// — it can't be used to enumerate subscribers — so the same light rate
+// confirm their own e-mail is in notify_signups (signed up before the
+// window opened — see lib/early-access) to unlock the wizard an hour
+// early. Only ever answers for the e-mail the caller already typed in —
+// it can't be used to enumerate subscribers — so the same light rate
 // limit as /api/prior-registration is enough to stop brute-forcing one
-// address.
+// address. This is a UX convenience only: /api/register re-checks the
+// same thing server-side before accepting an early submission, so this
+// endpoint being called outside the window or against a stale cookie
+// can't actually let anyone register early.
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 20;
@@ -37,15 +43,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ subscribed: false }, { status: 400 });
   }
 
+  // Outside the early-access window there is nothing to unlock — answer
+  // neutrally either way instead of hinting at phase/timing.
+  if (getPhase() !== "early-access") {
+    return NextResponse.json({ subscribed: false });
+  }
+
   const admin = getSupabaseAdmin();
   if (!admin) return NextResponse.json({ subscribed: false });
 
-  const { data, error } = await admin
-    .from("notify_signups")
-    .select("email")
-    .ilike("email", email)
-    .maybeSingle();
-  if (error) console.error("notify check lookup failed:", error);
-
-  return NextResponse.json({ subscribed: !!data });
+  return NextResponse.json({ subscribed: await isEarlySubscriber(admin, email) });
 }

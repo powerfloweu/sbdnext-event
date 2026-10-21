@@ -872,10 +872,19 @@ export function RegistrationWizard() {
         return;
       }
       router.push(`/nevezes/koszonjuk?rid=${json.registrationId}`);
-    } catch {
-      setSubmitError(
-        "A jelentkezés beküldése nem sikerült. A piszkozatod megmaradt, próbáld újra, vagy írj nekünk e-mailt."
-      );
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "unknown";
+      if (code === "early_access_required") {
+        setSubmitError(
+          "Ezzel az e-mail címmel nem találtunk korai hozzáférést. A nevezés 18:00-kor mindenki számára megnyílik — addig csak a hírlevél-feliratkozók nevezhetnek ezzel az e-mail címükkel."
+        );
+      } else if (code === "registration_closed") {
+        setSubmitError("A nevezés jelenleg nincs nyitva. Próbáld újra a nevezési időszakban.");
+      } else {
+        setSubmitError(
+          "A jelentkezés beküldése nem sikerült. A piszkozatod megmaradt, próbáld újra, vagy írj nekünk e-mailt."
+        );
+      }
     } finally {
       setSubmitting(false);
     }
