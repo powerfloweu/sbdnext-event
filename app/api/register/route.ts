@@ -6,6 +6,7 @@ import { registrationSchema } from "@/lib/validation/registration";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { sendRegistrationReceivedEmail } from "@/lib/email";
+import { generateEditToken } from "@/lib/edit-token";
 
 // Kept from the live site: this is where registrations have always been
 // forwarded (Google Sheets, via Make). Registrations are now also inserted
@@ -38,7 +39,8 @@ async function getRegisteredCount(): Promise<number> {
     const { count, error } = await admin
       .from("registrations")
       .select("id", { count: "exact", head: true })
-      .neq("status", "cancelled");
+      .neq("status", "cancelled")
+      .eq("is_preview_test", false);
     if (!error && typeof count === "number") return count;
     console.error("Supabase count failed, falling back to Sheets:", error);
   }
@@ -160,6 +162,7 @@ export async function POST(req: NextRequest) {
   const waitlisted = totalRegistered >= EVENT.registration.capacity;
 
   const registrationId = crypto.randomUUID();
+  const editToken = generateEditToken();
   const fullName = `${data.lastName.trim()} ${data.firstName.trim()}`.trim();
   const entryFee = data.wantsShirt ? EVENT.fees.entryWithShirt : EVENT.fees.entryBase;
   const totalFee = entryFee + (data.premiumMedia ? EVENT.fees.premiumMedia : 0);
@@ -193,8 +196,13 @@ export async function POST(req: NextRequest) {
       entry_fee: entryFee,
       total_fee: totalFee,
       face_photo_path: facePhotoPath,
+      edit_token: editToken,
       utm,
       raw: data,
+      // Preview deployments (e.g. this test branch) share the same Supabase
+      // project as production — flag these rows so they never count toward
+      // the real capacity cap and can be told apart from genuine entries.
+      is_preview_test: process.env.VERCEL_ENV === "preview",
     });
     if (error) {
       console.error("Supabase registration insert failed:", error);
@@ -222,23 +230,28 @@ export async function POST(req: NextRequest) {
     },
   };
 
-  try {
-    const resp = await fetch(REGISTRATION_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!resp.ok) {
-      throw new Error(`webhook status ${resp.status}`);
-    }
-  } catch (err) {
-    console.error("registration webhook failed:", err);
-    // Only a hard failure if Supabase isn't already our system of record —
-    // once Supabase is configured the row above is the source of truth, so
-    // a Make/Sheets hiccup shouldn't block a real registration. See finding
-    // C2 in docs/UI_UX_ROBUSTNESS_PLAN.md for why this used to be fatal.
-    if (!supabaseAdmin) {
-      return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
+  // Preview deployments (e.g. a branch used to test the registration/payment
+  // flow before going live) must never write test entries into the real
+  // Google Sheet that Make forwards to.
+  if (process.env.VERCEL_ENV !== "preview") {
+    try {
+      const resp = await fetch(REGISTRATION_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!resp.ok) {
+        throw new Error(`webhook status ${resp.status}`);
+      }
+    } catch (err) {
+      console.error("registration webhook failed:", err);
+      // Only a hard failure if Supabase isn't already our system of record —
+      // once Supabase is configured the row above is the source of truth, so
+      // a Make/Sheets hiccup shouldn't block a real registration. See finding
+      // C2 in docs/UI_UX_ROBUSTNESS_PLAN.md for why this used to be fatal.
+      if (!supabaseAdmin) {
+        return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
+      }
     }
   }
 
@@ -248,6 +261,7 @@ export async function POST(req: NextRequest) {
       firstName: data.firstName,
       waitlisted,
       totalFee,
+      editUrl: `${EVENT.siteUrl}/nevezes/szerkesztes/${registrationId}?token=${editToken}`,
     });
   } catch (err) {
     console.error("registration confirmation email failed:", err);
