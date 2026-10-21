@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/select";
 import { Field } from "@/components/forms/field";
 import { WizardHeader } from "@/components/forms/registration-wizard/wizard-header";
+import { EventBanner } from "@/components/forms/registration-wizard/event-banner";
+import { WizardSponsorStrip } from "@/components/forms/registration-wizard/wizard-sponsor-strip";
 import { PremiumMediaPreview } from "@/components/forms/registration-wizard/premium-media-preview";
 
 import { EVENT } from "@/config/event";
@@ -876,6 +878,8 @@ export function RegistrationWizard() {
       <WizardHeader step={step} onBack={step > 1 ? goBack : undefined} />
 
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
+        {step === 1 && <EventBanner />}
+
         {restoredDraft && step === 1 && (
           <Alert>
             <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
@@ -982,6 +986,8 @@ export function RegistrationWizard() {
             </p>
           </div>
         </form>
+
+        <WizardSponsorStrip />
       </main>
     </div>
   );
