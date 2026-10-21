@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { RegistrationFlowchart } from "@/components/admin/registration-flowchart";
+import { WeightClassStats } from "@/components/admin/weight-class-stats";
+import { AdminTabs } from "@/components/admin/admin-tabs";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { formatHUF, formatKg } from "@/lib/format";
@@ -162,6 +164,7 @@ export default async function AdminPage({
     { data: statsRows },
     { count: totalNotifyCount },
     { data: feedbackSignups },
+    { data: priorYearRows },
   ] = await Promise.all([
     regQuery.range(regFrom, regTo).returns<RegistrationRow[]>(),
     notifyQuery.range(notifyFrom, notifyTo).returns<NotifySignupRow[]>(),
@@ -175,6 +178,10 @@ export default async function AdminPage({
       .not("feedback_text", "is", null)
       .order("feedback_at", { ascending: false })
       .returns<Pick<NotifySignupRow, "id" | "email" | "feedback_text" | "feedback_at">[]>(),
+    admin
+      .from("prior_year_registrations")
+      .select("sex, division, bodyweight")
+      .returns<{ sex: string; division: string; bodyweight: number | null }[]>(),
   ]);
 
   const rows = registrations ?? [];
@@ -192,16 +199,8 @@ export default async function AdminPage({
   const regFilterQs = { q: q || undefined, status: status !== "all" ? status : undefined };
   const notifyFilterQs = { nq: nq || undefined, nsource: nsource !== "all" ? nsource : undefined };
 
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">SBD Next — Admin</h1>
-          <p className="text-sm text-muted-foreground">Bejelentkezve: {user?.email}</p>
-        </div>
-        <LogoutButton />
-      </div>
-
+  const overview = (
+    <>
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
           { label: "Nevezések", value: totalRegistrations },
@@ -219,7 +218,11 @@ export default async function AdminPage({
       </div>
 
       <RegistrationFlowchart />
+    </>
+  );
 
+  const registrationsTab = (
+    <>
       <section className="mb-10">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">
@@ -358,7 +361,11 @@ export default async function AdminPage({
           </div>
         )}
       </section>
+    </>
+  );
 
+  const notifyTab = (
+    <>
       <section className="mb-10">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Notify feliratkozók ({notifyCount ?? 0})</h2>
@@ -448,38 +455,60 @@ export default async function AdminPage({
           </div>
         )}
       </section>
+    </>
+  );
 
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({feedbackRows.length})</h2>
-        <Card className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="border-b border-border text-xs uppercase text-muted-foreground">
+  const feedbackTab = (
+    <section>
+      <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({feedbackRows.length})</h2>
+      <Card className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead className="border-b border-border text-xs uppercase text-muted-foreground">
+            <tr>
+              <th className="p-3">Beérkezett</th>
+              <th className="p-3">E-mail</th>
+              <th className="p-3">Visszajelzés</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {feedbackRows.length === 0 ? (
               <tr>
-                <th className="p-3">Beérkezett</th>
-                <th className="p-3">E-mail</th>
-                <th className="p-3">Visszajelzés</th>
+                <td colSpan={3} className="p-4 text-center text-muted-foreground">
+                  Még nem érkezett visszajelzés.
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {feedbackRows.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="p-4 text-center text-muted-foreground">
-                    Még nem érkezett visszajelzés.
-                  </td>
+            ) : (
+              feedbackRows.map((n) => (
+                <tr key={n.id}>
+                  <td className="p-3 whitespace-nowrap text-muted-foreground">{fmtDate(n.feedback_at)}</td>
+                  <td className="p-3">{n.email}</td>
+                  <td className="p-3 text-muted-foreground">{n.feedback_text}</td>
                 </tr>
-              ) : (
-                feedbackRows.map((n) => (
-                  <tr key={n.id}>
-                    <td className="p-3 whitespace-nowrap text-muted-foreground">{fmtDate(n.feedback_at)}</td>
-                    <td className="p-3">{n.email}</td>
-                    <td className="p-3 text-muted-foreground">{n.feedback_text}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </Card>
-      </section>
+              ))
+            )}
+          </tbody>
+        </table>
+      </Card>
+    </section>
+  );
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">SBD Next — Admin</h1>
+          <p className="text-sm text-muted-foreground">Bejelentkezve: {user?.email}</p>
+        </div>
+        <LogoutButton />
+      </div>
+
+      <AdminTabs
+        overview={overview}
+        registrations={registrationsTab}
+        notifySignups={notifyTab}
+        feedback={feedbackTab}
+        weightClassStats={<WeightClassStats rows={priorYearRows ?? []} />}
+      />
     </div>
   );
 }
