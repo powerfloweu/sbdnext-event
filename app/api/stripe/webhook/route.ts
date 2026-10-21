@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { sendPaymentConfirmedEmail } from "@/lib/email";
+import { EVENT } from "@/config/event";
 
 export const runtime = "nodejs";
 
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   const { data: registration, error: fetchError } = await admin
     .from("registrations")
-    .select("id, email, first_name, total_fee, status")
+    .select("id, email, first_name, total_fee, status, edit_token")
     .eq("id", registrationId)
     .maybeSingle();
 
@@ -93,6 +94,9 @@ export async function POST(req: NextRequest) {
         email: registration.email,
         firstName: registration.first_name,
         totalFee: registration.total_fee,
+        editUrl: registration.edit_token
+          ? `${EVENT.siteUrl}/nevezes/szerkesztes/${registrationId}?token=${registration.edit_token}`
+          : undefined,
       });
       await admin
         .from("registrations")

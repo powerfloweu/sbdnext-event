@@ -81,14 +81,28 @@ function PriorYearLookup({
   onPrefill: (data: PriorYearPrefill) => void;
 }) {
   const email = useWatch({ control, name: "email" });
+  const lastName = useWatch({ control, name: "lastName" });
+  const firstName = useWatch({ control, name: "firstName" });
+  const birthYear = useWatch({ control, name: "birthYear" });
   const [status, setStatus] = useState<PriorLookupStatus>("idle");
 
+  const hasEmail = (email ?? "").trim().includes("@");
+  const hasNameAndYear = !!(lastName ?? "").trim() && !!(firstName ?? "").trim() && /^\d{4}$/.test((birthYear ?? "").trim());
+
   const lookup = useCallback(async () => {
-    const trimmed = (email ?? "").trim();
-    if (!trimmed.includes("@")) return;
+    if (!hasEmail && !hasNameAndYear) return;
     setStatus("loading");
     try {
-      const res = await fetch(`/api/prior-registration?email=${encodeURIComponent(trimmed)}`);
+      const params = new URLSearchParams();
+      // E-mail is tried first server-side; name+birth year goes along as a
+      // fallback for returning athletes who used a different address.
+      if (hasEmail) params.set("email", (email ?? "").trim());
+      if (hasNameAndYear) {
+        params.set("lastName", (lastName ?? "").trim());
+        params.set("firstName", (firstName ?? "").trim());
+        params.set("birthYear", (birthYear ?? "").trim());
+      }
+      const res = await fetch(`/api/prior-registration?${params.toString()}`);
       const json = await res.json().catch(() => null);
       if (json?.found) {
         onPrefill(json.data as PriorYearPrefill);
@@ -99,9 +113,9 @@ function PriorYearLookup({
     } catch {
       setStatus("error");
     }
-  }, [email, onPrefill]);
+  }, [email, lastName, firstName, birthYear, hasEmail, hasNameAndYear, onPrefill]);
 
-  const disabled = !(email ?? "").trim().includes("@") || status === "loading";
+  const disabled = (!hasEmail && !hasNameAndYear) || status === "loading";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -115,7 +129,8 @@ function PriorYearLookup({
       )}
       {status === "not_found" && (
         <p className="text-xs text-muted-foreground">
-          Nem találtunk egyezést erre az e-mail címre, nyugodtan töltsd ki manuálisan.
+          Nem találtunk egyezést sem az e-mail címre, sem a névre és születési évre, nyugodtan töltsd
+          ki manuálisan.
         </p>
       )}
       {status === "error" && (
@@ -218,8 +233,6 @@ function Step1({
         )}
       />
 
-      <PriorYearLookup control={control} onPrefill={onPrefill} />
-
       <div className="grid gap-4 sm:grid-cols-2">
         <Controller
           name="birthYear"
@@ -251,6 +264,8 @@ function Step1({
           )}
         />
       </div>
+
+      <PriorYearLookup control={control} onPrefill={onPrefill} />
     </div>
   );
 }

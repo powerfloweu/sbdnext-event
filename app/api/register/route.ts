@@ -6,6 +6,7 @@ import { registrationSchema } from "@/lib/validation/registration";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { sendRegistrationReceivedEmail } from "@/lib/email";
+import { generateEditToken } from "@/lib/edit-token";
 
 // Kept from the live site: this is where registrations have always been
 // forwarded (Google Sheets, via Make). Registrations are now also inserted
@@ -161,6 +162,7 @@ export async function POST(req: NextRequest) {
   const waitlisted = totalRegistered >= EVENT.registration.capacity;
 
   const registrationId = crypto.randomUUID();
+  const editToken = generateEditToken();
   const fullName = `${data.lastName.trim()} ${data.firstName.trim()}`.trim();
   const entryFee = data.wantsShirt ? EVENT.fees.entryWithShirt : EVENT.fees.entryBase;
   const totalFee = entryFee + (data.premiumMedia ? EVENT.fees.premiumMedia : 0);
@@ -194,6 +196,7 @@ export async function POST(req: NextRequest) {
       entry_fee: entryFee,
       total_fee: totalFee,
       face_photo_path: facePhotoPath,
+      edit_token: editToken,
       utm,
       raw: data,
       // Preview deployments (e.g. this test branch) share the same Supabase
@@ -258,6 +261,7 @@ export async function POST(req: NextRequest) {
       firstName: data.firstName,
       waitlisted,
       totalFee,
+      editUrl: `${EVENT.siteUrl}/nevezes/szerkesztes/${registrationId}?token=${editToken}`,
     });
   } catch (err) {
     console.error("registration confirmation email failed:", err);
