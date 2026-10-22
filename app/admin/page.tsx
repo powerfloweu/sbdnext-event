@@ -67,6 +67,25 @@ interface NotifySignupRow {
   notified_at: string | null;
 }
 
+interface EventFeedbackRow {
+  id: string;
+  source: "sbd_next_1_form" | "newsletter";
+  submitted_at: string | null;
+  name: string | null;
+  email: string | null;
+  participation_role: string | null;
+  nps: number | null;
+  best: string | null;
+  improve: string | null;
+  comment: string | null;
+  allow_quote: boolean | null;
+}
+
+const FEEDBACK_SOURCE_LABELS: Record<string, string> = {
+  sbd_next_1_form: "SBD Next 1 (visszajelzés űrlap)",
+  newsletter: "Hírlevél (SBD Next 2)",
+};
+
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
   return new Intl.DateTimeFormat("hu-HU", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
@@ -165,6 +184,7 @@ export default async function AdminPage({
     { count: totalNotifyCount },
     { data: feedbackSignups },
     { data: priorYearRows },
+    { data: sbdNext1FeedbackRows },
   ] = await Promise.all([
     regQuery.range(regFrom, regTo).returns<RegistrationRow[]>(),
     notifyQuery.range(notifyFrom, notifyTo).returns<NotifySignupRow[]>(),
@@ -182,11 +202,45 @@ export default async function AdminPage({
       .from("prior_year_registrations")
       .select("sex, division, bodyweight")
       .returns<{ sex: string; division: string; bodyweight: number | null }[]>(),
+    admin
+      .from("event_feedback")
+      .select("id, source, submitted_at, name, email, participation_role, nps, best, improve, comment, allow_quote")
+      .eq("source", "sbd_next_1_form")
+      .order("submitted_at", { ascending: false })
+      .returns<EventFeedbackRow[]>(),
   ]);
 
   const rows = registrations ?? [];
   const notify = notifySignups ?? [];
-  const feedbackRows = feedbackSignups ?? [];
+  const sbdNext1Feedback = sbdNext1FeedbackRows ?? [];
+
+  // Unified feedback list for the admin tab: the newsletter question
+  // (notify_signups.feedback_text) plus the SBD Next 1 organiser's post-event
+  // form, imported once into event_feedback (see
+  // supabase/migrations/0008_event_feedback.sql) — same tab, sorted together
+  // by date, each row tagged with its source.
+  const unifiedFeedback = [
+    ...(feedbackSignups ?? []).map((n) => ({
+      id: n.id,
+      source: "newsletter" as const,
+      submittedAt: n.feedback_at,
+      name: null as string | null,
+      email: n.email,
+      nps: null as number | null,
+      text: n.feedback_text,
+      allowQuote: null as boolean | null,
+    })),
+    ...sbdNext1Feedback.map((f) => ({
+      id: f.id,
+      source: f.source,
+      submittedAt: f.submitted_at,
+      name: f.name,
+      email: f.email,
+      nps: f.nps,
+      text: [f.best, f.improve, f.comment].filter(Boolean).join("\n\n"),
+      allowQuote: f.allow_quote,
+    })),
+  ].sort((a, b) => (b.submittedAt ?? "").localeCompare(a.submittedAt ?? ""));
 
   const allStats = statsRows ?? [];
   const totalRegistrations = allStats.length;
@@ -460,29 +514,41 @@ export default async function AdminPage({
 
   const feedbackTab = (
     <section>
-      <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({feedbackRows.length})</h2>
+      <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({unifiedFeedback.length})</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        A hírlevél-feliratkozók válasza (SBD Next 2) és az SBD Next 1 szervezői visszajelzés-űrlapjának importált
+        válaszai együtt, forrás szerint jelölve.
+      </p>
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[800px] text-left text-sm">
           <thead className="border-b border-border text-xs uppercase text-muted-foreground">
             <tr>
               <th className="p-3">Beérkezett</th>
-              <th className="p-3">E-mail</th>
+              <th className="p-3">Forrás</th>
+              <th className="p-3">Név / e-mail</th>
+              <th className="p-3">NPS</th>
               <th className="p-3">Visszajelzés</th>
+              <th className="p-3">Idézhető</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {feedbackRows.length === 0 ? (
+            {unifiedFeedback.length === 0 ? (
               <tr>
-                <td colSpan={3} className="p-4 text-center text-muted-foreground">
+                <td colSpan={6} className="p-4 text-center text-muted-foreground">
                   Még nem érkezett visszajelzés.
                 </td>
               </tr>
             ) : (
-              feedbackRows.map((n) => (
-                <tr key={n.id}>
-                  <td className="p-3 whitespace-nowrap text-muted-foreground">{fmtDate(n.feedback_at)}</td>
-                  <td className="p-3">{n.email}</td>
-                  <td className="p-3 text-muted-foreground">{n.feedback_text}</td>
+              unifiedFeedback.map((f) => (
+                <tr key={`${f.source}-${f.id}`}>
+                  <td className="p-3 whitespace-nowrap text-muted-foreground">{fmtDate(f.submittedAt)}</td>
+                  <td className="p-3 whitespace-nowrap text-muted-foreground">
+                    {FEEDBACK_SOURCE_LABELS[f.source] ?? f.source}
+                  </td>
+                  <td className="p-3">{f.name || f.email || "—"}</td>
+                  <td className="p-3">{f.nps ?? "—"}</td>
+                  <td className="p-3 whitespace-pre-wrap text-muted-foreground">{f.text || "—"}</td>
+                  <td className="p-3">{f.allowQuote === null ? "—" : f.allowQuote ? "Igen" : "Nem"}</td>
                 </tr>
               ))
             )}
