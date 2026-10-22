@@ -62,7 +62,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         showCapacity: false,
         showRegistrationTeaser: true,
         registrationNote:
-          "A nevezési részleteket hamarosan bejelentjük. Iratkozz fel, hogy e-mailben elsőként értesülj, amint megnyílik a nevezés!",
+          "A nevezési részleteket hamarosan bejelentjük. Iratkozz fel, hogy e-mailben elsőként értesülj, amint megnyílik a nevezés! A feliratkozók 1 órával korábban nevezhetnek majd, mint mindenki más.",
         registrationCtaLabel: "Kövesd az @sbd.hungary Instagramot",
         registrationCtaHref: EVENT.social.igSbd,
         showVolunteerCta: false,
