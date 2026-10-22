@@ -4,13 +4,19 @@ import { AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { RegistrationWizard } from "@/components/forms/registration-wizard/registration-wizard";
+import { EarlyAccessGate } from "@/components/forms/early-access-gate";
+import { EVENT } from "@/config/event";
 import { getPhase } from "@/lib/phase";
 
 export const revalidate = 60;
 
 // Deliberately just a status line + a way back — no dates, no countdown.
 // D (2026-10-22): showing an expected opening date/time here was something
-// nobody asked for; drop it rather than word it more carefully.
+// nobody asked for; drop it rather than word it more carefully. The
+// EarlyAccessGate's own countdown (shown only once early access is
+// actually live, 17:00–18:00) is a different thing — people already on
+// that gate are seconds away from the public opening, not reading an
+// announcement made weeks ahead — so it's untouched here.
 function ClosedNotice() {
   const phase = getPhase();
   const heading = phase === "closed" || phase === "live" || phase === "post" ? "A nevezés lezárult." : "A nevezés még nem indult el.";
@@ -35,6 +41,14 @@ function ClosedNotice() {
 
 export default function RegisterPage() {
   const phase = getPhase();
+
+  if (phase === "early-access") {
+    return (
+      <EarlyAccessGate opensAt={EVENT.registration.opensAt}>
+        <RegistrationWizard />
+      </EarlyAccessGate>
+    );
+  }
 
   if (phase !== "registration") {
     return <ClosedNotice />;

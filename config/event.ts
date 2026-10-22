@@ -36,9 +36,13 @@ export const EVENT = {
     amenitiesEn: "Changing rooms and showers available. Aldi and Tesco supermarkets one block away.",
   },
 
-  // TODO(event-2): confirm the exact registration window.
   registration: {
-    opensAt: "2026-11-01T20:00:00+01:00",
+    // Confirmed on the 2026-10-21 planning call: opens 2026-11-02 18:00
+    // (not Nov 1 — that's halottak napja). Newsletter subscribers
+    // (notify_signups) get a 1h early-access window from 17:00 — see
+    // earlyAccessOpensAt and app/api/notify/check.
+    earlyAccessOpensAt: "2026-11-02T17:00:00+01:00",
+    opensAt: "2026-11-02T18:00:00+01:00",
     closesAt: "2026-12-31T23:59:00+01:00",
     capacity: 220,
     waitlist: true,
@@ -62,7 +66,12 @@ export const EVENT = {
   // instead of being bundled into a single entry fee.
   fees: {
     currency: "HUF",
-    entryBase: 27990,
+    // Confirmed 2026-10-21: entry 24 990 Ft, named shirt +7 990 Ft.
+    // entryWithShirt kept at 32 990 Ft as the organiser stated it on the
+    // call, which is 10 Ft above 24990+7990 — flagged back to the
+    // organiser, not "fixed" here since the total is the number that's
+    // actually charged.
+    entryBase: 24990,
     entryWithShirt: 32990,
     spectator: 1000,
     premiumMedia: 24990,

@@ -4,6 +4,8 @@ import { EVENT } from "@/config/event";
 import { getAllLeaderboards } from "@/lib/sheets";
 import { registrationSchema } from "@/lib/validation/registration";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { getPhase } from "@/lib/phase";
+import { isEarlySubscriber } from "@/lib/early-access";
 import { getStripe } from "@/lib/stripe";
 import { sendRegistrationReceivedEmail } from "@/lib/email";
 import { generateEditToken } from "@/lib/edit-token";
@@ -158,6 +160,26 @@ export async function POST(req: NextRequest) {
   const utm = typeof raw.utm === "string" ? raw.utm : "";
   const facePhotoDataUrl = typeof raw.facePhoto === "string" ? raw.facePhoto : null;
 
+  // Server-side authority for the registration window — the client-side
+  // phase gate on /nevezes (including the EarlyAccessGate) is only a UX
+  // nicety. Outside early-access/registration this always rejects. During
+  // early-access, only an e-mail that was subscribed before the window
+  // opened gets through (see lib/early-access) — checked here against the
+  // submitted e-mail itself, not against whatever the client's gate cookie
+  // claims, so passing the gate with one address and registering with
+  // another doesn't work.
+  const phase = getPhase();
+  const supabaseAdmin = getSupabaseAdmin();
+  if (phase !== "registration" && phase !== "early-access") {
+    return NextResponse.json({ ok: false, error: "registration_closed" }, { status: 403 });
+  }
+  if (phase === "early-access") {
+    const subscribed = supabaseAdmin ? await isEarlySubscriber(supabaseAdmin, data.email.trim()) : false;
+    if (!subscribed) {
+      return NextResponse.json({ ok: false, error: "early_access_required" }, { status: 403 });
+    }
+  }
+
   const totalRegistered = await getRegisteredCount();
   const waitlisted = totalRegistered >= EVENT.registration.capacity;
 
@@ -171,7 +193,6 @@ export async function POST(req: NextRequest) {
     ? await uploadFacePhoto(registrationId, facePhotoDataUrl)
     : null;
 
-  const supabaseAdmin = getSupabaseAdmin();
   if (supabaseAdmin) {
     const { error } = await supabaseAdmin.from("registrations").insert({
       id: registrationId,
