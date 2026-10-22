@@ -66,13 +66,10 @@ export const EVENT = {
   // instead of being bundled into a single entry fee.
   fees: {
     currency: "HUF",
-    // Confirmed 2026-10-21: entry 24 990 Ft, named shirt +7 990 Ft.
-    // entryWithShirt kept at 32 990 Ft as the organiser stated it on the
-    // call, which is 10 Ft above 24990+7990 — flagged back to the
-    // organiser, not "fixed" here since the total is the number that's
-    // actually charged.
+    // Confirmed 2026-10-21, price corrected by the organiser 2026-10-22:
+    // entry 24 990 Ft, named shirt +7 990 Ft → 32 980 Ft with a shirt.
     entryBase: 24990,
-    entryWithShirt: 32990,
+    entryWithShirt: 32980,
     spectator: 1000,
     premiumMedia: 24990,
   },
