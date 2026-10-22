@@ -49,11 +49,14 @@ function AmbientVideo({ playbackId, className }: AmbientVideoProps) {
 // pixel-anchored connector (the two live in different components, and a
 // straight ruler-line would look too literal anyway). Long and winding on
 // purpose: it has to visually bridge the gap up to the fee boxes above, not
-// just sit as a short stub right next to the video.
+// just sit as a short stub right next to the video. Desktop-only (sm:block):
+// on the mobile stacked layout the two clips sit directly on top of each
+// other, so the arrow's large offsets would push the label off-screen and
+// point into the wrong clip.
 function ExampleArrow({ locale = "hu" as const }: { locale?: "hu" | "en" }) {
   return (
     <div
-      className="pointer-events-none absolute -top-24 -left-32 h-28 w-52 -rotate-2 text-primary sm:-top-32 sm:-left-48 sm:h-40 sm:w-72"
+      className="pointer-events-none absolute -top-32 left-0 hidden h-40 w-72 -rotate-2 text-primary sm:-left-48 sm:block"
       aria-hidden="true"
     >
       <span className="absolute -top-1 left-0 -rotate-6 font-serif text-sm italic text-primary sm:text-base">
