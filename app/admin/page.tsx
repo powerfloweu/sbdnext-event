@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { RegistrationFlowchart } from "@/components/admin/registration-flowchart";
 import { WeightClassStats } from "@/components/admin/weight-class-stats";
+import { ResultsAdmin } from "@/components/admin/results-admin";
 import { AdminTabs } from "@/components/admin/admin-tabs";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
@@ -508,6 +509,7 @@ export default async function AdminPage({
         notifySignups={notifyTab}
         feedback={feedbackTab}
         weightClassStats={<WeightClassStats rows={priorYearRows ?? []} />}
+        results={<ResultsAdmin />}
       />
     </div>
   );
