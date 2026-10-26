@@ -37,7 +37,7 @@ export default function EnglishPage() {
           ctaLabel="Notify me"
           ctaHref="#register"
           showVolunteerLink={false}
-          navLinks={[{ href: "/en/results", label: "SBD Next I Results" }]}
+          navLinks={[{ href: "/en/results", label: "SBD Next I Results", wordmarkRoman: "I" }]}
           locale="en"
         />
 
@@ -91,7 +91,7 @@ export default function EnglishPage() {
         ctaLabel="Go to registration"
         ctaHref="/#register"
         showVolunteerLink={false}
-        navLinks={[{ href: "/en/results", label: "SBD Next I Results" }]}
+        navLinks={[{ href: "/en/results", label: "SBD Next I Results", wordmarkRoman: "I" }]}
         locale="en"
       />
 

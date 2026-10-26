@@ -39,7 +39,7 @@ export default async function HomePage() {
     content.showSchedule && { href: "#schedule", label: "Időrend" },
     phase !== "announced" && { href: "#fees", label: "Díjak" },
     content.showFaq && { href: "#faq", label: "GYIK" },
-    { href: "/eredmenyek", label: "SBD Next I Eredmények" },
+    { href: "/eredmenyek", label: "SBD Next I Eredmények", wordmarkRoman: "I" },
   ].filter((l): l is { href: string; label: string } => Boolean(l));
 
   return (

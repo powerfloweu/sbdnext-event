@@ -37,12 +37,35 @@ const STRINGS = {
   },
 } as const;
 
+interface NavLink {
+  href: string;
+  label: string;
+  // When set, the link is rendered like the "SBD Next II" logo wordmark
+  // (bold condensed uppercase, this substring of `label` in red) instead of
+  // the plain muted nav text — e.g. for the "SBD Next I Eredmények" link.
+  wordmarkRoman?: string;
+}
+
 interface HeaderProps {
   ctaLabel: string;
   ctaHref: string;
   showVolunteerLink: boolean;
-  navLinks: { href: string; label: string }[];
+  navLinks: NavLink[];
   locale?: "hu" | "en";
+}
+
+function NavLinkLabel({ label, wordmarkRoman }: { label: string; wordmarkRoman?: string }) {
+  if (!wordmarkRoman) return <>{label}</>;
+  const token = ` ${wordmarkRoman} `;
+  const idx = label.indexOf(token);
+  if (idx === -1) return <>{label}</>;
+  const before = label.slice(0, idx);
+  const after = label.slice(idx + token.length);
+  return (
+    <>
+      {before} <span className="text-primary">{wordmarkRoman}</span> {after}
+    </>
+  );
 }
 
 export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale = "hu" }: HeaderProps) {
@@ -91,9 +114,13 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale 
               <a
                 key={l.href}
                 href={l.href}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className={
+                  l.wordmarkRoman
+                    ? "font-display text-sm font-extrabold uppercase tracking-wide text-foreground/90 transition-colors hover:text-foreground"
+                    : "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                }
               >
-                {l.label}
+                <NavLinkLabel label={l.label} wordmarkRoman={l.wordmarkRoman} />
               </a>
             ))}
           </nav>
@@ -147,9 +174,13 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale 
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-3.5 text-lg font-semibold text-foreground hover:bg-accent"
+                className={
+                  l.wordmarkRoman
+                    ? "rounded-lg px-3 py-3.5 font-display text-lg font-extrabold uppercase tracking-wide text-foreground hover:bg-accent"
+                    : "rounded-lg px-3 py-3.5 text-lg font-semibold text-foreground hover:bg-accent"
+                }
               >
-                {l.label}
+                <NavLinkLabel label={l.label} wordmarkRoman={l.wordmarkRoman} />
               </a>
             ))}
             <Link
