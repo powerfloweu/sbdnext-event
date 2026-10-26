@@ -82,7 +82,7 @@ export function Testimonials() {
     <div className="flex flex-col gap-3">
       <span className="eyebrow flex items-center gap-1.5">
         <Quote className="size-3.5" aria-hidden="true" />
-        Ezt mondták az SBD Next 1 versenyzői
+        Ezt mondták az SBD Next I versenyzői
       </span>
       <div className="grid gap-3 sm:grid-cols-2">
         {visible.map((q) => (

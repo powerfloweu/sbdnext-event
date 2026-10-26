@@ -112,7 +112,7 @@ export function WeightClassStats({ rows }: { rows: PriorYearRow[] }) {
     <section className="mb-10">
       <h2 className="mb-1 text-lg font-semibold">Tavalyi súlycsoport-statisztika</h2>
       <p className="mb-4 text-sm text-muted-foreground">
-        {rows.length} tavalyi (SBD Next 1) induló, nincs felskálázás. {withBodyweight.length} / {rows.length} sornál
+        {rows.length} tavalyi (SBD Next I) induló, nincs felskálázás. {withBodyweight.length} / {rows.length} sornál
         van testsúly-adat ({Math.round((withBodyweight.length / Math.max(1, rows.length)) * 100)}%). IPF-súlycsoportok
         szerint, versenyző/újonc bontásban — ez a döntés alapja a SBD Next 2 versenyrendszeréhez.
       </p>
