@@ -74,6 +74,7 @@ export default async function HomePage() {
               ctaLabel={content.registrationCtaLabel}
               ctaHref={content.registrationCtaHref}
               note={content.registrationNote}
+              earlyAccessNote={content.earlyAccessNote}
               notifyForm={phase === "announced"}
             />
           )}
