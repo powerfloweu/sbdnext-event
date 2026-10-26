@@ -22,7 +22,7 @@ const STRINGS = {
     eyebrow: "SBD Next 1 · 2026. február",
     title: "Az első SBD Next eredményei",
     description:
-      "A versenyzők teljes eredménysora kategóriánként, az IPF szabályok szerinti pontszám és helyezés alapján. Az áthúzott szám sikertelen próbálkozást jelent.",
+      "A versenyzők teljes eredménysora kategóriánként. A helyezést a GL pont döntötte el, nem a total — az SBD Next súlycsoportok nélkül, GL pont alapján méri össze a versenyzőket. Az áthúzott szám sikertelen próbálkozást jelent.",
     empty: "Ebben a kategóriában nincs rögzített eredmény.",
     place: "Hely",
     name: "Név",
@@ -32,6 +32,7 @@ const STRINGS = {
     bench: "Fekvenyomás",
     deadlift: "Felhúzás",
     total: "Total",
+    glPoints: "GL pont",
   },
   en: {
     tabLabels: {
@@ -43,7 +44,7 @@ const STRINGS = {
     eyebrow: "SBD Next 1 · February 2026",
     title: "SBD Next 1 results",
     description:
-      "Full results by category, placed by IPF-rules score. A struck-through number is a failed attempt.",
+      "Full results by category. Placing was decided by GL Points, not raw total — SBD Next runs without weight classes, ranking lifters by GL Points instead. A struck-through number is a failed attempt.",
     empty: "No results recorded in this category.",
     place: "Place",
     name: "Name",
@@ -53,10 +54,15 @@ const STRINGS = {
     bench: "Bench",
     deadlift: "Deadlift",
     total: "Total",
+    glPoints: "GL Points",
   },
 } as const;
 
 type Locale = keyof typeof STRINGS;
+
+function formatGL(value: number): string {
+  return new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 2 }).format(value);
+}
 
 function AttemptCell({ value }: { value: number | null }) {
   if (value === null) {
@@ -100,15 +106,18 @@ function ResultsDivisionTable({ rows, t }: { rows: ResultRow[]; t: (typeof STRIN
           <div key={row.name + idx} className="flex flex-col gap-2 p-4">
             <div className="flex items-center justify-between">
               <PlaceBadge place={row.place} />
-              <span className="font-display text-xl font-bold tabular-nums">
-                {row.total !== null ? formatKg(row.total) : "—"}
-              </span>
+              <div className="text-right">
+                <span className="font-display text-xl font-bold tabular-nums text-primary">
+                  {row.glPoints !== null ? formatGL(row.glPoints) : "—"}
+                </span>
+                <span className="ml-1 text-xs text-muted-foreground">{t.glPoints}</span>
+              </div>
             </div>
             <div>
               <span className="text-sm font-semibold text-foreground">{row.name}</span>
               {row.team && <span className="ml-2 text-xs text-muted-foreground">{row.team}</span>}
             </div>
-            <div className="grid grid-cols-4 gap-2 text-xs">
+            <div className="grid grid-cols-5 gap-2 text-xs">
               <div className="flex flex-col gap-0.5">
                 <span className="text-muted-foreground">{t.bodyWeight}</span>
                 <span className="font-medium">{row.bodyWeight ? formatKg(row.bodyWeight) : "—"}</span>
@@ -125,6 +134,10 @@ function ResultsDivisionTable({ rows, t }: { rows: ResultRow[]; t: (typeof STRIN
                 <span className="text-muted-foreground">{t.deadlift}</span>
                 <span className="font-medium">{row.bestDeadlift !== null ? formatKg(row.bestDeadlift) : "—"}</span>
               </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-muted-foreground">{t.total}</span>
+                <span className="font-medium">{row.total !== null ? formatKg(row.total) : "—"}</span>
+              </div>
             </div>
           </div>
         ))}
@@ -132,7 +145,7 @@ function ResultsDivisionTable({ rows, t }: { rows: ResultRow[]; t: (typeof STRIN
 
       {/* Desktop: table */}
       <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[920px] border-collapse text-sm">
+        <table className="w-full min-w-[980px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               <th className="w-14 px-4 py-3">{t.place}</th>
@@ -149,6 +162,7 @@ function ResultsDivisionTable({ rows, t }: { rows: ResultRow[]; t: (typeof STRIN
                 {t.deadlift}
               </th>
               <th className="px-4 py-3 text-right">{t.total}</th>
+              <th className="px-4 py-3 text-right text-primary">{t.glPoints}</th>
             </tr>
           </thead>
           <tbody>
@@ -177,8 +191,11 @@ function ResultsDivisionTable({ rows, t }: { rows: ResultRow[]; t: (typeof STRIN
                     <AttemptCell value={v} />
                   </td>
                 ))}
-                <td className="px-4 py-3 text-right font-display text-lg font-bold tabular-nums">
+                <td className="px-4 py-3 text-right tabular-nums">
                   {row.total !== null ? formatKg(row.total) : "—"}
+                </td>
+                <td className="px-4 py-3 text-right font-display text-lg font-bold tabular-nums text-primary">
+                  {row.glPoints !== null ? formatGL(row.glPoints) : "—"}
                 </td>
               </tr>
             ))}

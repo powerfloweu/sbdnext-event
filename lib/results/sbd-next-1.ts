@@ -1,6 +1,11 @@
 // Generated from the official LiftingCast awards/results export for SBD Next 1
 // (2026-02-14, Budapest). Only public competition data is kept here — no emails,
 // birth dates, nationality or other registration data.
+//
+// glPoints is the IPF GL Points score (lib/gl-points.ts's computeGLPoints formula —
+// verified to match the CSV's "IPF Points" column to floating-point precision).
+// Placings in this meet were decided by glPoints, not by raw total, since SBD Next
+// runs without weight classes.
 
 export interface ResultRow {
   place: number | null;
@@ -14,6 +19,7 @@ export interface ResultRow {
   bestBench: number | null;
   bestDeadlift: number | null;
   total: number | null;
+  glPoints: number | null;
 }
 
 export type ResultDivisionKey = "womensLifter" | "womensRookie" | "mensLifter" | "mensRookie";
@@ -31,6 +37,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 80,
     bestDeadlift: 162.5,
     total: 357.5,
+    glPoints: 90.72,
   },
   {
     place: 2,
@@ -44,6 +51,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 80,
     bestDeadlift: 170,
     total: 397.5,
+    glPoints: 89.34,
   },
   {
     place: 3,
@@ -57,6 +65,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 72.5,
     bestDeadlift: 157.5,
     total: 365,
+    glPoints: 86.66,
   },
   {
     place: 4,
@@ -70,6 +79,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 75,
     bestDeadlift: 200,
     total: 422.5,
+    glPoints: 84.55,
   },
   {
     place: 5,
@@ -83,6 +93,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 105,
     bestDeadlift: 160,
     total: 420,
+    glPoints: 84.39,
   },
   {
     place: 6,
@@ -96,6 +107,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 62.5,
     bestDeadlift: 120,
     total: 300,
+    glPoints: 79.74,
   },
   {
     place: 7,
@@ -109,6 +121,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 70,
     bestDeadlift: 142.5,
     total: 332.5,
+    glPoints: 78.2,
   },
   {
     place: 8,
@@ -122,6 +135,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 82.5,
     bestDeadlift: 145,
     total: 372.5,
+    glPoints: 76.86,
   },
   {
     place: 9,
@@ -135,6 +149,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 70,
     bestDeadlift: 160,
     total: 350,
+    glPoints: 76.73,
   },
   {
     place: 10,
@@ -148,6 +163,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 70,
     bestDeadlift: 135,
     total: 325,
+    glPoints: 76.44,
   },
   {
     place: 11,
@@ -161,6 +177,7 @@ const womensLifter: ResultRow[] = [
     bestBench: 65,
     bestDeadlift: 145,
     total: 330,
+    glPoints: 68.04,
   },
   {
     place: null,
@@ -174,6 +191,7 @@ const womensLifter: ResultRow[] = [
     bestBench: null,
     bestDeadlift: null,
     total: 0,
+    glPoints: 0.0,
   },
 ];
 
@@ -190,6 +208,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 67.5,
     bestDeadlift: 162.5,
     total: 355,
+    glPoints: 74.09,
   },
   {
     place: 2,
@@ -203,6 +222,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 52.5,
     bestDeadlift: 125,
     total: 292.5,
+    glPoints: 70.42,
   },
   {
     place: 3,
@@ -216,6 +236,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 75,
     bestDeadlift: 120,
     total: 295,
+    glPoints: 69.29,
   },
   {
     place: 4,
@@ -229,6 +250,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 72.5,
     bestDeadlift: 137.5,
     total: 337.5,
+    glPoints: 66.88,
   },
   {
     place: 5,
@@ -242,6 +264,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 65,
     bestDeadlift: 160,
     total: 370,
+    glPoints: 66.49,
   },
   {
     place: 6,
@@ -255,6 +278,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 60,
     bestDeadlift: 140,
     total: 295,
+    glPoints: 64.34,
   },
   {
     place: 7,
@@ -268,6 +292,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 50,
     bestDeadlift: 110,
     total: 247.5,
+    glPoints: 61.59,
   },
   {
     place: 8,
@@ -281,6 +306,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 47.5,
     bestDeadlift: 120,
     total: 252.5,
+    glPoints: 60.79,
   },
   {
     place: 9,
@@ -294,6 +320,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 67.5,
     bestDeadlift: 140,
     total: 327.5,
+    glPoints: 60.22,
   },
   {
     place: 10,
@@ -307,6 +334,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 70,
     bestDeadlift: 140,
     total: 310,
+    glPoints: 59.85,
   },
   {
     place: 11,
@@ -320,6 +348,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 70,
     bestDeadlift: 112.5,
     total: 277.5,
+    glPoints: 59.53,
   },
   {
     place: 12,
@@ -333,6 +362,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 55,
     bestDeadlift: 115,
     total: 265,
+    glPoints: 59.03,
   },
   {
     place: 13,
@@ -346,6 +376,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 60,
     bestDeadlift: 127.5,
     total: 285,
+    glPoints: 57.42,
   },
   {
     place: 14,
@@ -359,6 +390,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 55,
     bestDeadlift: 127.5,
     total: 292.5,
+    glPoints: 56.2,
   },
   {
     place: 15,
@@ -372,6 +404,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 55,
     bestDeadlift: 120,
     total: 275,
+    glPoints: 55.18,
   },
   {
     place: 16,
@@ -385,6 +418,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 57.5,
     bestDeadlift: 120,
     total: 267.5,
+    glPoints: 54.65,
   },
   {
     place: 17,
@@ -398,6 +432,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 75,
     bestDeadlift: 127.5,
     total: 292.5,
+    glPoints: 50.23,
   },
   {
     place: 18,
@@ -411,6 +446,7 @@ const womensRookie: ResultRow[] = [
     bestBench: 47.5,
     bestDeadlift: 107.5,
     total: 245,
+    glPoints: 48.21,
   },
 ];
 
@@ -427,6 +463,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 160,
     bestDeadlift: 282.5,
     total: 707.5,
+    glPoints: 93.2,
   },
   {
     place: 2,
@@ -440,6 +477,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 140,
     bestDeadlift: 275,
     total: 645,
+    glPoints: 89.72,
   },
   {
     place: 3,
@@ -453,6 +491,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 160,
     bestDeadlift: 250,
     total: 655,
+    glPoints: 87.27,
   },
   {
     place: 4,
@@ -466,6 +505,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 147.5,
     bestDeadlift: 250,
     total: 630,
+    glPoints: 86.32,
   },
   {
     place: 5,
@@ -479,6 +519,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 152.5,
     bestDeadlift: 242.5,
     total: 610,
+    glPoints: 84.7,
   },
   {
     place: 6,
@@ -492,6 +533,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 117.5,
     bestDeadlift: 275,
     total: 630,
+    glPoints: 84.12,
   },
   {
     place: 7,
@@ -505,6 +547,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 150,
     bestDeadlift: 250,
     total: 630,
+    glPoints: 82.5,
   },
   {
     place: 8,
@@ -518,6 +561,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 150,
     bestDeadlift: 275,
     total: 660,
+    glPoints: 82.37,
   },
   {
     place: 9,
@@ -531,6 +575,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 122.5,
     bestDeadlift: 252.5,
     total: 600,
+    glPoints: 82.16,
   },
   {
     place: 10,
@@ -544,6 +589,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 175,
     bestDeadlift: 265,
     total: 660,
+    glPoints: 82.15,
   },
   {
     place: 11,
@@ -557,6 +603,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 142.5,
     bestDeadlift: 245,
     total: 587.5,
+    glPoints: 78.67,
   },
   {
     place: 12,
@@ -570,6 +617,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 135,
     bestDeadlift: 265,
     total: 630,
+    glPoints: 77.21,
   },
   {
     place: 13,
@@ -583,6 +631,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 152.5,
     bestDeadlift: 240,
     total: 582.5,
+    glPoints: 77.06,
   },
   {
     place: 14,
@@ -596,6 +645,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 90,
     bestDeadlift: 200,
     total: 460,
+    glPoints: 76.61,
   },
   {
     place: 15,
@@ -609,6 +659,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 102.5,
     bestDeadlift: 220,
     total: 500,
+    glPoints: 68.15,
   },
   {
     place: 16,
@@ -622,6 +673,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 145,
     bestDeadlift: 240,
     total: 540,
+    glPoints: 67.43,
   },
   {
     place: 17,
@@ -635,6 +687,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 115,
     bestDeadlift: 200,
     total: 480,
+    glPoints: 63.99,
   },
   {
     place: 18,
@@ -648,6 +701,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 97.5,
     bestDeadlift: 180,
     total: 435,
+    glPoints: 59.82,
   },
   {
     place: 19,
@@ -661,6 +715,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 67.5,
     bestDeadlift: 190,
     total: 397.5,
+    glPoints: 54.02,
   },
   {
     place: null,
@@ -674,6 +729,7 @@ const mensLifter: ResultRow[] = [
     bestBench: 137.5,
     bestDeadlift: 217.5,
     total: 0,
+    glPoints: 0.0,
   },
 ];
 
@@ -690,6 +746,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 132.5,
     bestDeadlift: 240,
     total: 597.5,
+    glPoints: 83.84,
   },
   {
     place: 2,
@@ -703,6 +760,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 147.5,
     bestDeadlift: 235,
     total: 582.5,
+    glPoints: 80.73,
   },
   {
     place: 3,
@@ -716,6 +774,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 140,
     bestDeadlift: 260,
     total: 615,
+    glPoints: 80.46,
   },
   {
     place: 4,
@@ -729,6 +788,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 130,
     bestDeadlift: 230,
     total: 560,
+    glPoints: 80.38,
   },
   {
     place: 5,
@@ -742,6 +802,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 112.5,
     bestDeadlift: 235,
     total: 547.5,
+    glPoints: 80.21,
   },
   {
     place: 6,
@@ -755,6 +816,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 150,
     bestDeadlift: 250,
     total: 590,
+    glPoints: 80.09,
   },
   {
     place: 7,
@@ -768,6 +830,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 162.5,
     bestDeadlift: 222.5,
     total: 590,
+    glPoints: 78.96,
   },
   {
     place: 8,
@@ -781,6 +844,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 137.5,
     bestDeadlift: 265,
     total: 602.5,
+    glPoints: 78.74,
   },
   {
     place: 9,
@@ -794,6 +858,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 157.5,
     bestDeadlift: 235,
     total: 617.5,
+    glPoints: 78.57,
   },
   {
     place: 10,
@@ -807,6 +872,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 140,
     bestDeadlift: 220,
     total: 562.5,
+    glPoints: 78.44,
   },
   {
     place: 11,
@@ -820,6 +886,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 135,
     bestDeadlift: 275,
     total: 655,
+    glPoints: 77.34,
   },
   {
     place: 12,
@@ -833,6 +900,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 107.5,
     bestDeadlift: 245,
     total: 562.5,
+    glPoints: 77.17,
   },
   {
     place: 13,
@@ -846,6 +914,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 137.5,
     bestDeadlift: 245,
     total: 555,
+    glPoints: 77.11,
   },
   {
     place: 14,
@@ -859,6 +928,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 150,
     bestDeadlift: 245,
     total: 615,
+    glPoints: 76.97,
   },
   {
     place: 15,
@@ -872,6 +942,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 112.5,
     bestDeadlift: 217.5,
     total: 517.5,
+    glPoints: 76.79,
   },
   {
     place: 16,
@@ -885,6 +956,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 122.5,
     bestDeadlift: 232.5,
     total: 545,
+    glPoints: 76.52,
   },
   {
     place: 17,
@@ -898,6 +970,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 160,
     bestDeadlift: 260,
     total: 665,
+    glPoints: 75.39,
   },
   {
     place: 18,
@@ -911,6 +984,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 130,
     bestDeadlift: 230,
     total: 535,
+    glPoints: 74.42,
   },
   {
     place: 19,
@@ -924,6 +998,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 187.5,
     bestDeadlift: 222.5,
     total: 632.5,
+    glPoints: 73.45,
   },
   {
     place: 20,
@@ -937,6 +1012,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 92.5,
     bestDeadlift: 205,
     total: 457.5,
+    glPoints: 73.35,
   },
   {
     place: 21,
@@ -950,6 +1026,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 110,
     bestDeadlift: 220,
     total: 530,
+    glPoints: 73.28,
   },
   {
     place: 22,
@@ -963,6 +1040,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 120,
     bestDeadlift: 210,
     total: 512.5,
+    glPoints: 73.08,
   },
   {
     place: 23,
@@ -976,6 +1054,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 110,
     bestDeadlift: 232.5,
     total: 517.5,
+    glPoints: 72.89,
   },
   {
     place: 24,
@@ -989,6 +1068,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 135,
     bestDeadlift: 230,
     total: 582.5,
+    glPoints: 72.3,
   },
   {
     place: 25,
@@ -1002,6 +1082,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 120,
     bestDeadlift: 205,
     total: 500,
+    glPoints: 71.53,
   },
   {
     place: 26,
@@ -1015,6 +1096,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 142.5,
     bestDeadlift: 205,
     total: 537.5,
+    glPoints: 70.76,
   },
   {
     place: 27,
@@ -1028,6 +1110,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 120,
     bestDeadlift: 220,
     total: 505,
+    glPoints: 69.91,
   },
   {
     place: 28,
@@ -1041,6 +1124,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 112.5,
     bestDeadlift: 195,
     total: 462.5,
+    glPoints: 68.87,
   },
   {
     place: 29,
@@ -1054,6 +1138,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 140,
     bestDeadlift: 212.5,
     total: 565,
+    glPoints: 68.68,
   },
   {
     place: 30,
@@ -1067,6 +1152,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 125,
     bestDeadlift: 220,
     total: 545,
+    glPoints: 68.43,
   },
   {
     place: 31,
@@ -1080,6 +1166,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 125,
     bestDeadlift: 250,
     total: 560,
+    glPoints: 68.39,
   },
   {
     place: 32,
@@ -1093,6 +1180,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 145,
     bestDeadlift: 210,
     total: 525,
+    glPoints: 67.67,
   },
   {
     place: 33,
@@ -1106,6 +1194,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 127.5,
     bestDeadlift: 242.5,
     total: 540,
+    glPoints: 67.33,
   },
   {
     place: 34,
@@ -1119,6 +1208,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 125,
     bestDeadlift: 215,
     total: 510,
+    glPoints: 66.79,
   },
   {
     place: 35,
@@ -1132,6 +1222,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 125,
     bestDeadlift: 210,
     total: 500,
+    glPoints: 66.76,
   },
   {
     place: 36,
@@ -1145,6 +1236,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 132.5,
     bestDeadlift: 200,
     total: 510,
+    glPoints: 66.51,
   },
   {
     place: 37,
@@ -1158,6 +1250,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 125,
     bestDeadlift: 205,
     total: 470,
+    glPoints: 65.7,
   },
   {
     place: 38,
@@ -1171,6 +1264,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 110,
     bestDeadlift: 205,
     total: 467.5,
+    glPoints: 65.52,
   },
   {
     place: 39,
@@ -1184,6 +1278,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 112.5,
     bestDeadlift: 180,
     total: 457.5,
+    glPoints: 65.41,
   },
   {
     place: 40,
@@ -1197,6 +1292,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 130,
     bestDeadlift: 215,
     total: 540,
+    glPoints: 65.28,
   },
   {
     place: 41,
@@ -1210,6 +1306,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 110,
     bestDeadlift: 220,
     total: 510,
+    glPoints: 63.59,
   },
   {
     place: 42,
@@ -1223,6 +1320,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 105,
     bestDeadlift: 215,
     total: 515,
+    glPoints: 63.5,
   },
   {
     place: 43,
@@ -1236,6 +1334,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 127.5,
     bestDeadlift: 200,
     total: 505,
+    glPoints: 63.06,
   },
   {
     place: 44,
@@ -1249,6 +1348,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 105,
     bestDeadlift: 200,
     total: 455,
+    glPoints: 62.31,
   },
   {
     place: 45,
@@ -1262,6 +1362,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 120,
     bestDeadlift: 190,
     total: 470,
+    glPoints: 61.98,
   },
   {
     place: 46,
@@ -1275,6 +1376,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 100,
     bestDeadlift: 180,
     total: 430,
+    glPoints: 61.89,
   },
   {
     place: 47,
@@ -1288,6 +1390,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 122.5,
     bestDeadlift: 185,
     total: 485,
+    glPoints: 61.45,
   },
   {
     place: 48,
@@ -1301,6 +1404,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 122.5,
     bestDeadlift: 195,
     total: 477.5,
+    glPoints: 61.09,
   },
   {
     place: 49,
@@ -1314,6 +1418,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 132.5,
     bestDeadlift: 230,
     total: 562.5,
+    glPoints: 60.34,
   },
   {
     place: 50,
@@ -1327,6 +1432,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 85,
     bestDeadlift: 210,
     total: 455,
+    glPoints: 60.23,
   },
   {
     place: 51,
@@ -1340,6 +1446,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 137.5,
     bestDeadlift: 200,
     total: 492.5,
+    glPoints: 59.72,
   },
   {
     place: 52,
@@ -1353,6 +1460,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 92.5,
     bestDeadlift: 155,
     total: 387.5,
+    glPoints: 58.39,
   },
   {
     place: 53,
@@ -1366,6 +1474,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 110,
     bestDeadlift: 180,
     total: 447.5,
+    glPoints: 57.56,
   },
   {
     place: 54,
@@ -1379,6 +1488,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 105,
     bestDeadlift: 180,
     total: 440,
+    glPoints: 57.23,
   },
   {
     place: 55,
@@ -1392,6 +1502,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 110,
     bestDeadlift: 180,
     total: 470,
+    glPoints: 57.06,
   },
   {
     place: 56,
@@ -1405,6 +1516,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 150,
     bestDeadlift: 215,
     total: 530,
+    glPoints: 56.6,
   },
   {
     place: 57,
@@ -1418,6 +1530,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 115,
     bestDeadlift: 170,
     total: 425,
+    glPoints: 56.5,
   },
   {
     place: 58,
@@ -1431,6 +1544,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 67.5,
     bestDeadlift: 205,
     total: 457.5,
+    glPoints: 56.36,
   },
   {
     place: 59,
@@ -1444,6 +1558,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 102.5,
     bestDeadlift: 180,
     total: 445,
+    glPoints: 56.06,
   },
   {
     place: 60,
@@ -1457,6 +1572,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 77.5,
     bestDeadlift: 190,
     total: 417.5,
+    glPoints: 55.35,
   },
   {
     place: 61,
@@ -1470,6 +1586,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 87.5,
     bestDeadlift: 160,
     total: 367.5,
+    glPoints: 46.78,
   },
   {
     place: null,
@@ -1483,6 +1600,7 @@ const mensRookie: ResultRow[] = [
     bestBench: 100,
     bestDeadlift: 200,
     total: 0,
+    glPoints: 0.0,
   },
   {
     place: null,
@@ -1496,6 +1614,7 @@ const mensRookie: ResultRow[] = [
     bestBench: null,
     bestDeadlift: null,
     total: 0,
+    glPoints: 0.0,
   },
 ];
 
