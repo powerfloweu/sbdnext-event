@@ -53,7 +53,7 @@ export function ResultsAdmin() {
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">SBD Next 1 eredmények ({filtered.length})</h2>
+        <h2 className="text-lg font-semibold">SBD Next I Eredmények ({filtered.length})</h2>
       </div>
 
       <div className="relative mb-3 max-w-xs">

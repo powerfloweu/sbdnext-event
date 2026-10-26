@@ -19,8 +19,8 @@ const STRINGS = {
       mensLifter: "Férfi versenyző",
       mensRookie: "Férfi újonc",
     } as Record<ResultDivisionKey, string>,
-    eyebrow: "SBD Next 1 · 2026. február",
-    title: "Az első SBD Next eredményei",
+    eyebrow: "SBD Next I · 2026. február",
+    title: "Eredmények",
     description:
       "A versenyzők teljes eredménysora kategóriánként. A helyezést a GL pont döntötte el, nem a total — az SBD Next súlycsoportok nélkül, GL pont alapján méri össze a versenyzőket. Az áthúzott szám sikertelen próbálkozást jelent.",
     empty: "Ebben a kategóriában nincs rögzített eredmény.",
@@ -41,8 +41,8 @@ const STRINGS = {
       mensLifter: "Men's Lifter",
       mensRookie: "Men's Rookie",
     } as Record<ResultDivisionKey, string>,
-    eyebrow: "SBD Next 1 · February 2026",
-    title: "SBD Next 1 results",
+    eyebrow: "SBD Next I · February 2026",
+    title: "Results",
     description:
       "Full results by category. Placing was decided by GL Points, not raw total — SBD Next runs without weight classes, ranking lifters by GL Points instead. A struck-through number is a failed attempt.",
     empty: "No results recorded in this category.",
@@ -74,13 +74,21 @@ function AttemptCell({ value }: { value: number | null }) {
   );
 }
 
+const MEDAL_TONE: Record<number, string> = {
+  1: "text-amber-400",
+  2: "text-slate-300",
+  3: "text-orange-700",
+};
+
 function PlaceBadge({ place }: { place: number | null }) {
   if (place === null) {
     return <span className="text-muted-foreground">—</span>;
   }
   if (place <= 3) {
     return (
-      <span className="inline-flex items-center gap-1 font-display text-lg font-bold tabular-nums text-primary">
+      <span
+        className={`inline-flex items-center gap-1 font-display text-lg font-bold tabular-nums ${MEDAL_TONE[place]}`}
+      >
         <Medal className="size-4" aria-hidden="true" />
         {place}.
       </span>
@@ -99,11 +107,16 @@ function ResultsDivisionTable({ rows, t }: { rows: ResultRow[]; t: (typeof STRIN
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden shadow-sm">
       {/* Mobile: stacked cards */}
       <div className="flex flex-col divide-y divide-border lg:hidden">
         {rows.map((row, idx) => (
-          <div key={row.name + idx} className="flex flex-col gap-2 p-4">
+          <div
+            key={row.name + idx}
+            className={`flex flex-col gap-2 p-4 ${
+              row.place !== null && row.place <= 3 ? "bg-primary/5" : ""
+            }`}
+          >
             <div className="flex items-center justify-between">
               <PlaceBadge place={row.place} />
               <div className="text-right">
@@ -167,7 +180,12 @@ function ResultsDivisionTable({ rows, t }: { rows: ResultRow[]; t: (typeof STRIN
           </thead>
           <tbody>
             {rows.map((row, idx) => (
-              <tr key={row.name + idx} className="border-b border-border last:border-none">
+              <tr
+                key={row.name + idx}
+                className={`border-b border-border last:border-none ${
+                  row.place !== null && row.place <= 3 ? "bg-primary/5" : ""
+                }`}
+              >
                 <td className="px-4 py-3">
                   <PlaceBadge place={row.place} />
                 </td>
