@@ -7,9 +7,9 @@ import { ResultsSection } from "@/components/event/results-table";
 import { getPhase, volunteersOpen } from "@/lib/phase";
 
 export const metadata: Metadata = {
-  title: "SBD Next 1 eredményei",
+  title: "SBD Next I – Eredmények",
   description:
-    "A 2026. februári SBD Next 1 erőemelő verseny teljes eredménysora kategóriánként, IPF szabályok szerint.",
+    "A 2026. februári SBD Next I erőemelő verseny teljes eredménysora kategóriánként, IPF szabályok szerint.",
 };
 
 export default function ResultsPage() {
@@ -30,9 +30,9 @@ export default function ResultsPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           <div className="pt-16 sm:pt-24">
             <div className="flex items-center gap-2">
-              <span className="eyebrow">Archívum</span>
+              <span className="eyebrow">SBD Next I · Archívum</span>
             </div>
-            <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">SBD Next 1 eredményei</h1>
+            <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">Eredmények</h1>
             <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
               2026. február 14-én rendeztük meg az első SBD Next versenyt a Thor Gymben. Köszönjük
               minden versenyzőnek és segítőnek a fantasztikus napot! Alább a teljes

@@ -7,8 +7,8 @@ import { ResultsSection } from "@/components/event/results-table";
 import { getPhase, volunteersOpen } from "@/lib/phase";
 
 export const metadata: Metadata = {
-  title: "SBD Next 1 results",
-  description: "Full results of the SBD Next 1 powerlifting competition (February 2026), by category.",
+  title: "SBD Next I – Results",
+  description: "Full results of the SBD Next I powerlifting competition (February 2026), by category.",
 };
 
 export default function ResultsPageEn() {
@@ -30,9 +30,9 @@ export default function ResultsPageEn() {
         <div className="mx-auto max-w-6xl px-4 sm:px-8">
           <div className="pt-16 sm:pt-24">
             <div className="flex items-center gap-2">
-              <span className="eyebrow">Archive</span>
+              <span className="eyebrow">SBD Next I · Archive</span>
             </div>
-            <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">SBD Next 1 results</h1>
+            <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">Results</h1>
             <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
               We held the first SBD Next on February 14, 2026, at Thor Gym. Thanks to every lifter
               and volunteer for a fantastic day! The full results, grouped by category, are below.
