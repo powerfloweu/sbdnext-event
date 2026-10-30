@@ -701,7 +701,7 @@ function Summary({
 
 const MAX_FACE_PHOTO_MB = 20;
 
-export function RegistrationWizard() {
+export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: boolean } = {}) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -774,8 +774,11 @@ export function RegistrationWizard() {
     defaultValues: REGISTRATION_DEFAULTS,
     mode: "onBlur",
   });
-  // Restore a draft on mount.
+  // Restore a draft on mount — skipped in admin test mode, so each test run
+  // starts from a clean form instead of picking up a previous tester's
+  // leftover draft on the same browser (D, 2026-10-30).
   useEffect(() => {
+    if (isAdminTest) return;
     try {
       const raw = window.localStorage.getItem(DRAFT_KEY);
       if (raw) {
@@ -789,9 +792,12 @@ export function RegistrationWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist the draft on every change (skip the honeypot).
+  // Persist the draft on every change (skip the honeypot). Also skipped in
+  // admin test mode so test fills never overwrite a real in-progress draft
+  // on the same browser.
   const values = watch();
   useEffect(() => {
+    if (isAdminTest) return;
     const id = window.setTimeout(() => {
       try {
         const rest: Record<string, unknown> = { ...values };

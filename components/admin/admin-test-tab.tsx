@@ -1,7 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/admin/submit-button";
 import { formatHUF } from "@/lib/format";
 import { startAdminTest, stopAdminTest, simulateTestPayment, updateRegistrationStatus } from "@/app/admin/actions";
 
@@ -28,12 +28,13 @@ function fmtDate(iso: string): string {
 
 interface AdminTestTabProps {
   registrations: TestRegistrationRow[];
+  priorYearSample: { email: string; last_name: string; first_name: string } | null;
 }
 
 // A self-contained guide + the controls to run it, so Miki can do this from
 // just being logged into /admin — no separate doc to go find. See
 // lib/admin-test.ts / app/admin/actions.ts for how the bypass itself works.
-export function AdminTestTab({ registrations }: AdminTestTabProps) {
+export function AdminTestTab({ registrations, priorYearSample }: AdminTestTabProps) {
   return (
     <div className="space-y-8">
       <section>
@@ -42,9 +43,9 @@ export function AdminTestTab({ registrations }: AdminTestTabProps) {
           <CardContent className="space-y-4 p-5 text-sm">
             <p className="flex items-start gap-2 text-amber-700">
               <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              Ez a teszt a <b>valós, éles oldalon</b> fut, de a nevezés nem kerül be a nyilvános
-              nevezések közé, nem megy ki rá hírlevél/Sheet, és nem indul valódi Stripe-fizetés —
-              ezért a fizetési lépés szimulált (lásd 4. pont).
+              Ez a <b>valós, éles oldalon</b> fut. A nevezés nem kerül be a nyilvános
+              nevezések közé, nem megy ki rá hírlevél/Sheet. A fizetés szimulált (6. pont) — valódi
+              Stripe-fizetés nem indul.
             </p>
 
             <ol className="list-decimal space-y-3 pl-5">
@@ -57,14 +58,19 @@ export function AdminTestTab({ registrations }: AdminTestTabProps) {
               <li>Töltsd ki az űrlapot végig, valós fotóval/adatokkal is tesztelhető (nem lesz nyilvános).</li>
               <li>
                 Az arcfotó <b>nem kötelező</b> — kihagyva is tovább tudsz lépni, és a visszaigazoló
-                e-mail linkjén bármikor pótolható a verseny előttig (lásd 5. pont).
+                e-mail linkjén bármikor pótolható a verseny előttig (lásd 7. pont).
               </li>
               <li>
-                A &bdquo;Tavaly már versenyeztél? Töltsd ki automatikusan&rdquo; gombot úgy tudod
-                tesztelni, ha egy <b>tavalyi (SBD Next 1) versenyző e-mail címét</b> írod be — ezt
-                a Súlycsoport-statisztika tabon vagy a tavalyi nevezési táblázatban találod. Ha nem
-                ismered az e-mail címét, a nevét és születési évét is megpróbálhatod (pontosan úgy,
-                ahogy tavaly szerepelt), de az e-mail a megbízhatóbb találat.
+                A &bdquo;Tavaly már versenyeztél? Töltsd ki automatikusan&rdquo; gombot egy{" "}
+                <b>tavalyi (SBD Next 1) versenyző e-mail címével</b> tudod tesztelni.{" "}
+                {priorYearSample ? (
+                  <>
+                    Például ezzel: <code className="rounded bg-muted px-1">{priorYearSample.email}</code>{" "}
+                    ({priorYearSample.last_name} {priorYearSample.first_name}).
+                  </>
+                ) : (
+                  "A Súlycsoport-statisztika tab csak összesítést mutat, konkrét e-mailt nem — jelenleg nincs tavalyi versenyző a táblában."
+                )}
               </li>
               <li>
                 Küldés után a visszaigazoló e-mail (a jelentkezés megérkezett) megérkezik a
@@ -89,12 +95,12 @@ export function AdminTestTab({ registrations }: AdminTestTabProps) {
 
             <div className="flex flex-wrap gap-2 pt-2">
               <form action={startAdminTest}>
-                <Button type="submit">Teszt mód indítása</Button>
+                <SubmitButton pendingLabel="Indítás…">Teszt mód indítása</SubmitButton>
               </form>
               <form action={stopAdminTest}>
-                <Button type="submit" variant="secondary">
+                <SubmitButton variant="secondary" pendingLabel="Leállítás…">
                   Teszt mód leállítása
-                </Button>
+                </SubmitButton>
               </form>
             </div>
           </CardContent>
@@ -138,9 +144,9 @@ export function AdminTestTab({ registrations }: AdminTestTabProps) {
                           <form action={simulateTestPayment}>
                             <input type="hidden" name="id" value={r.id} />
                             <input type="hidden" name="redirectTo" value="/admin" />
-                            <Button type="submit" variant="secondary" size="sm">
+                            <SubmitButton variant="secondary" size="sm" pendingLabel="Fizetés rögzítése…">
                               Fizetés szimulálása
-                            </Button>
+                            </SubmitButton>
                           </form>
                         )}
                         {r.status !== "cancelled" && (
@@ -148,9 +154,14 @@ export function AdminTestTab({ registrations }: AdminTestTabProps) {
                             <input type="hidden" name="id" value={r.id} />
                             <input type="hidden" name="status" value="cancelled" />
                             <input type="hidden" name="redirectTo" value="/admin" />
-                            <Button type="submit" variant="ghost" size="sm">
+                            <SubmitButton
+                              variant="ghost"
+                              size="sm"
+                              pendingLabel="Törlés…"
+                              confirmMessage={`Biztosan lezárod (lemondottra állítod) ${r.last_name} ${r.first_name} teszt nevezését?`}
+                            >
                               Törlés
-                            </Button>
+                            </SubmitButton>
                           </form>
                         )}
                       </div>

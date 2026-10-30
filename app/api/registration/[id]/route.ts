@@ -126,12 +126,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // rest of the form has locked.
   const raw = body as Record<string, unknown>;
   const facePhotoDataUrl = typeof raw.facePhoto === "string" ? raw.facePhoto : null;
+  // The photo-only save (FacePhotoCard) sends just {facePhoto, token} — never
+  // the rest of the form — so use the presence of a form field, not
+  // allFieldsOpen, to decide whether this request even needs full-form
+  // validation. Otherwise a photo-only save made while the form is still
+  // open (allFieldsOpen=true, the common case before editClosesAt) would
+  // wrongly run registrationEditSchema against a body missing every
+  // required field and fail with 400.
+  const isFullFormSubmit = typeof raw.lastName === "string";
 
   if (!allFieldsOpen && !facePhotoDataUrl) {
     return NextResponse.json({ ok: false, error: "edit_closed" }, { status: 403 });
   }
 
-  if (allFieldsOpen) {
+  if (isFullFormSubmit) {
+    if (!allFieldsOpen) {
+      return NextResponse.json({ ok: false, error: "edit_closed" }, { status: 403 });
+    }
     const parsed = registrationEditSchema.safeParse(body);
     if (!parsed.success) {
       const fieldErrors = parsed.error.flatten().fieldErrors;

@@ -61,7 +61,7 @@ export default async function RegisterPage() {
       return (
         <>
           <AdminTestBanner />
-          <RegistrationWizard />
+          <RegistrationWizard isAdminTest />
         </>
       );
     }
