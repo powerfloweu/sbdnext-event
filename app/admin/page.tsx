@@ -171,6 +171,7 @@ export default async function AdminPage({
     { data: feedbackSignups },
     { data: priorYearRows },
     { data: testRegistrations },
+    { data: priorYearSample },
   ] = await Promise.all([
     regQuery.range(regFrom, regTo).returns<RegistrationRow[]>(),
     notifyQuery.range(notifyFrom, notifyTo).returns<NotifySignupRow[]>(),
@@ -200,6 +201,18 @@ export default async function AdminPage({
       .returns<
         { id: string; created_at: string; status: string; last_name: string; first_name: string; email: string; total_fee: number }[]
       >(),
+    // A single real example so the "Teszt nevezés" guide can tell Miki/D a
+    // concrete e-mail to test the "tavaly már versenyeztél?" prefill with —
+    // the Súlycsoport-statisztika tab only ever shows aggregated counts, not
+    // emails, so there was previously no way to find one from /admin at all
+    // (D, 2026-10-30).
+    admin
+      .from("prior_year_registrations")
+      .select("email, last_name, first_name")
+      .not("email", "ilike", "%e2e%")
+      .limit(1)
+      .maybeSingle()
+      .returns<{ email: string; last_name: string; first_name: string } | null>(),
   ]);
 
   const rows = registrations ?? [];
@@ -476,7 +489,9 @@ export default async function AdminPage({
     </>
   );
 
-  const testTab = <AdminTestTab registrations={testRegistrations ?? []} />;
+  const testTab = (
+    <AdminTestTab registrations={testRegistrations ?? []} priorYearSample={priorYearSample ?? null} />
+  );
 
   const feedbackTab = (
     <section>
