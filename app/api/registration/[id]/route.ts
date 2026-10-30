@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { EVENT } from "@/config/event";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { registrationEditSchema } from "@/lib/validation/registration-edit";
+import { facePhotoEditOpen } from "@/lib/phase";
+import { uploadFacePhoto } from "@/lib/face-photo";
 
 // Self-service edit link: no login, just the per-registration edit_token
 // mailed to the athlete. Rate-limited the same way as /api/register and
@@ -32,7 +34,7 @@ function editWindow() {
 }
 
 const SELECT_FIELDS =
-  "id, edit_token, status, last_name, first_name, birth_year, sex, division, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size";
+  "id, edit_token, status, last_name, first_name, birth_year, sex, division, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, face_photo_path";
 
 async function loadByToken(id: string, token: string) {
   const admin = getSupabaseAdmin();
@@ -68,6 +70,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     ok: true,
     allFieldsOpen,
     shirtOpen,
+    facePhotoEditOpen: facePhotoEditOpen(),
+    hasFacePhoto: !!registration.face_photo_path,
     data: {
       lastName: registration.last_name,
       firstName: registration.first_name,
@@ -113,50 +117,80 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const { allFieldsOpen, shirtOpen } = editWindow();
-  if (!allFieldsOpen) {
+  const photoOpen = facePhotoEditOpen();
+
+  // The face photo is optional and, unlike the rest of this form, stays
+  // editable past editClosesAt (right up to the event) — see
+  // lib/phase.ts#facePhotoEditOpen. Handled separately from the
+  // zod-validated fields below so a photo-only save still works once the
+  // rest of the form has locked.
+  const raw = body as Record<string, unknown>;
+  const facePhotoDataUrl = typeof raw.facePhoto === "string" ? raw.facePhoto : null;
+
+  if (!allFieldsOpen && !facePhotoDataUrl) {
     return NextResponse.json({ ok: false, error: "edit_closed" }, { status: 403 });
   }
 
-  const parsed = registrationEditSchema.safeParse(body);
-  if (!parsed.success) {
-    const fieldErrors = parsed.error.flatten().fieldErrors;
-    return NextResponse.json({ ok: false, error: "validation", fieldErrors }, { status: 400 });
-  }
-  const data = parsed.data;
+  if (allFieldsOpen) {
+    const parsed = registrationEditSchema.safeParse(body);
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.flatten().fieldErrors;
+      return NextResponse.json({ ok: false, error: "validation", fieldErrors }, { status: 400 });
+    }
+    const data = parsed.data;
 
-  const update: Record<string, unknown> = {
-    last_name: data.lastName.trim(),
-    first_name: data.firstName.trim(),
-    birth_year: Number(data.birthYear),
-    sex: data.sex,
-    division: data.division,
-    club: data.club || null,
-    bodyweight: Number(data.bodyweight.replace(",", ".")),
-    opener_squat: Number(data.openerSquat.replace(",", ".")),
-    opener_bench: Number(data.openerBench.replace(",", ".")),
-    opener_deadlift: Number(data.openerDeadlift.replace(",", ".")),
-    mc_text: data.mcText || null,
-    notes: data.notes || null,
-    updated_at: new Date().toISOString(),
-  };
+    const update: Record<string, unknown> = {
+      last_name: data.lastName.trim(),
+      first_name: data.firstName.trim(),
+      birth_year: Number(data.birthYear),
+      sex: data.sex,
+      division: data.division,
+      club: data.club || null,
+      bodyweight: Number(data.bodyweight.replace(",", ".")),
+      opener_squat: Number(data.openerSquat.replace(",", ".")),
+      opener_bench: Number(data.openerBench.replace(",", ".")),
+      opener_deadlift: Number(data.openerDeadlift.replace(",", ".")),
+      mc_text: data.mcText || null,
+      notes: data.notes || null,
+      updated_at: new Date().toISOString(),
+    };
 
-  // Shirt cut/size only change if the athlete already opted into a shirt —
-  // this endpoint never flips wants_shirt itself, since that changes the
-  // fee already charged via Stripe.
-  if (registration.wants_shirt) {
-    if (!shirtOpen) {
-      // Outside the shirt window: silently keep whatever was submitted for
-      // every other field, but never touch shirt_cut/shirt_size.
-    } else {
-      update.shirt_cut = data.shirtCut ?? null;
-      update.shirt_size = data.shirtSize ?? null;
+    // Shirt cut/size only change if the athlete already opted into a shirt —
+    // this endpoint never flips wants_shirt itself, since that changes the
+    // fee already charged via Stripe.
+    if (registration.wants_shirt) {
+      if (!shirtOpen) {
+        // Outside the shirt window: silently keep whatever was submitted for
+        // every other field, but never touch shirt_cut/shirt_size.
+      } else {
+        update.shirt_cut = data.shirtCut ?? null;
+        update.shirt_size = data.shirtSize ?? null;
+      }
+    }
+
+    const { error } = await admin.from("registrations").update(update).eq("id", id);
+    if (error) {
+      console.error("registration self-edit failed:", error);
+      return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
     }
   }
 
-  const { error } = await admin.from("registrations").update(update).eq("id", id);
-  if (error) {
-    console.error("registration self-edit failed:", error);
-    return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
+  if (facePhotoDataUrl) {
+    if (!photoOpen) {
+      return NextResponse.json({ ok: false, error: "photo_edit_closed" }, { status: 403 });
+    }
+    const path = await uploadFacePhoto(admin, id, facePhotoDataUrl);
+    if (!path) {
+      return NextResponse.json({ ok: false, error: "photo_upload_failed" }, { status: 502 });
+    }
+    const { error } = await admin
+      .from("registrations")
+      .update({ face_photo_path: path, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) {
+      console.error("registration self-edit photo update failed:", error);
+      return NextResponse.json({ ok: false, error: "storage" }, { status: 502 });
+    }
   }
 
   return NextResponse.json({ ok: true });

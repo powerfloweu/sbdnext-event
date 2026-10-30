@@ -56,6 +56,17 @@ export function AdminTestTab({ registrations }: AdminTestTabProps) {
               </li>
               <li>Töltsd ki az űrlapot végig, valós fotóval/adatokkal is tesztelhető (nem lesz nyilvános).</li>
               <li>
+                Az arcfotó <b>nem kötelező</b> — kihagyva is tovább tudsz lépni, és a visszaigazoló
+                e-mail linkjén bármikor pótolható a verseny előttig (lásd 5. pont).
+              </li>
+              <li>
+                A &bdquo;Tavaly már versenyeztél? Töltsd ki automatikusan&rdquo; gombot úgy tudod
+                tesztelni, ha egy <b>tavalyi (SBD Next 1) versenyző e-mail címét</b> írod be — ezt
+                a Súlycsoport-statisztika tabon vagy a tavalyi nevezési táblázatban találod. Ha nem
+                ismered az e-mail címét, a nevét és születési évét is megpróbálhatod (pontosan úgy,
+                ahogy tavaly szerepelt), de az e-mail a megbízhatóbb találat.
+              </li>
+              <li>
                 Küldés után a visszaigazoló e-mail (a jelentkezés megérkezett) megérkezik a
                 megadott címre — nézd át, ez a valódi sablon.
               </li>
@@ -66,8 +77,8 @@ export function AdminTestTab({ registrations }: AdminTestTabProps) {
                 <b>&bdquo;Fizetés szimulálása&rdquo;</b> gombbal tudod kiváltani.
               </li>
               <li>
-                Az önkiszolgáló szerkesztő linket a visszaigazoló e-mailekben tesztelheted
-                (adatok módosítása, póló stb.).
+                Az önkiszolgáló szerkesztő linket a visszaigazoló e-mailekben tesztelheted (adatok
+                módosítása, póló, arcfotó pótlása/cseréje stb.).
               </li>
               <li>
                 Ha végeztél, a &bdquo;Törlés&rdquo; gombbal zárd le a teszt nevezést (ez

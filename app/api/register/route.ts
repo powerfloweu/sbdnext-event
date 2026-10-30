@@ -10,6 +10,7 @@ import { getStripe } from "@/lib/stripe";
 import { sendRegistrationReceivedEmail } from "@/lib/email";
 import { generateEditToken } from "@/lib/edit-token";
 import { isAdminTestActive } from "@/lib/admin-test";
+import { uploadFacePhoto } from "@/lib/face-photo";
 
 // Kept from the live site: this is where registrations have always been
 // forwarded (Google Sheets, via Make). Registrations are now also inserted
@@ -50,35 +51,6 @@ async function getRegisteredCount(): Promise<number> {
   // Fallback while Supabase isn't configured yet.
   const leaderboards = await getAllLeaderboards();
   return Object.values(leaderboards).reduce((sum, rows) => sum + rows.length, 0);
-}
-
-// Face photos are compressed client-side to a small JPEG before this ever
-// runs (see lib/client-image.ts), so this is a safety cap, not the primary
-// size control.
-const MAX_FACE_PHOTO_BYTES = 8 * 1024 * 1024;
-
-async function uploadFacePhoto(registrationId: string, dataUrl: string): Promise<string | null> {
-  const admin = getSupabaseAdmin();
-  if (!admin) return null;
-
-  const match = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(dataUrl);
-  if (!match) return null;
-  const [, mime, base64] = match;
-  const buffer = Buffer.from(base64, "base64");
-  if (buffer.byteLength === 0 || buffer.byteLength > MAX_FACE_PHOTO_BYTES) return null;
-
-  const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
-  const path = `${registrationId}.${ext}`;
-
-  const { error } = await admin.storage.from("athlete-face-photos").upload(path, buffer, {
-    contentType: mime,
-    upsert: true,
-  });
-  if (error) {
-    console.error("face photo upload failed:", error);
-    return null;
-  }
-  return path;
 }
 
 interface CheckoutSessionParams {
@@ -196,9 +168,8 @@ export async function POST(req: NextRequest) {
   const entryFee = data.wantsShirt ? EVENT.fees.entryWithShirt : EVENT.fees.entryBase;
   const totalFee = entryFee + (data.premiumMedia ? EVENT.fees.premiumMedia : 0);
 
-  const facePhotoPath = facePhotoDataUrl
-    ? await uploadFacePhoto(registrationId, facePhotoDataUrl)
-    : null;
+  const facePhotoPath =
+    facePhotoDataUrl && supabaseAdmin ? await uploadFacePhoto(supabaseAdmin, registrationId, facePhotoDataUrl) : null;
 
   if (supabaseAdmin) {
     const { error } = await supabaseAdmin.from("registrations").insert({
