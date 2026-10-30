@@ -1,9 +1,9 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, CheckCircle2, Lock } from "lucide-react";
+import { AlertCircle, CheckCircle2, Lock, Camera } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { Alert } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { Field } from "@/components/forms/field";
+import { compressImageToDataUrl } from "@/lib/client-image";
 
 import { EVENT } from "@/config/event";
 import { registrationEditSchema, type RegistrationEditInput } from "@/lib/validation/registration-edit";
@@ -19,7 +20,147 @@ import { registrationEditSchema, type RegistrationEditInput } from "@/lib/valida
 type LoadState =
   | { status: "loading" }
   | { status: "not_found" }
-  | { status: "ready"; allFieldsOpen: boolean; shirtOpen: boolean; wantsShirt: boolean };
+  | {
+      status: "ready";
+      allFieldsOpen: boolean;
+      shirtOpen: boolean;
+      wantsShirt: boolean;
+      facePhotoEditOpen: boolean;
+      hasFacePhoto: boolean;
+    };
+
+const MAX_FACE_PHOTO_MB = 20;
+
+// The face photo stays editable (facePhotoEditOpen) even once the rest of
+// the form has locked (allFieldsOpen=false) — it's optional at registration
+// time and can be added right up until the event, see lib/phase.ts. Kept as
+// its own small card/save so it works standalone when nothing else on the
+// page is editable.
+function FacePhotoCard({
+  id,
+  token,
+  hasFacePhoto,
+  onSaved,
+}: {
+  id: string;
+  token: string;
+  hasFacePhoto: boolean;
+  onSaved: () => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const objectUrlRef = useRef<string | null>(null);
+
+  const handleSelect = useCallback(async (file: File | null) => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Csak képfájlt tudunk elfogadni (jpg, png, heic).");
+      return;
+    }
+    if (file.size > MAX_FACE_PHOTO_MB * 1024 * 1024) {
+      setError(`A fájl túl nagy (max. ${MAX_FACE_PHOTO_MB} MB).`);
+      return;
+    }
+    setError(null);
+    setProcessing(true);
+    try {
+      const url = await compressImageToDataUrl(file);
+      setDataUrl(url);
+      const preview = URL.createObjectURL(file);
+      objectUrlRef.current = preview;
+      setPreviewUrl(preview);
+    } catch {
+      setError("A fotó feldolgozása nem sikerült, próbálj egy másik képet.");
+    } finally {
+      setProcessing(false);
+    }
+  }, []);
+
+  const save = useCallback(async () => {
+    if (!dataUrl) return;
+    setSaveState("saving");
+    try {
+      const res = await fetch(`/api/registration/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ facePhoto: dataUrl, token }),
+      });
+      const json = await res.json();
+      setSaveState(json.ok ? "saved" : "error");
+      if (json.ok) onSaved();
+    } catch {
+      setSaveState("error");
+    }
+  }, [dataUrl, id, token, onSaved]);
+
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-3 p-5 sm:p-6">
+        <h2 className="text-lg font-semibold">Arcfotó</h2>
+        <p className="text-sm text-muted-foreground">
+          Egy tiszta, jól látható arcfotó kell ahhoz, hogy a verseny után az AI-alapú
+          fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad készült
+          képeket. {hasFacePhoto && !previewUrl ? "Már van feltöltött fotód — ez lecseréli." : ""}
+        </p>
+        <div className="flex items-center gap-4">
+          <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-background">
+            {previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={previewUrl} alt="Feltöltött arcfotó előnézete" className="size-full object-cover" />
+            ) : (
+              <Camera className="size-6 text-muted-foreground" aria-hidden="true" />
+            )}
+          </div>
+          <div className="flex-1">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleSelect(e.target.files?.[0] ?? null)}
+              className="sr-only"
+              aria-label="Arcfotó kiválasztása"
+            />
+            <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
+              {hasFacePhoto || previewUrl ? "Fotó cseréje" : "Fotó kiválasztása"}
+            </Button>
+          </div>
+        </div>
+        {processing && <p className="text-xs text-muted-foreground">Feldolgozás…</p>}
+        {error && (
+          <p role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+            <AlertCircle className="size-3.5" aria-hidden="true" />
+            {error}
+          </p>
+        )}
+        {saveState === "saved" && (
+          <Alert className="flex items-center gap-2">
+            <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
+            Mentve.
+          </Alert>
+        )}
+        {saveState === "error" && (
+          <Alert className="flex items-center gap-2" variant="destructive">
+            <AlertCircle className="size-4" aria-hidden="true" />
+            A mentés nem sikerült, próbáld újra.
+          </Alert>
+        )}
+        {dataUrl && (
+          <Button type="button" onClick={save} disabled={saveState === "saving"} className="self-start">
+            {saveState === "saving" ? "Mentés…" : "Fotó mentése"}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function EditRegistrationPage({
   params,
@@ -61,6 +202,8 @@ export default function EditRegistrationPage({
           allFieldsOpen: json.allFieldsOpen,
           shirtOpen: json.shirtOpen,
           wantsShirt: json.data.wantsShirt,
+          facePhotoEditOpen: json.facePhotoEditOpen,
+          hasFacePhoto: json.hasFacePhoto,
         });
       })
       .catch(() => setState({ status: "not_found" }));
@@ -103,13 +246,23 @@ export default function EditRegistrationPage({
 
   if (!state.allFieldsOpen) {
     return (
-      <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 px-4 text-center">
-        <Lock className="size-10 text-muted-foreground" aria-hidden="true" />
-        <h1 className="text-2xl">A szerkesztési időszak lezárult</h1>
-        <p className="text-sm text-muted-foreground">
-          A nevezési adatok önálló módosítása 2027. január 30-ig volt lehetséges. Ha mégis változtatnod
-          kell valamin, írj nekünk: <a href={`mailto:${EVENT.contact.email}`} className="text-primary">{EVENT.contact.email}</a>
-        </p>
+      <div className="mx-auto max-w-lg px-4 py-16">
+        <div className="mb-8 flex flex-col items-center gap-4 text-center">
+          <Lock className="size-10 text-muted-foreground" aria-hidden="true" />
+          <h1 className="text-2xl">A szerkesztési időszak lezárult</h1>
+          <p className="text-sm text-muted-foreground">
+            A nevezési adatok önálló módosítása 2027. január 30-ig volt lehetséges. Ha mégis változtatnod
+            kell valamin, írj nekünk: <a href={`mailto:${EVENT.contact.email}`} className="text-primary">{EVENT.contact.email}</a>
+          </p>
+        </div>
+        {state.facePhotoEditOpen && (
+          <FacePhotoCard
+            id={id}
+            token={token ?? ""}
+            hasFacePhoto={state.hasFacePhoto}
+            onSaved={() => setState({ ...state, hasFacePhoto: true })}
+          />
+        )}
       </div>
     );
   }
@@ -122,6 +275,17 @@ export default function EditRegistrationPage({
         Itt javíthatod a nevezéskor megadott adataidat. A módosítás 2027. január 30-ig lehetséges
         {state.wantsShirt && !state.shirtOpen ? " — a pólóméret/fazon már lezárult, a rendelés leadása miatt." : "."}
       </p>
+
+      {state.facePhotoEditOpen && (
+        <div className="mb-6">
+          <FacePhotoCard
+            id={id}
+            token={token ?? ""}
+            hasFacePhoto={state.hasFacePhoto}
+            onSaved={() => setState({ ...state, hasFacePhoto: true })}
+          />
+        </div>
+      )}
 
       {saveState === "saved" && (
         <Alert className="mb-5 flex items-center gap-2">
