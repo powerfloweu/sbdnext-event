@@ -37,12 +37,12 @@ export const EVENT = {
   },
 
   registration: {
-    // Confirmed on the 2026-10-21 planning call: opens 2026-11-02 18:00
-    // (not Nov 1 — that's halottak napja). Newsletter subscribers
-    // (notify_signups) get a 1h early-access window from 17:00 — see
-    // earlyAccessOpensAt and app/api/notify/check.
-    earlyAccessOpensAt: "2026-11-02T17:00:00+01:00",
-    opensAt: "2026-11-02T18:00:00+01:00",
+    // Moved by the organiser (2026-10-30, via the project thread) from
+    // 2026-11-02 to 2026-11-03 18:00 (Nov 1 is halottak napja). Newsletter
+    // subscribers (notify_signups) still get a 1h early-access window from
+    // 17:00 — see earlyAccessOpensAt and app/api/notify/check.
+    earlyAccessOpensAt: "2026-11-03T17:00:00+01:00",
+    opensAt: "2026-11-03T18:00:00+01:00",
     closesAt: "2026-12-31T23:59:00+01:00",
     capacity: 220,
     waitlist: true,
