@@ -5,8 +5,10 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RegistrationWizard } from "@/components/forms/registration-wizard/registration-wizard";
 import { EarlyAccessGate } from "@/components/forms/early-access-gate";
+import { AdminTestBanner } from "@/components/admin/admin-test-banner";
 import { EVENT } from "@/config/event";
 import { getPhase } from "@/lib/phase";
+import { isAdminTestActive } from "@/lib/admin-test";
 
 export const revalidate = 60;
 
@@ -39,7 +41,7 @@ function ClosedNotice() {
   );
 }
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
   const phase = getPhase();
 
   if (phase === "early-access") {
@@ -51,6 +53,18 @@ export default function RegisterPage() {
   }
 
   if (phase !== "registration") {
+    // Lets D/Miki run the real wizard before the public opening — started
+    // from /admin's "Teszt nevezés" tab. Only reachable with the admin-test
+    // cookie AND a live admin session (re-checked here, not trusted from
+    // the cookie alone).
+    if (await isAdminTestActive()) {
+      return (
+        <>
+          <AdminTestBanner />
+          <RegistrationWizard />
+        </>
+      );
+    }
     return <ClosedNotice />;
   }
 

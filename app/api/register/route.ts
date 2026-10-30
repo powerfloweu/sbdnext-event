@@ -9,6 +9,7 @@ import { isEarlySubscriber } from "@/lib/early-access";
 import { getStripe } from "@/lib/stripe";
 import { sendRegistrationReceivedEmail } from "@/lib/email";
 import { generateEditToken } from "@/lib/edit-token";
+import { isAdminTestActive } from "@/lib/admin-test";
 
 // Kept from the live site: this is where registrations have always been
 // forwarded (Google Sheets, via Make). Registrations are now also inserted
@@ -170,7 +171,13 @@ export async function POST(req: NextRequest) {
   // another doesn't work.
   const phase = getPhase();
   const supabaseAdmin = getSupabaseAdmin();
-  if (phase !== "registration" && phase !== "early-access") {
+  // Lets an allowlisted admin (D/Miki) submit the real wizard before the
+  // public opening, from /admin's "Teszt nevezés" tab — re-verified here
+  // (cookie + live admin session), never trusted from the client. Every
+  // side effect below treats this the same as a Vercel Preview submission:
+  // flagged is_preview_test, no Sheet webhook, no real Stripe charge.
+  const adminTest = phase !== "registration" && phase !== "early-access" ? await isAdminTestActive() : false;
+  if (phase !== "registration" && phase !== "early-access" && !adminTest) {
     return NextResponse.json({ ok: false, error: "registration_closed" }, { status: 403 });
   }
   if (phase === "early-access") {
@@ -223,7 +230,8 @@ export async function POST(req: NextRequest) {
       // Preview deployments (e.g. this test branch) share the same Supabase
       // project as production — flag these rows so they never count toward
       // the real capacity cap and can be told apart from genuine entries.
-      is_preview_test: process.env.VERCEL_ENV === "preview",
+      // An admin-test submission on production gets the same flag.
+      is_preview_test: process.env.VERCEL_ENV === "preview" || adminTest,
     });
     if (error) {
       console.error("Supabase registration insert failed:", error);
@@ -252,9 +260,10 @@ export async function POST(req: NextRequest) {
   };
 
   // Preview deployments (e.g. a branch used to test the registration/payment
-  // flow before going live) must never write test entries into the real
-  // Google Sheet that Make forwards to.
-  if (process.env.VERCEL_ENV !== "preview") {
+  // flow before going live), same as an admin-test submission on production,
+  // must never write test entries into the real Google Sheet that Make
+  // forwards to.
+  if (process.env.VERCEL_ENV !== "preview" && !adminTest) {
     try {
       const resp = await fetch(REGISTRATION_WEBHOOK_URL, {
         method: "POST",
@@ -292,13 +301,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, registrationId, waitlisted: true });
   }
 
-  const stripeUrl = await createCheckoutSession({
-    registrationId,
-    email: data.email,
-    entryFee,
-    wantsShirt: data.wantsShirt,
-    premiumMedia: data.premiumMedia,
-  });
+  // Admin-test never goes to a real Stripe Checkout — the connected Stripe
+  // account has no test mode (see team memory), so a real charge is the
+  // only alternative. The wizard falls back to the "köszönjük" page, same
+  // as "demo" mode; the guide on the admin tab has Miki simulate the paid
+  // step from there instead.
+  const stripeUrl = adminTest
+    ? null
+    : await createCheckoutSession({
+        registrationId,
+        email: data.email,
+        entryFee,
+        wantsShirt: data.wantsShirt,
+        premiumMedia: data.premiumMedia,
+      });
 
   // Demo mode: no STRIPE_SECRET_KEY configured yet. The wizard falls back
   // to the "köszönjük" page instead of a real payment redirect.
