@@ -9,6 +9,7 @@ import { RegistrationFlowchart } from "@/components/admin/registration-flowchart
 import { WeightClassStats } from "@/components/admin/weight-class-stats";
 import { ResultsAdmin } from "@/components/admin/results-admin";
 import { AdminTabs } from "@/components/admin/admin-tabs";
+import { AdminTestTab } from "@/components/admin/admin-test-tab";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { formatHUF, formatKg } from "@/lib/format";
@@ -138,6 +139,9 @@ export default async function AdminPage({
       "id, created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, utm, paid_at",
       { count: "exact" }
     )
+    // Admin-test walkthroughs (see components/admin/admin-test-tab.tsx) live
+    // in the same table but must never show up in the real roster or stats.
+    .eq("is_preview_test", false)
     .order("created_at", { ascending: false });
   if (status !== "all") regQuery = regQuery.eq("status", status);
   if (q) {
@@ -166,10 +170,15 @@ export default async function AdminPage({
     { count: totalNotifyCount },
     { data: feedbackSignups },
     { data: priorYearRows },
+    { data: testRegistrations },
   ] = await Promise.all([
     regQuery.range(regFrom, regTo).returns<RegistrationRow[]>(),
     notifyQuery.range(notifyFrom, notifyTo).returns<NotifySignupRow[]>(),
-    admin.from("registrations").select("status, total_fee").returns<{ status: string; total_fee: number }[]>(),
+    admin
+      .from("registrations")
+      .select("status, total_fee")
+      .eq("is_preview_test", false)
+      .returns<{ status: string; total_fee: number }[]>(),
     admin.from("notify_signups").select("id", { count: "exact", head: true }),
     // Independent of the notify-signups table's own pagination/search above —
     // the feedback list below always shows every submitted answer.
@@ -183,6 +192,14 @@ export default async function AdminPage({
       .from("prior_year_registrations")
       .select("sex, division, bodyweight")
       .returns<{ sex: string; division: string; bodyweight: number | null }[]>(),
+    admin
+      .from("registrations")
+      .select("id, created_at, status, last_name, first_name, email, total_fee")
+      .eq("is_preview_test", true)
+      .order("created_at", { ascending: false })
+      .returns<
+        { id: string; created_at: string; status: string; last_name: string; first_name: string; email: string; total_fee: number }[]
+      >(),
   ]);
 
   const rows = registrations ?? [];
@@ -459,6 +476,8 @@ export default async function AdminPage({
     </>
   );
 
+  const testTab = <AdminTestTab registrations={testRegistrations ?? []} />;
+
   const feedbackTab = (
     <section>
       <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({feedbackRows.length})</h2>
@@ -510,6 +529,7 @@ export default async function AdminPage({
         feedback={feedbackTab}
         weightClassStats={<WeightClassStats rows={priorYearRows ?? []} />}
         results={<ResultsAdmin />}
+        testRegistration={testTab}
       />
     </div>
   );
