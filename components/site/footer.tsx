@@ -8,7 +8,7 @@ const STRINGS = {
     tagline: "SBD Hungary × PowerFlow · Budapest",
     contact: "Kapcsolat",
     documents: "Dokumentumok",
-    invitation: "Versenykiírás (PDF)",
+    invitation: "Versenykiírás",
     rules: "IPF / MERSZ szabályzat",
     privacy: "Adatkezelési tájékoztató",
     language: "Nyelv",
