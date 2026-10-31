@@ -120,7 +120,10 @@ export const EVENT = {
   ],
 
   docs: {
-    invitation: "/docs/SBD_Next_versenykiiras.pdf",
+    // Branded in-site page (app/versenykiiras) instead of a static PDF —
+    // admin-only until the organiser publishes (see that page's phase
+    // check). Was "/docs/SBD_Next_versenykiiras.pdf" (SBD Next I's file).
+    invitation: "/versenykiiras",
     rules: "/docs/IPF_MERSZ_szabalyzat_2025.pdf",
     qualification: "/docs/MERSZ_Open_Minositesi_Szintek_2025.pdf",
   },

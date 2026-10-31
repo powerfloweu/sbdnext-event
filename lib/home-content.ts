@@ -113,7 +113,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         badgeTone: "open",
         description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Nevezek", href: "/nevezes" },
-        secondaryCta: { label: "Versenykiírás (PDF)", href: EVENT.docs.invitation },
+        secondaryCta: { label: "Versenykiírás", href: EVENT.docs.invitation },
         countdown: { target: EVENT.registration.closesAt, label: "Nevezési határidő" },
         showCapacity: true,
         showRegistrationTeaser: true,
@@ -137,7 +137,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         primaryCta: { label: "Nevezési lista", href: "#lists" },
         secondaryCta: volunteersLive
           ? { label: "Önkéntesnek jelentkezem", href: "/volunteers" }
-          : { label: "Versenykiírás (PDF)", href: EVENT.docs.invitation },
+          : { label: "Versenykiírás", href: EVENT.docs.invitation },
         countdown: { target: `${firstDay.date}T${firstDay.start}:00+01:00`, label: "Verseny kezdetéig" },
         showCapacity: true,
         showRegistrationTeaser: true,

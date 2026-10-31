@@ -6,7 +6,7 @@ import { EVENT } from "@/config/event";
 
 const DOC_LINKS = [
   { href: EVENT.docs.rules, title: "IPF/MERSZ szabályzat (PDF)", subtitle: "Hivatalos szabálykönyv" },
-  { href: EVENT.docs.invitation, title: "SBD Next versenykiírás (PDF)", subtitle: "Hivatalos kiírás, részletes infók" },
+  { href: EVENT.docs.invitation, title: "SBD Next versenykiírás", subtitle: "Hivatalos kiírás, részletes infók" },
   { href: EVENT.docs.qualification, title: "MERSZ minősítési szintek", subtitle: "Férfi és női open szintek" },
 ];
 
