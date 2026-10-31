@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Mail, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getSupabaseBrowser } from "@/lib/supabase/browser";
 
 export default function AdminLoginPage() {
+  return (
+    <Suspense>
+      <AdminLoginForm />
+    </Suspense>
+  );
+}
+
+function AdminLoginForm() {
+  const searchParams = useSearchParams();
+  // Lets a link send the admin somewhere other than /admin after login —
+  // e.g. /admin/login?next=/versenykiiras for previewing an admin-gated page.
+  const next = searchParams.get("next") ?? "/admin";
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [googleStatus, setGoogleStatus] = useState<"idle" | "redirecting" | "error">("idle");
@@ -19,7 +32,7 @@ export default function AdminLoginPage() {
       const supabase = getSupabaseBrowser();
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin` },
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
       });
       setStatus(error ? "error" : "sent");
     } catch {
@@ -33,7 +46,7 @@ export default function AdminLoginPage() {
       const supabase = getSupabaseBrowser();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/auth/callback?next=/admin` },
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
       });
       if (error) setGoogleStatus("error");
       // On success the browser navigates away to Google, so no further state change needed here.
