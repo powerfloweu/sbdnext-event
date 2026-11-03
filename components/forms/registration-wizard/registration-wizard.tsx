@@ -941,7 +941,7 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
 
   return (
     <div className="flex min-h-screen flex-col">
-      <WizardHeader step={step} onBack={step > 1 ? goBack : undefined} />
+      <WizardHeader step={step} onBack={step > 1 ? goBack : undefined} isAdminTest={isAdminTest} />
 
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
         {step === 1 && <EventBanner />}

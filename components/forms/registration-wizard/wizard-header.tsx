@@ -6,15 +6,18 @@ import { ArrowLeft } from "lucide-react";
 
 import { EVENT } from "@/config/event";
 import { formatDateRange } from "@/lib/format";
+import { CountdownTimer } from "@/components/ui/countdown-timer";
 
 const TOTAL_STEPS = 5;
 
 export function WizardHeader({
   step,
   onBack,
+  isAdminTest = false,
 }: {
   step: number;
   onBack?: () => void;
+  isAdminTest?: boolean;
 }) {
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
@@ -49,11 +52,24 @@ export function WizardHeader({
           {step} / {TOTAL_STEPS}
         </span>
       </div>
-      <div className="mx-auto flex max-w-xl items-center justify-center gap-1.5 px-4 pb-2 text-center">
+      <div className="mx-auto flex max-w-xl flex-col items-center justify-center gap-1.5 px-4 pb-2 text-center">
         <span className="text-[11px] font-medium text-muted-foreground sm:text-xs">
           SBD Next <span className="text-primary">{EVENT.editionRoman}</span> · {formatDateRange(EVENT.days)} ·{" "}
           {EVENT.venue.name}
         </span>
+        {/* Admin test mode bypasses the registration deadline (it can run
+            any time before the public opening), so a countdown to it there
+            would be misleading — see app/nevezes/page.tsx. */}
+        {!isAdminTest && (
+          <span className="text-[11px] font-medium tabular-nums text-muted-foreground sm:text-xs">
+            Nevezési határidő:{" "}
+            <CountdownTimer
+              target={EVENT.registration.closesAt}
+              className="font-semibold text-foreground"
+              doneLabel="lezárult"
+            />
+          </span>
+        )}
       </div>
       <div className="mx-auto grid max-w-xl grid-cols-5 gap-1.5 px-4 pb-3">
         {Array.from({ length: TOTAL_STEPS }, (_, i) => (

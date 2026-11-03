@@ -43,7 +43,9 @@ export const EVENT = {
     // from 18:00 — see earlyAccessOpensAt and app/api/notify/check.
     earlyAccessOpensAt: "2026-11-04T18:00:00+01:00",
     opensAt: "2026-11-04T19:00:00+01:00",
-    closesAt: "2026-12-31T23:59:00+01:00",
+    // Registration deadline, per the organiser (2026-11-03, via the
+    // project thread).
+    closesAt: "2026-12-12T23:59:00+01:00",
     capacity: 220,
     waitlist: true,
     minBirthYear: 1927,
