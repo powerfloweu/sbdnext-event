@@ -143,16 +143,20 @@ export async function POST(req: NextRequest) {
   // another doesn't work.
   const phase = getPhase();
   const supabaseAdmin = getSupabaseAdmin();
-  // Lets an allowlisted admin (D/Miki) submit the real wizard before the
-  // public opening, from /admin's "Teszt nevezés" tab — re-verified here
-  // (cookie + live admin session), never trusted from the client. Every
-  // side effect below treats this the same as a Vercel Preview submission:
-  // flagged is_preview_test, no Sheet webhook, no real Stripe charge.
-  const adminTest = phase !== "registration" && phase !== "early-access" ? await isAdminTestActive() : false;
+  // Lets an allowlisted admin (D/Miki) submit the real wizard any time
+  // before the public opening, from /admin's "Teszt nevezés" tab —
+  // re-verified here (cookie + live admin session), never trusted from the
+  // client. Checked for "early-access" too (not just "announced"/"closed"/
+  // "live"/"post"): otherwise an admin-test submission made during the 1h
+  // early-access window hits the subscriber check below like a real
+  // request would. Every side effect below treats this the same as a
+  // Vercel Preview submission: flagged is_preview_test, no Sheet webhook,
+  // no real Stripe charge.
+  const adminTest = phase !== "registration" ? await isAdminTestActive() : false;
   if (phase !== "registration" && phase !== "early-access" && !adminTest) {
     return NextResponse.json({ ok: false, error: "registration_closed" }, { status: 403 });
   }
-  if (phase === "early-access") {
+  if (phase === "early-access" && !adminTest) {
     const subscribed = supabaseAdmin ? await isEarlySubscriber(supabaseAdmin, data.email.trim()) : false;
     if (!subscribed) {
       return NextResponse.json({ ok: false, error: "early_access_required" }, { status: 403 });
