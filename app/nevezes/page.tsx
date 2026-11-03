@@ -44,6 +44,22 @@ function ClosedNotice() {
 export default async function RegisterPage() {
   const phase = getPhase();
 
+  // Lets D/Miki run the real wizard any time before the public opening —
+  // started from /admin's "Teszt nevezés" tab. Only reachable with the
+  // admin-test cookie AND a live admin session (re-checked here, not
+  // trusted from the cookie alone). Checked before the early-access gate
+  // too: once early-access starts, phase is "early-access" rather than
+  // "announced", and admin test mode must still bypass it like it bypasses
+  // every other pre-opening phase.
+  if (phase !== "registration" && (await isAdminTestActive())) {
+    return (
+      <>
+        <AdminTestBanner />
+        <RegistrationWizard isAdminTest />
+      </>
+    );
+  }
+
   if (phase === "early-access") {
     return (
       <EarlyAccessGate opensAt={EVENT.registration.opensAt}>
@@ -53,18 +69,6 @@ export default async function RegisterPage() {
   }
 
   if (phase !== "registration") {
-    // Lets D/Miki run the real wizard before the public opening — started
-    // from /admin's "Teszt nevezés" tab. Only reachable with the admin-test
-    // cookie AND a live admin session (re-checked here, not trusted from
-    // the cookie alone).
-    if (await isAdminTestActive()) {
-      return (
-        <>
-          <AdminTestBanner />
-          <RegistrationWizard isAdminTest />
-        </>
-      );
-    }
     return <ClosedNotice />;
   }
 
