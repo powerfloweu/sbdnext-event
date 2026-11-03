@@ -864,6 +864,26 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  // Step 4's "Fizetés" button validates the WHOLE schema (shirt cut/size is
+  // only required if wantsShirt is set, via a superRefine on the merged
+  // schema), not just the current step — so a field left empty on an
+  // earlier step can fail silently here with no visible error, since that
+  // field isn't even rendered on step 5 (D, 2026-11-03: filled the shirt
+  // checkbox but not cut/size, pressed Fizetés on step 5, nothing happened
+  // — no request, no message). Jump back to the earliest step that has an
+  // invalid field and say so, instead of leaving the button looking broken.
+  const onInvalidSubmit = useCallback(
+    (formErrors: Errs) => {
+      const invalidStep = STEP_FIELDS.findIndex((fields) => fields.some((f) => formErrors[f]));
+      if (invalidStep !== -1) {
+        setStep(invalidStep + 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      setSubmitError("Néhány mező hiányzik vagy hibás — visszaugrottunk a megfelelő lépésre, ellenőrizd a pirossal jelölt mezőket.");
+    },
+    [setStep]
+  );
+
   const onSubmit = handleSubmit(async (data) => {
     if (data.honeypot) return; // silently drop bot submissions
     setSubmitting(true);
@@ -908,7 +928,7 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
     } finally {
       setSubmitting(false);
     }
-  });
+  }, onInvalidSubmit);
 
   const openers = useMemo(
     () => ({
