@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Download } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Download } from "lucide-react";
 
 import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
@@ -26,6 +27,12 @@ export default function VersenykiirasPage() {
       />
       <main id="main">
         <div className="mx-auto max-w-3xl px-4 py-12 sm:px-8 sm:py-16">
+          <Link
+            href="/"
+            className="pdf-skip mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" /> Vissza a főoldalra
+          </Link>
           <div className="pdf-skip mb-6 flex justify-center">
             <a
               href="/docs/SBD_Next_II_versenykiiras_HU.pdf"

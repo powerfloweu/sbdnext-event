@@ -51,8 +51,9 @@ export function CompetitionRulesDocument() {
           {/* eslint-disable @next/next/no-img-element */}
           <img src="/sbd_logo_transparent.png" alt="SBD Hungary" className="h-10 w-auto object-contain sm:h-12" />
           <img src="/powerflow_logo.png" alt="PowerFlow" className="h-10 w-auto object-contain sm:h-12" />
-          <span className="text-sm font-bold uppercase tracking-wide text-foreground">
-            Thor Gym Újbuda
+          <span className="flex items-center gap-2">
+            <img src="/thor_gym_logo.png" alt="" className="h-9 w-auto object-contain sm:h-10" />
+            <span className="text-sm font-bold uppercase tracking-wide text-foreground">Thor Gym Újbuda</span>
           </span>
           {/* eslint-enable @next/next/no-img-element */}
         </div>
@@ -77,14 +78,20 @@ export function CompetitionRulesDocument() {
           <a href="https://sbdhungary.hu" target="_blank" rel="noopener noreferrer">
             sbdhungary.hu
           </a>
-          ), Power Flow EU
+          ),{" "}
+          <a href="https://app.power-flow.eu" target="_blank" rel="noopener noreferrer">
+            Power Flow EU
+          </a>
         </p>
         <p>
           <strong>Társszervezők:</strong> Thor Gym Újbuda (
           <a href="https://ujbuda.thorgym.hu/" target="_blank" rel="noopener noreferrer">
             ujbuda.thorgym.hu
           </a>
-          ), Bunnymedia.hu
+          ),{" "}
+          <a href="https://bunnymedia.hu" target="_blank" rel="noopener noreferrer">
+            Bunnymedia.hu
+          </a>
         </p>
         <p>A Magyar Erőemelő Szövetség (MERSZ) jóváhagyásával és támogatásával.</p>
       </DocSection>
@@ -144,15 +151,45 @@ export function CompetitionRulesDocument() {
           <li>2025. január 1-től elért hivatalos MERSZ versenyen az Open Magyar I. osztályú szintet erőemelésben,</li>
           <li>külföldi versenyzők esetében, ha bármely IPF tagország szövetségénél elért eredményük eléri a magyar első osztályú szintet.</li>
         </ul>
-        <p className="text-xs">
-          A MERSZ I. osztályú szintek (Open): Nők — 47/52/57/63/69/76/84/+84 kg, összetett 250–380 kg.
-          Férfiak — 59/66/74/83/93/105/120/+120 kg, összetett 480–700 kg.
+        <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-foreground">
+          A MERSZ I. osztályú szintek (Open)
         </p>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-xs sm:text-sm">
+            <thead>
+              <tr className="bg-muted/50 text-left text-foreground">
+                <th className="px-3 py-2 font-semibold">Nők (kg)</th>
+                <th className="px-3 py-2 font-semibold">Összetett (kg)</th>
+                <th className="px-3 py-2 font-semibold">Férfiak (kg)</th>
+                <th className="px-3 py-2 font-semibold">Összetett (kg)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {[
+                ["47", "250", "59", "480"],
+                ["52", "275", "66", "515"],
+                ["57", "300", "74", "545"],
+                ["63", "320", "83", "620"],
+                ["69", "340", "93", "650"],
+                ["76", "360", "105", "680"],
+                ["84", "375", "120", "690"],
+                ["84+", "380", "120+", "700"],
+              ].map((row) => (
+                <tr key={row[0]}>
+                  <td className="px-3 py-1.5 tabular-nums">{row[0]}</td>
+                  <td className="px-3 py-1.5 tabular-nums">{row[1]}</td>
+                  <td className="px-3 py-1.5 tabular-nums">{row[2]}</td>
+                  <td className="px-3 py-1.5 tabular-nums">{row[3]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </DocSection>
 
       <DocSection icon={ShieldCheck} title="Bírók és csúcsok">
         <p>A versenyen a MERSZ hivatalos bírói működnek közre. Zsűri nem lesz.</p>
-        <p>Az SBD Next nem egy szabadidős verseny, ezért országos csúcsokat nem lehet dönteni.</p>
+        <p>Az SBD Next szabadidős verseny, ezért országos csúcsokat nem lehet dönteni.</p>
       </DocSection>
 
       <DocSection icon={Gift} title="Nevezési díjak és díjazás">
