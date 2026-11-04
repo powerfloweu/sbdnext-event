@@ -26,6 +26,7 @@ import { WizardHeader } from "@/components/forms/registration-wizard/wizard-head
 import { EventBanner } from "@/components/forms/registration-wizard/event-banner";
 import { WizardSponsorStrip } from "@/components/forms/registration-wizard/wizard-sponsor-strip";
 import { PremiumMediaPreview } from "@/components/forms/registration-wizard/premium-media-preview";
+import { InvitePriceSummary } from "@/components/forms/registration-wizard/invite-price-summary";
 
 import { EVENT } from "@/config/event";
 import { formatHUF, formatEUR } from "@/lib/format";
@@ -1209,6 +1210,7 @@ export function RegistrationWizard({
 
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
         {step === 1 && <EventBanner locale={locale} />}
+        {step === 1 && locale === "en" && inviteCode && <InvitePriceSummary />}
 
         {restoredDraft && step === 1 && (
           <Alert>
