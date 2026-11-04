@@ -15,7 +15,7 @@ const STRINGS = {
     entryWithShirt: "Nevezés + póló",
     perks: [
       "Mindenki kap ingyenesen letölthető fotókat magáról a versenyen",
-      "A póló saját névvel/felirattal is kérhető, felár nélkül",
+      "A póló személyre szóló",
     ],
     premiumMedia: "Prémium média csomag",
     premiumMediaHint: "3 fotó + 3 videó, kiemelt válogatás",
@@ -40,7 +40,7 @@ const STRINGS = {
     entryWithShirt: "Entry + shirt",
     perks: [
       "Everyone gets free downloadable photos of themselves from the competition",
-      "The shirt can carry a custom name/print at no extra charge",
+      "The shirt is personalized",
     ],
     premiumMedia: "Premium media package",
     premiumMediaHint: "3 photos + 3 videos, hand-picked selection",
@@ -96,7 +96,9 @@ export function FeesSection({ locale = "hu" }: { locale?: "hu" | "en" }) {
         <Card>
           <CardContent className="flex items-center justify-between gap-3 p-5">
             <div className="flex flex-col gap-0.5">
-              <span className="font-semibold text-foreground">{t.premiumMedia}</span>
+              <Link href="/premium-media" className="font-semibold text-foreground underline">
+                {t.premiumMedia}
+              </Link>
               <span className="text-xs text-muted-foreground">{t.premiumMediaHint}</span>
             </div>
             <span className="font-display text-xl font-bold tabular-nums">+{amount(fees.premiumMedia)}</span>
