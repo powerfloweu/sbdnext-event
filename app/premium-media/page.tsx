@@ -57,6 +57,15 @@ export default function PremiumMediaPage() {
             <br />A cél az, hogy az adott pillanat pontosan és profi módon legyen rögzítve.
           </p>
 
+          <Card className="mb-4 border-primary/40 bg-primary/5">
+            <CardContent className="p-4">
+              <span className="mb-2 block text-sm font-semibold text-primary">Mit tartalmaz</span>
+              <span className="block text-foreground">
+                Minimum 3 fotó és 3 videó, minden gyakorlat legjobb kísérletéről.
+              </span>
+            </CardContent>
+          </Card>
+
           <Card className="mb-6 border-primary/40 bg-primary/5">
             <CardContent className="p-4">
               <span className="mb-2 block text-sm font-semibold text-primary">

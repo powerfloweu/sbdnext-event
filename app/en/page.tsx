@@ -228,8 +228,8 @@ export default function EnglishPage() {
                 unique and name-printed.
               </div>
               <div>
-                <b>Prémium média csomag</b> – Optional add-on: 3 photos + 3 videos, priority
-                selection.
+                <b>Prémium média csomag</b> – Optional add-on: at least 3 photos and 3 videos, of
+                your best attempt on each lift.
               </div>
               <div>
                 <b>Hozzájárulok…</b> – Consent checkbox: data processing, meet rules, and that

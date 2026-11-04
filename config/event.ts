@@ -128,6 +128,7 @@ export const EVENT = {
     { name: "SBD Hungary", logo: "/sbd_logo_transparent.png", url: "https://www.sbdhungary.hu/" },
     { name: "PowerFlow", logo: "/powerflow_logo.png", url: "https://power-flow.eu/" },
     { name: "Avancus", logo: "/avancus_logo.png", url: "https://power-flow.eu/" },
+    { name: "Thor Gym Újbuda", logo: "/thor_gym_logo.png", url: "https://ujbuda.thorgym.hu/" },
   ],
 
   mediaTeam: [

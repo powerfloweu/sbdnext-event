@@ -50,11 +50,7 @@ export function CompetitionRulesDocumentEn() {
           {/* eslint-disable @next/next/no-img-element */}
           <img src="/sbd_logo_transparent.png" alt="SBD Hungary" className="h-10 w-auto object-contain sm:h-12" />
           <img src="/powerflow_logo.png" alt="PowerFlow" className="h-10 w-auto object-contain sm:h-12" />
-          <img
-            src="/thor_gym_logo.png"
-            alt="Thor Gym Újbuda"
-            className="h-9 w-auto rounded-md bg-white/90 object-contain px-2 py-1 sm:h-10"
-          />
+          <img src="/thor_gym_logo.png" alt="Thor Gym Újbuda" className="h-10 w-auto object-contain sm:h-12" />
           {/* eslint-enable @next/next/no-img-element */}
         </div>
       </div>
@@ -213,8 +209,8 @@ export function CompetitionRulesDocumentEn() {
           <li>Medals for 1st–3rd place in each category. A certificate for every participant.</li>
           <li>A featured gift package for every category&apos;s podium finishers.</li>
           <li>
-            Free downloadable photos of every competitor (a premium subscription gets the full photo and
-            video package).
+            Free downloadable photos of every competitor (a premium subscription gets at least 3 photos
+            and 3 videos, of your best attempt on each lift).
           </li>
           <li>
             A custom, name-printed SBD competition shirt: orderable for an extra fee as part of

@@ -11,7 +11,8 @@ const ROLE_EN: Record<string, string> = {
 };
 
 const title = "SBD Next II – Premium Media Package";
-const description = "3 photos + 3 videos, hand-picked selection, by the SBD Next media team.";
+const description =
+  "At least 3 photos and 3 videos of your best attempt on each lift, by the SBD Next media team.";
 
 export const metadata: Metadata = {
   title,
@@ -88,6 +89,15 @@ export default function PremiumMediaPageEn() {
             <br />
             The goal is to capture each moment precisely and professionally.
           </p>
+
+          <Card className="mb-4 border-primary/40 bg-primary/5">
+            <CardContent className="p-4">
+              <span className="mb-2 block text-sm font-semibold text-primary">What&apos;s included</span>
+              <span className="block text-foreground">
+                At least 3 photos and 3 videos, of your best attempt on each lift.
+              </span>
+            </CardContent>
+          </Card>
 
           <Card className="mb-6 border-primary/40 bg-primary/5">
             <CardContent className="p-4">

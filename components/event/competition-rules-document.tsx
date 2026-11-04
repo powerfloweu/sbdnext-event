@@ -52,11 +52,7 @@ export function CompetitionRulesDocument() {
           {/* eslint-disable @next/next/no-img-element */}
           <img src="/sbd_logo_transparent.png" alt="SBD Hungary" className="h-10 w-auto object-contain sm:h-12" />
           <img src="/powerflow_logo.png" alt="PowerFlow" className="h-10 w-auto object-contain sm:h-12" />
-          <img
-            src="/thor_gym_logo.png"
-            alt="Thor Gym Újbuda"
-            className="h-9 w-auto rounded-md bg-white/90 object-contain px-2 py-1 sm:h-10"
-          />
+          <img src="/thor_gym_logo.png" alt="Thor Gym Újbuda" className="h-10 w-auto object-contain sm:h-12" />
           {/* eslint-enable @next/next/no-img-element */}
         </div>
       </div>
@@ -218,8 +214,8 @@ export function CompetitionRulesDocument() {
           <li>Érmek a kategóriák I–III. helyezettjeinek. Oklevél minden résztvevőnek.</li>
           <li>Kiemelt ajándékcsomag minden kategória dobogós helyezettjeinek.</li>
           <li>
-            Ingyenesen letölthető fotóanyag minden versenyzőről (prémium előfizetéssel teljes fotó- és
-            videócsomag is kérhető).
+            Ingyenesen letölthető fotóanyag minden versenyzőről (prémium előfizetéssel minimum 3 fotó és
+            3 videó is kérhető, minden gyakorlat legjobb kísérletéről).
           </li>
           <li>
             SBD egyedi, névre szóló versenypóló: külön díj fejében rendelhető a Nevezés + póló
