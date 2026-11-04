@@ -723,6 +723,7 @@ function Step4({
   t,
   formatPrice,
   fees,
+  locale,
 }: {
   control: Ctrl;
   errors: Errs;
@@ -730,6 +731,7 @@ function Step4({
   t: WizardStrings;
   formatPrice: (amount: number) => string;
   fees: { entryBase: number; entryWithShirt: number; premiumMedia: number };
+  locale: RegistrationLocale;
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -821,7 +823,7 @@ function Step4({
         )}
       />
 
-      <PremiumMediaPreview />
+      <PremiumMediaPreview locale={locale} />
     </div>
   );
 }
@@ -836,6 +838,7 @@ function Summary({
   t,
   formatPrice,
   fees,
+  locale,
 }: {
   data: RegistrationInput;
   errors: Errs;
@@ -850,6 +853,7 @@ function Summary({
   t: WizardStrings;
   formatPrice: (amount: number) => string;
   fees: { entryBase: number; entryWithShirt: number; premiumMedia: number };
+  locale: RegistrationLocale;
 }) {
   const total = num(data.openerSquat) + num(data.openerBench) + num(data.openerDeadlift);
   const entryFee = data.wantsShirt ? fees.entryWithShirt : fees.entryBase;
@@ -923,7 +927,12 @@ function Summary({
                 {t.consentPrivacy}
               </a>
               {t.consentMiddle}
-              <a href={EVENT.docs.invitation} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+              <a
+                href={locale === "en" ? "/en/versenykiiras" : EVENT.docs.invitation}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline"
+              >
                 {t.consentInvitation}
               </a>
               {t.consentSuffix}
@@ -1196,10 +1205,10 @@ export function RegistrationWizard({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <WizardHeader step={step} onBack={step > 1 ? goBack : undefined} />
+      <WizardHeader step={step} onBack={step > 1 ? goBack : undefined} locale={locale} />
 
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
-        {step === 1 && <EventBanner />}
+        {step === 1 && <EventBanner locale={locale} />}
 
         {restoredDraft && step === 1 && (
           <Alert>
@@ -1273,6 +1282,7 @@ export function RegistrationWizard({
               t={t}
               formatPrice={formatPrice}
               fees={fees}
+              locale={locale}
             />
           )}
           {step === 5 && (
@@ -1285,6 +1295,7 @@ export function RegistrationWizard({
               t={t}
               formatPrice={formatPrice}
               fees={fees}
+              locale={locale}
             />
           )}
 

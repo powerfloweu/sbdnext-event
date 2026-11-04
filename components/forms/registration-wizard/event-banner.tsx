@@ -2,13 +2,14 @@ import Image from "next/image";
 
 import { EVENT } from "@/config/event";
 import { formatDateRange } from "@/lib/format";
+import type { RegistrationLocale } from "@/lib/validation/registration";
 
 // The registration wizard is a focused, logo-free funnel by design (one
 // task per screen) — this is the one place it borrows the homepage's "this
 // is a real competition" visual language (event photo, logo, dates, venue)
 // before the lifter commits to filling out the form. Shown once, above
 // step 1 only, so it doesn't compete with the step content on every screen.
-export function EventBanner() {
+export function EventBanner({ locale = "hu" }: { locale?: RegistrationLocale } = {}) {
   return (
     <div className="relative overflow-hidden rounded-xl border border-border">
       <div className="relative aspect-[16/9] sm:aspect-[21/9]">
@@ -39,7 +40,7 @@ export function EventBanner() {
             SBD Next <span className="text-primary">{EVENT.editionRoman}</span>
           </h2>
           <p className="text-xs font-semibold text-foreground/90 sm:text-sm">
-            {formatDateRange(EVENT.days)} · {EVENT.venue.name}
+            {formatDateRange(EVENT.days, locale)} · {EVENT.venue.name}
           </p>
         </div>
       </div>
