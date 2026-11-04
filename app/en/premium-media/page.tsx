@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,27 @@ import { EVENT } from "@/config/event";
 const ROLE_EN: Record<string, string> = {
   Fotós: "Photographer",
   Videós: "Videographer",
+};
+
+const title = "SBD Next II – Premium Media Package";
+const description = "3 photos + 3 videos, hand-picked selection, by the SBD Next media team.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    images: [{ url: "/photos/hero-desktop.jpg", width: 1600, height: 900, alt: "SBD Next" }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/photos/hero-desktop.jpg"],
+  },
 };
 
 export default function PremiumMediaPageEn() {

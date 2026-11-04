@@ -20,10 +20,37 @@ import { getPhase } from "@/lib/phase";
 
 export const revalidate = 60;
 
+const title = "SBD Next II – Open Powerlifting Competition | Thor Gym, Budapest, 13–14 February 2027";
+const ogTitle = "SBD Next II – Open Powerlifting Competition";
+const description =
+  "SBD Next – an IPF-rules powerlifting competition for novice and competitive lifters at Thor Gym, Budapest. Full power meet with a media package and a custom SBD competition shirt.";
+const ogDescription = "An IPF-rules powerlifting meet for novice and competitive lifters at Thor Gym, Budapest.";
+
 export const metadata: Metadata = {
-  title: "SBD Next II – Open Powerlifting Competition | Thor Gym, Budapest, 13–14 February 2027",
-  description:
-    "SBD Next – an IPF-rules powerlifting competition for novice and competitive lifters at Thor Gym, Budapest. Full power meet with a media package and a custom SBD competition shirt.",
+  title,
+  description,
+  openGraph: {
+    title: ogTitle,
+    description: ogDescription,
+    url: `${EVENT.siteUrl}/en`,
+    siteName: EVENT.name,
+    images: [
+      {
+        url: "/photos/hero-desktop.jpg",
+        width: 1600,
+        height: 900,
+        alt: "SBD Next – powerlifting meet at Thor Gym",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: ogTitle,
+    description: ogDescription,
+    images: ["/photos/hero-desktop.jpg"],
+  },
 };
 
 // This page mirrors app/page.tsx, translated. It's only fully translated for

@@ -76,6 +76,11 @@ const EYEBROW = {
   en: "What SBD Next I athletes said (in their own words, Hungarian)",
 } as const;
 
+const PAGE_ARIA = {
+  hu: (page: number) => `Vélemények, ${page}. oldal`,
+  en: (page: number) => `Reviews, page ${page}`,
+} as const;
+
 export function Testimonials({ locale = "hu" }: { locale?: "hu" | "en" } = {}) {
   const [page, setPage] = useState(0);
 
@@ -111,7 +116,7 @@ export function Testimonials({ locale = "hu" }: { locale?: "hu" | "en" } = {}) {
             <button
               key={idx}
               type="button"
-              aria-label={`Vélemények, ${idx + 1}. oldal`}
+              aria-label={PAGE_ARIA[locale](idx + 1)}
               aria-current={idx === page}
               onClick={() => setPage(idx)}
               className={`size-2 rounded-full transition-colors ${

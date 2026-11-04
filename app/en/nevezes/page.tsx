@@ -8,9 +8,25 @@ import { RegistrationWizard } from "@/components/forms/registration-wizard/regis
 
 export const revalidate = 0;
 
+const title = "SBD Next II – Registration";
+const description = "Register for SBD Next II, 13–14 February 2027 at Thor Gym, Budapest.";
+
 export const metadata: Metadata = {
-  title: "SBD Next II – Registration",
-  description: "Register for SBD Next II, 13–14 February 2027 at Thor Gym, Budapest.",
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    images: [{ url: "/photos/hero-desktop.jpg", width: 1600, height: 900, alt: "SBD Next" }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/photos/hero-desktop.jpg"],
+  },
 };
 
 // English registration, gated by a secret invite code (?code=...) given out

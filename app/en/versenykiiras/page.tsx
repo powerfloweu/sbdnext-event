@@ -9,9 +9,25 @@ import { getPhase, volunteersOpen } from "@/lib/phase";
 
 export const dynamic = "force-dynamic";
 
+const title = "SBD Next II – Competition Rules";
+const description = "Official competition rules for the SBD Next II open powerlifting competition.";
+
 export const metadata: Metadata = {
-  title: "SBD Next II – Competition Rules",
-  description: "Official competition rules for the SBD Next II open powerlifting competition.",
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    images: [{ url: "/photos/hero-desktop.jpg", width: 1600, height: 900, alt: "SBD Next" }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/photos/hero-desktop.jpg"],
+  },
 };
 
 export default function VersenykiirasEnPage() {
