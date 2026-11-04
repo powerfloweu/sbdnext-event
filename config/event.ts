@@ -37,12 +37,15 @@ export const EVENT = {
   },
 
   registration: {
-    // Moved by the organiser (2026-11-03, via the project thread) from
-    // 2026-11-03 to 2026-11-04: D wanted to finish testing with Miki first.
-    // Newsletter subscribers (notify_signups) get a 1h early-access window
-    // from 18:00 — see earlyAccessOpensAt and app/api/notify/check.
-    earlyAccessOpensAt: "2026-11-04T18:00:00+01:00",
-    opensAt: "2026-11-04T19:00:00+01:00",
+    // Postponed indefinitely by the organiser (2026-11-04, via the project
+    // thread): the English registration flow isn't ready yet. No new date
+    // has been decided — these are a placeholder far enough out that the
+    // site stays in the "announced"/closed state until the organiser picks
+    // a real date and this gets updated again. Newsletter subscribers
+    // (notify_signups) get a 1h early-access window before opensAt — see
+    // earlyAccessOpensAt and app/api/notify/check.
+    earlyAccessOpensAt: "2026-11-25T18:00:00+01:00",
+    opensAt: "2026-11-25T19:00:00+01:00",
     closesAt: "2026-12-31T23:59:00+01:00",
     capacity: 220,
     waitlist: true,
