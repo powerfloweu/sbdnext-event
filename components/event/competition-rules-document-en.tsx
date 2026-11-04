@@ -49,8 +49,9 @@ export function CompetitionRulesDocumentEn() {
           {/* eslint-disable @next/next/no-img-element */}
           <img src="/sbd_logo_transparent.png" alt="SBD Hungary" className="h-10 w-auto object-contain sm:h-12" />
           <img src="/powerflow_logo.png" alt="PowerFlow" className="h-10 w-auto object-contain sm:h-12" />
-          <span className="text-sm font-bold uppercase tracking-wide text-foreground">
-            Thor Gym Újbuda
+          <span className="flex items-center gap-2">
+            <img src="/thor_gym_logo.png" alt="" className="h-9 w-auto object-contain sm:h-10" />
+            <span className="text-sm font-bold uppercase tracking-wide text-foreground">Thor Gym Újbuda</span>
           </span>
           {/* eslint-enable @next/next/no-img-element */}
         </div>
@@ -75,14 +76,20 @@ export function CompetitionRulesDocumentEn() {
           <a href="https://sbdhungary.hu" target="_blank" rel="noopener noreferrer">
             sbdhungary.hu
           </a>
-          ), Power Flow EU
+          ),{" "}
+          <a href="https://app.power-flow.eu" target="_blank" rel="noopener noreferrer">
+            Power Flow EU
+          </a>
         </p>
         <p>
           <strong>Co-organisers:</strong> Thor Gym Újbuda (
           <a href="https://ujbuda.thorgym.hu/" target="_blank" rel="noopener noreferrer">
             ujbuda.thorgym.hu
           </a>
-          ), Bunnymedia.hu
+          ),{" "}
+          <a href="https://bunnymedia.hu" target="_blank" rel="noopener noreferrer">
+            Bunnymedia.hu
+          </a>
         </p>
         <p>Approved and supported by the Hungarian Powerlifting Federation (MERSZ).</p>
       </DocSection>
@@ -139,15 +146,45 @@ export function CompetitionRulesDocumentEn() {
           <li>have hit the Open first-division (Class I) powerlifting total at an official MERSZ competition since 1 January 2025,</li>
           <li>or, for foreign lifters, whose result with any IPF member federation reaches the Hungarian first-division standard.</li>
         </ul>
-        <p className="text-xs">
-          MERSZ first-division (Open) standards: Women — 47/52/57/63/69/76/84/+84 kg, total 250–380 kg.
-          Men — 59/66/74/83/93/105/120/+120 kg, total 480–700 kg.
+        <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-foreground">
+          MERSZ first-division (Open) standards
         </p>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-xs sm:text-sm">
+            <thead>
+              <tr className="bg-muted/50 text-left text-foreground">
+                <th className="px-3 py-2 font-semibold">Women (kg)</th>
+                <th className="px-3 py-2 font-semibold">Total (kg)</th>
+                <th className="px-3 py-2 font-semibold">Men (kg)</th>
+                <th className="px-3 py-2 font-semibold">Total (kg)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {[
+                ["47", "250", "59", "480"],
+                ["52", "275", "66", "515"],
+                ["57", "300", "74", "545"],
+                ["63", "320", "83", "620"],
+                ["69", "340", "93", "650"],
+                ["76", "360", "105", "680"],
+                ["84", "375", "120", "690"],
+                ["84+", "380", "120+", "700"],
+              ].map((row) => (
+                <tr key={row[0]}>
+                  <td className="px-3 py-1.5 tabular-nums">{row[0]}</td>
+                  <td className="px-3 py-1.5 tabular-nums">{row[1]}</td>
+                  <td className="px-3 py-1.5 tabular-nums">{row[2]}</td>
+                  <td className="px-3 py-1.5 tabular-nums">{row[3]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </DocSection>
 
       <DocSection icon={ShieldCheck} title="Judges and records">
         <p>Official MERSZ referees will judge the competition. There will be no jury.</p>
-        <p>SBD Next is not a recreational meet, so national records cannot be set.</p>
+        <p>SBD Next is a recreational meet, so national records cannot be set.</p>
       </DocSection>
 
       <DocSection icon={Gift} title="Entry fees and prizes">
