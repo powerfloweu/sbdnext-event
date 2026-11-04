@@ -70,13 +70,26 @@ export const EVENT = {
   fees: {
     currency: "HUF",
     // Confirmed 2026-10-21, price corrected by the organiser 2026-10-22 to
-    // 32 980, then again 2026-11-03 to the final 4-package pricing: entry
-    // 24 990 Ft, entry+shirt 32 990 Ft, entry+premium media 49 980 Ft,
-    // entry+shirt+premium media 57 980 Ft.
+    // 32 980, then again 2026-11-03 to 32 990, then again 2026-11-04 once
+    // the final shirt cost was set: entry 24 990 Ft, entry+shirt 35 980 Ft
+    // (shirt add-on 10 990 Ft), entry+premium media 49 980 Ft,
+    // entry+shirt+premium media 60 970 Ft.
     entryBase: 24990,
-    entryWithShirt: 32990,
+    entryWithShirt: 35980,
     spectator: 1000,
     premiumMedia: 24990,
+  },
+
+  // EUR pricing for foreign athletes (English registration flow). Confirmed
+  // by the organiser 2026-11-04: entry 69€, +shirt 99€, +premium media
+  // 137€, +shirt+premium 167€ (all "99-ending" per D).
+  feesEur: {
+    entryBase: 69,
+    entryWithShirt: 99,
+    premiumMedia: 68,
+    // Confirmed by the organiser 2026-11-04: spectator ticket is 3 € for
+    // the English site (was previously shown in HUF only).
+    spectator: 3,
   },
 
   // Entry + shirt + premium-media are now built as a Stripe Checkout Session
@@ -125,7 +138,7 @@ export const EVENT = {
   ],
 
   docs: {
-    invitation: "/docs/SBD_Next_versenykiiras.pdf",
+    invitation: "/versenykiiras",
     rules: "/docs/IPF_MERSZ_szabalyzat_2025.pdf",
     qualification: "/docs/MERSZ_Open_Minositesi_Szintek_2025.pdf",
   },

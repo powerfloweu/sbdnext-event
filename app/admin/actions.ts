@@ -105,7 +105,7 @@ export async function simulateTestPayment(formData: FormData): Promise<void> {
 
   const { data: registration, error: fetchError } = await admin
     .from("registrations")
-    .select("id, email, first_name, total_fee, status, edit_token, is_preview_test")
+    .select("id, email, first_name, total_fee, status, edit_token, is_preview_test, locale, currency")
     .eq("id", id)
     .maybeSingle();
 
@@ -130,6 +130,8 @@ export async function simulateTestPayment(formData: FormData): Promise<void> {
         email: registration.email,
         firstName: registration.first_name,
         totalFee: registration.total_fee,
+        currency: registration.currency === "EUR" ? "EUR" : "HUF",
+        locale: registration.locale === "en" ? "en" : "hu",
         editUrl: registration.edit_token
           ? `${EVENT.siteUrl}/nevezes/szerkesztes/${id}?token=${registration.edit_token}`
           : undefined,

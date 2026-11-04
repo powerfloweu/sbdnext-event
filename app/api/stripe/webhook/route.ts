@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   const { data: registration, error: fetchError } = await admin
     .from("registrations")
-    .select("id, email, first_name, total_fee, status, edit_token")
+    .select("id, email, first_name, total_fee, status, edit_token, locale, currency")
     .eq("id", registrationId)
     .maybeSingle();
 
@@ -94,6 +94,8 @@ export async function POST(req: NextRequest) {
         email: registration.email,
         firstName: registration.first_name,
         totalFee: registration.total_fee,
+        currency: registration.currency === "EUR" ? "EUR" : "HUF",
+        locale: registration.locale === "en" ? "en" : "hu",
         editUrl: registration.edit_token
           ? `${EVENT.siteUrl}/nevezes/szerkesztes/${registrationId}?token=${registration.edit_token}`
           : undefined,

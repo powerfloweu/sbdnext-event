@@ -58,7 +58,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         badgeTone: "neutral",
         description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Értesítést kérek", href: "#register" },
-        secondaryCta: null,
+        secondaryCta: { label: "Versenykiírás", href: "/versenykiiras" },
         countdown: null,
         showCapacity: false,
         showRegistrationTeaser: true,

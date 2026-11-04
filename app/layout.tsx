@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(EVENT.siteUrl),
   title: `${EVENT.name} ${EVENT.editionRoman} – Nyílt Erőemelő Verseny | ${EVENT.venue.name}, ${dateRangeLabel}`,
   description:
-    "SBD Next – IPF szabályrendszer szerinti powerlifting esemény újoncoknak és versenyzőknek a Thor Gymben. Háromfogásos SBD verseny, media csomaggal és egyedi SBD versenypólóval.",
+    "SBD Next – IPF szabályrendszer szerinti powerlifting esemény újoncoknak és versenyzőknek a Thor Gymben. Háromfogásos SBD verseny, media csomaggal és opcionálisan rendelhető, névre szóló SBD versenypólóval.",
   openGraph: {
     title: `${EVENT.name} ${EVENT.editionRoman} – Nyílt Erőemelő Verseny`,
     description:

@@ -1,7 +1,13 @@
 import { Resend } from "resend";
 
 import { EVENT } from "@/config/event";
-import { formatHUF } from "@/lib/format";
+import { formatHUF, formatEUR } from "@/lib/format";
+
+type RegistrationLocale = "hu" | "en";
+
+function formatAmount(amount: number, currency: "HUF" | "EUR"): string {
+  return currency === "EUR" ? `€${formatEUR(amount)}` : `${formatHUF(amount)} Ft`;
+}
 
 // Server-only, and gracefully inert until the organiser verifies a sending
 // domain (sbdnext.hu) with Resend and sets RESEND_API_KEY — see README
@@ -66,31 +72,56 @@ interface RegistrationEmailData {
   firstName: string;
   waitlisted: boolean;
   totalFee: number;
+  currency: "HUF" | "EUR";
   editUrl: string;
+  locale?: RegistrationLocale;
 }
 
 export async function sendRegistrationReceivedEmail(data: RegistrationEmailData): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
 
-  const subject = data.waitlisted
-    ? "SBD Next 2 — jelentkezésed várólistára került"
-    : "SBD Next 2 — jelentkezésed megérkezett";
+  const locale = data.locale ?? "hu";
+  const amount = formatAmount(data.totalFee, data.currency);
 
-  const body = data.waitlisted
-    ? `<p>Szia ${data.firstName}!</p>
-       <p>Megkaptuk a jelentkezésed a SBD Next 2 versenyre. Jelenleg a nevezői létszám betelt, ezért
-       <b>várólistára</b> kerültél. Amint hely szabadul fel, e-mailben jelentkezünk.</p>`
-    : `<p>Szia ${data.firstName}!</p>
-       <p>Megkaptuk a jelentkezésed a SBD Next 2 versenyre. A fizetendő összeg
-       <b>${formatHUF(data.totalFee)} Ft</b>. Ha a fizetés sikeres volt, hamarosan külön
-       visszaigazolást kapsz.</p>`;
+  const subject =
+    locale === "en"
+      ? data.waitlisted
+        ? "SBD Next 2 — you're on the waitlist"
+        : "SBD Next 2 — we've received your registration"
+      : data.waitlisted
+        ? "SBD Next 2 — jelentkezésed várólistára került"
+        : "SBD Next 2 — jelentkezésed megérkezett";
+
+  const editLabel = locale === "en" ? "View / edit your registration details" : "Nevezési adatok megtekintése / szerkesztése";
+  const contactLabel = locale === "en" ? "Questions? E-mail us:" : "Kérdés esetén írj nekünk:";
+  const editHintEn =
+    "Made a typo in your name, division or shirt size? You can fix it later via this link, until 2027-01-30 (shirt size until 2027-01-13).";
+  const editHintHu = "Elírtad a nevedet, az osztályod vagy a pólóméreted? Ezen a linken utólag is javíthatod, 2027. január 30-ig (a pólóméret 2027. január 13-ig).";
+
+  const body =
+    locale === "en"
+      ? data.waitlisted
+        ? `<p>Hi ${data.firstName}!</p>
+           <p>We've received your registration for SBD Next 2. Entry capacity is currently full, so
+           you've been placed on the <b>waitlist</b>. We'll e-mail you as soon as a spot opens up.</p>`
+        : `<p>Hi ${data.firstName}!</p>
+           <p>We've received your registration for SBD Next 2. The amount due is
+           <b>${amount}</b>. If your payment went through, you'll get a separate confirmation shortly.</p>`
+      : data.waitlisted
+        ? `<p>Szia ${data.firstName}!</p>
+           <p>Megkaptuk a jelentkezésed a SBD Next 2 versenyre. Jelenleg a nevezői létszám betelt, ezért
+           <b>várólistára</b> kerültél. Amint hely szabadul fel, e-mailben jelentkezünk.</p>`
+        : `<p>Szia ${data.firstName}!</p>
+           <p>Megkaptuk a jelentkezésed a SBD Next 2 versenyre. A fizetendő összeg
+           <b>${amount}</b>. Ha a fizetés sikeres volt, hamarosan külön
+           visszaigazolást kapsz.</p>`;
 
   await resend.emails.send({
     from: FROM,
     to: data.email,
     subject,
-    html: `${body}${buttonHtml(data.editUrl, "Nevezési adatok megtekintése / szerkesztése")}<p class="text-xs">Elírtad a nevedet, az osztályod vagy a pólóméreted? Ezen a linken utólag is javíthatod, 2027. január 30-ig (a pólóméret 2027. január 13-ig).</p><p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+    html: `${body}${buttonHtml(data.editUrl, editLabel)}<p class="text-xs">${locale === "en" ? editHintEn : editHintHu}</p><p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }
@@ -99,25 +130,45 @@ interface PaymentEmailData {
   email: string;
   firstName: string;
   totalFee: number;
+  currency: "HUF" | "EUR";
   editUrl?: string;
+  locale?: RegistrationLocale;
 }
 
 export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
 
+  const locale = data.locale ?? "hu";
+  const amount = formatAmount(data.totalFee, data.currency);
+  const editLabel = locale === "en" ? "View / edit your registration details" : "Nevezési adatok megtekintése / szerkesztése";
+  const contactLabel = locale === "en" ? "Questions? E-mail us:" : "Kérdés esetén írj nekünk:";
+
   const editSection = data.editUrl
-    ? `${buttonHtml(data.editUrl, "Nevezési adatok megtekintése / szerkesztése")}<p class="text-xs">Elírtad valamelyik adatodat? Ezen a linken utólag is javíthatod, 2027. január 30-ig (a pólóméret 2027. január 13-ig).</p>`
+    ? `${buttonHtml(data.editUrl, editLabel)}<p class="text-xs">${
+        locale === "en"
+          ? "Made a typo in your details? You can fix it later via this link, until 2027-01-30 (shirt size until 2027-01-13)."
+          : "Elírtad valamelyik adatodat? Ezen a linken utólag is javíthatod, 2027. január 30-ig (a pólóméret 2027. január 13-ig)."
+      }</p>`
     : "";
 
   await resend.emails.send({
     from: FROM,
     to: data.email,
-    subject: "SBD Next 2 — a fizetésed megérkezett, nevezésed véglegesítve",
-    html: `<p>Szia ${data.firstName}!</p>
-       <p>A(z) <b>${formatHUF(data.totalFee)} Ft</b> befizetésed megérkezett, a nevezésed
+    subject:
+      locale === "en"
+        ? "SBD Next 2 — payment received, your registration is confirmed"
+        : "SBD Next 2 — a fizetésed megérkezett, nevezésed véglegesítve",
+    html:
+      locale === "en"
+        ? `<p>Hi ${data.firstName}!</p>
+       <p>Your payment of <b>${amount}</b> has been received, your registration is
+       <b>confirmed</b>. See you at the competition!</p>
+       ${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`
+        : `<p>Szia ${data.firstName}!</p>
+       <p>A(z) <b>${amount}</b> befizetésed megérkezett, a nevezésed
        <b>véglegesítve</b> van. Találkozunk a versenyen!</p>
-       ${editSection}<p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+       ${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }

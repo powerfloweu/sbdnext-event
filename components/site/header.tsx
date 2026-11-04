@@ -96,7 +96,7 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale 
       </a>
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-[72px] sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5" aria-label={t.homeAria}>
+          <Link href={locale === "en" ? "/en" : "/"} className="flex items-center gap-2.5" aria-label={t.homeAria}>
             <Image
               src="/sbd_next_logo_transparent.png"
               alt=""
