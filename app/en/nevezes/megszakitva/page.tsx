@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EVENT } from "@/config/event";
+
+export const metadata: Metadata = {
+  title: "SBD Next II – Payment interrupted",
+  description: "Your SBD Next II registration was saved, but the payment didn't go through.",
+};
 
 export default async function EnglishCancelledPage({
   searchParams,

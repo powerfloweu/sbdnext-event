@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,12 @@ import { EVENT } from "@/config/event";
 import { getPhase } from "@/lib/phase";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "SBD Next II – Open Powerlifting Competition | Thor Gym, Budapest, 13–14 February 2027",
+  description:
+    "SBD Next – an IPF-rules powerlifting competition for novice and competitive lifters at Thor Gym, Budapest. Full power meet with a media package and a custom SBD competition shirt.",
+};
 
 // This page mirrors app/page.tsx, translated. It's only fully translated for
 // the "announced" teaser phase, since that's the only phase actually live

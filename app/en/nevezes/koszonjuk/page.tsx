@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EVENT } from "@/config/event";
+
+export const metadata: Metadata = {
+  title: "SBD Next II – Registration confirmed",
+  description: "Your SBD Next II registration has been received.",
+};
 
 export default async function EnglishThankYouPage({
   searchParams,
