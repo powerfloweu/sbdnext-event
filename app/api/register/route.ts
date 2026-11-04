@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { EVENT } from "@/config/event";
 import { getAllLeaderboards } from "@/lib/sheets";
-import { registrationSchema } from "@/lib/validation/registration";
+import { buildRegistrationSchema, type RegistrationLocale } from "@/lib/validation/registration";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getPhase } from "@/lib/phase";
 import { isEarlySubscriber } from "@/lib/early-access";
@@ -59,21 +59,32 @@ interface CheckoutSessionParams {
   entryFee: number;
   wantsShirt: boolean;
   premiumMedia: boolean;
+  premiumMediaFee: number;
+  currency: "HUF" | "EUR";
+  locale: RegistrationLocale;
 }
 
 async function createCheckoutSession(params: CheckoutSessionParams): Promise<string | null> {
   const stripe = getStripe();
   if (!stripe) return null;
 
+  const currency = params.currency.toLowerCase();
+  const entryName =
+    params.locale === "en"
+      ? params.wantsShirt
+        ? "SBD Next 2 — entry + shirt"
+        : "SBD Next 2 — entry"
+      : params.wantsShirt
+        ? "SBD Next 2 — nevezés + póló"
+        : "SBD Next 2 — nevezés";
+
   const lineItems = [
     {
       quantity: 1,
       price_data: {
-        currency: "huf",
-        unit_amount: params.entryFee * 100, // HUF is a two-decimal currency for charges
-        product_data: {
-          name: params.wantsShirt ? "SBD Next 2 — nevezés + póló" : "SBD Next 2 — nevezés",
-        },
+        currency,
+        unit_amount: params.entryFee * 100, // both HUF and EUR are charged as a two-decimal amount on this account
+        product_data: { name: entryName },
       },
     },
   ];
@@ -81,12 +92,17 @@ async function createCheckoutSession(params: CheckoutSessionParams): Promise<str
     lineItems.push({
       quantity: 1,
       price_data: {
-        currency: "huf",
-        unit_amount: EVENT.fees.premiumMedia * 100,
-        product_data: { name: "SBD Next 2 — Prémium média csomag" },
+        currency,
+        unit_amount: params.premiumMediaFee * 100,
+        product_data: {
+          name: params.locale === "en" ? "SBD Next 2 — Premium media package" : "SBD Next 2 — Prémium média csomag",
+        },
       },
     });
   }
+
+  const koszonjukPath = params.locale === "en" ? "/en/nevezes/koszonjuk" : "/nevezes/koszonjuk";
+  const megszakitvaPath = params.locale === "en" ? "/en/nevezes/megszakitva" : "/nevezes/megszakitva";
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -94,8 +110,8 @@ async function createCheckoutSession(params: CheckoutSessionParams): Promise<str
     customer_email: params.email,
     client_reference_id: params.registrationId,
     metadata: { registrationId: params.registrationId },
-    success_url: `${EVENT.siteUrl}/nevezes/koszonjuk?rid=${params.registrationId}`,
-    cancel_url: `${EVENT.siteUrl}/nevezes/megszakitva`,
+    success_url: `${EVENT.siteUrl}${koszonjukPath}?rid=${params.registrationId}`,
+    cancel_url: `${EVENT.siteUrl}${megszakitvaPath}`,
   });
 
   return session.url;

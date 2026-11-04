@@ -2,6 +2,10 @@ export function formatHUF(amount: number): string {
   return new Intl.NumberFormat("hu-HU").format(amount);
 }
 
+export function formatEUR(amount: number): string {
+  return new Intl.NumberFormat("en-IE").format(amount);
+}
+
 export function formatKg(value: number): string {
   return `${new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 1 }).format(value)} kg`;
 }

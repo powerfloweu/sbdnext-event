@@ -76,6 +76,15 @@ export const EVENT = {
     premiumMedia: 24990,
   },
 
+  // EUR pricing for foreign athletes (English registration flow). Confirmed
+  // by the organiser 2026-11-04: entry 69€, +shirt 99€, +premium media
+  // 137€, +shirt+premium 167€ (all "99-ending" per D).
+  feesEur: {
+    entryBase: 69,
+    entryWithShirt: 99,
+    premiumMedia: 68,
+  },
+
   // Entry + shirt + premium-media are now built as a Stripe Checkout Session
   // (dynamic line items) instead of static Payment Links, since pricing has
   // two independent add-on dimensions (shirt, premium media). Needs
