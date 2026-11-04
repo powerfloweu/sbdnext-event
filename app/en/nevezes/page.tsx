@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
@@ -6,6 +7,11 @@ import { Button } from "@/components/ui/button";
 import { RegistrationWizard } from "@/components/forms/registration-wizard/registration-wizard";
 
 export const revalidate = 0;
+
+export const metadata: Metadata = {
+  title: "SBD Next II – Registration",
+  description: "Register for SBD Next II, 13–14 February 2027 at Thor Gym, Budapest.",
+};
 
 // English registration, gated by a secret invite code (?code=...) given out
 // by D to a specific invited group (e.g. foreign athletes) ahead of the
