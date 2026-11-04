@@ -112,6 +112,9 @@ export function buildRegistrationSchema(locale: RegistrationLocale = "hu") {
 // exports so the existing (hu-only) call sites don't need to change.
 const hu = buildRegistrationSchema("hu");
 export const registrationSchema = hu.schema;
+export const step1Schema = hu.step1Schema;
+export const step2Schema = hu.step2Schema;
+export const step3Schema = hu.step3Schema;
 export type RegistrationInput = z.infer<typeof registrationSchema>;
 
 export const STEP_FIELDS = [

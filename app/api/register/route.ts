@@ -12,6 +12,22 @@ import { generateEditToken } from "@/lib/edit-token";
 import { isAdminTestActive } from "@/lib/admin-test";
 import { uploadFacePhoto } from "@/lib/face-photo";
 
+// Lets a specific group (named by D, e.g. invited foreign athletes) register
+// for real — counted toward capacity, charged for real — on a preview
+// deployment before the public opening, without needing to go live. Set as
+// a comma-separated list of secret codes in the Preview-scoped
+// FOREIGN_INVITE_CODES env var on Vercel; unset means the gate never opens.
+// See app/api/register/route.ts's use below and the project thread
+// "Ellenőrizni az angol nevezési flót" (2026-11-04) for why this exists.
+function isValidInviteCode(code: string | null): boolean {
+  if (!code) return false;
+  const codes = (process.env.FOREIGN_INVITE_CODES ?? "")
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+  return codes.includes(code);
+}
+
 // Kept from the live site: this is where registrations have always been
 // forwarded (Google Sheets, via Make). Registrations are now also inserted
 // into Supabase (the new system of record — see supabase/migrations), but
@@ -62,6 +78,7 @@ interface CheckoutSessionParams {
   premiumMediaFee: number;
   currency: "HUF" | "EUR";
   locale: RegistrationLocale;
+  inviteCode: string | null;
 }
 
 async function createCheckoutSession(params: CheckoutSessionParams): Promise<string | null> {
@@ -103,6 +120,11 @@ async function createCheckoutSession(params: CheckoutSessionParams): Promise<str
 
   const koszonjukPath = params.locale === "en" ? "/en/nevezes/koszonjuk" : "/nevezes/koszonjuk";
   const megszakitvaPath = params.locale === "en" ? "/en/nevezes/megszakitva" : "/nevezes/megszakitva";
+  // The invite code only lives in the URL, not in any cookie/session, so it
+  // has to be carried through the cancel redirect too — otherwise "try
+  // payment again" on the EN cancelled page would bounce an invited athlete
+  // back into the "registration hasn't started yet" notice.
+  const codeQuery = params.inviteCode ? `&code=${encodeURIComponent(params.inviteCode)}` : "";
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -111,7 +133,7 @@ async function createCheckoutSession(params: CheckoutSessionParams): Promise<str
     client_reference_id: params.registrationId,
     metadata: { registrationId: params.registrationId },
     success_url: `${EVENT.siteUrl}${koszonjukPath}?rid=${params.registrationId}`,
-    cancel_url: `${EVENT.siteUrl}${megszakitvaPath}`,
+    cancel_url: `${EVENT.siteUrl}${megszakitvaPath}?rid=${params.registrationId}${codeQuery}`,
   });
 
   return session.url;
@@ -138,14 +160,20 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const parsed = registrationSchema.safeParse(body);
+  const raw = body as Record<string, unknown>;
+  const locale: RegistrationLocale = raw.locale === "en" ? "en" : "hu";
+  const inviteCode = typeof raw.inviteCode === "string" ? raw.inviteCode : null;
+  const isInvited = isValidInviteCode(inviteCode);
+  const currency: "HUF" | "EUR" = locale === "en" ? "EUR" : "HUF";
+  const fees = locale === "en" ? EVENT.feesEur : EVENT.fees;
+
+  const parsed = buildRegistrationSchema(locale).schema.safeParse(body);
   if (!parsed.success) {
     const fieldErrors = parsed.error.flatten().fieldErrors;
     return NextResponse.json({ ok: false, error: "validation", fieldErrors }, { status: 400 });
   }
 
   const data = parsed.data;
-  const raw = body as Record<string, unknown>;
   const utm = typeof raw.utm === "string" ? raw.utm : "";
   const facePhotoDataUrl = typeof raw.facePhoto === "string" ? raw.facePhoto : null;
 
@@ -169,10 +197,10 @@ export async function POST(req: NextRequest) {
   // Vercel Preview submission: flagged is_preview_test, no Sheet webhook,
   // no real Stripe charge.
   const adminTest = phase !== "registration" ? await isAdminTestActive() : false;
-  if (phase !== "registration" && phase !== "early-access" && !adminTest) {
+  if (phase !== "registration" && phase !== "early-access" && !adminTest && !isInvited) {
     return NextResponse.json({ ok: false, error: "registration_closed" }, { status: 403 });
   }
-  if (phase === "early-access" && !adminTest) {
+  if (phase === "early-access" && !adminTest && !isInvited) {
     const subscribed = supabaseAdmin ? await isEarlySubscriber(supabaseAdmin, data.email.trim()) : false;
     if (!subscribed) {
       return NextResponse.json({ ok: false, error: "early_access_required" }, { status: 403 });
@@ -185,8 +213,8 @@ export async function POST(req: NextRequest) {
   const registrationId = crypto.randomUUID();
   const editToken = generateEditToken();
   const fullName = `${data.lastName.trim()} ${data.firstName.trim()}`.trim();
-  const entryFee = data.wantsShirt ? EVENT.fees.entryWithShirt : EVENT.fees.entryBase;
-  const totalFee = entryFee + (data.premiumMedia ? EVENT.fees.premiumMedia : 0);
+  const entryFee = data.wantsShirt ? fees.entryWithShirt : fees.entryBase;
+  const totalFee = entryFee + (data.premiumMedia ? fees.premiumMedia : 0);
 
   const facePhotoPath =
     facePhotoDataUrl && supabaseAdmin ? await uploadFacePhoto(supabaseAdmin, registrationId, facePhotoDataUrl) : null;
@@ -218,11 +246,17 @@ export async function POST(req: NextRequest) {
       edit_token: editToken,
       utm,
       raw: data,
+      locale,
+      currency,
       // Preview deployments (e.g. this test branch) share the same Supabase
       // project as production — flag these rows so they never count toward
       // the real capacity cap and can be told apart from genuine entries.
-      // An admin-test submission on production gets the same flag.
-      is_preview_test: process.env.VERCEL_ENV === "preview" || adminTest,
+      // An admin-test submission on production gets the same flag. A valid
+      // invite code (see isValidInviteCode above) is the one exception: it
+      // marks a real, capacity-counted registration even on a preview
+      // deployment, for a group D explicitly invited ahead of the public
+      // opening.
+      is_preview_test: (process.env.VERCEL_ENV === "preview" || adminTest) && !isInvited,
     });
     if (error) {
       console.error("Supabase registration insert failed:", error);
@@ -282,6 +316,8 @@ export async function POST(req: NextRequest) {
       firstName: data.firstName,
       waitlisted,
       totalFee,
+      currency,
+      locale,
       editUrl: `${EVENT.siteUrl}/nevezes/szerkesztes/${registrationId}?token=${editToken}`,
     });
   } catch (err) {
@@ -305,6 +341,10 @@ export async function POST(req: NextRequest) {
         entryFee,
         wantsShirt: data.wantsShirt,
         premiumMedia: data.premiumMedia,
+        premiumMediaFee: fees.premiumMedia,
+        currency,
+        locale,
+        inviteCode,
       });
 
   // Demo mode: no STRIPE_SECRET_KEY configured yet. The wizard falls back

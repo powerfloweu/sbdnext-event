@@ -45,7 +45,90 @@ type Errs = FieldErrors<RegistrationInput>;
 
 // All user-facing copy for the wizard, keyed by locale. See
 // lib/validation/registration.ts for the matching validation messages.
-const STRINGS = {
+// Typed explicitly (rather than inferred from the hu object) so hu and en —
+// which otherwise infer incompatible literal string types — are assignable
+// to the same WizardStrings parameter type throughout the step components.
+interface WizardStrings {
+  facePhotoLabel: string;
+  facePhotoHint: string;
+  facePhotoAlt: string;
+  facePhotoSelectAria: string;
+  facePhotoReplace: string;
+  facePhotoSelect: string;
+  facePhotoProcessing: string;
+  facePhotoTypeError: string;
+  facePhotoSizeError: (mb: number) => string;
+  facePhotoProcessError: string;
+  lastName: string;
+  firstName: string;
+  email: string;
+  birthYear: string;
+  birthYearHint: string;
+  sex: string;
+  selectPlaceholder: string;
+  priorLookupSearching: string;
+  priorLookupButton: string;
+  priorLookupFound: string;
+  priorLookupNotFound: string;
+  priorLookupError: string;
+  division: string;
+  divisionNovice: "Újonc";
+  divisionNoviceDesc: string;
+  divisionCompetitor: "Versenyző";
+  divisionCompetitorDesc: string;
+  divisionCompetitorLink: string;
+  club: string;
+  clubHint: string;
+  bodyweight: string;
+  bodyweightHint: string;
+  kg: string;
+  openersLegend: string;
+  openerSquat: string;
+  openerBench: string;
+  openerDeadlift: string;
+  openerTotal: string;
+  glPoints: string;
+  glPointsHint: string;
+  mcText: string;
+  mcTextPlaceholder: string;
+  optional: string;
+  shirtWantLabel: (price: string) => string;
+  shirtWantHint1: string;
+  shirtWantHint2: string;
+  shirtCut: string;
+  shirtSize: string;
+  notes: string;
+  notesPlaceholder: string;
+  premiumLabel: (price: string) => string;
+  premiumHint: string;
+  summaryName: string;
+  summaryEmail: string;
+  summaryCategory: string;
+  summaryWeightTotal: string;
+  summaryShirt: string;
+  edit: string;
+  entryFeeLabel: (withShirt: boolean) => string;
+  premiumMediaLabel: string;
+  payable: string;
+  consentPrefix: string;
+  consentPrivacy: string;
+  consentMiddle: string;
+  consentInvitation: string;
+  consentSuffix: string;
+  draftRestored: string;
+  stepTitles: readonly string[];
+  next: string;
+  submitting: string;
+  pay: (price: string) => string;
+  draftSavedHint: string;
+  stripeHint: string;
+  invalidSubmit: string;
+  earlyAccessError: string;
+  registrationClosedError: string;
+  genericSubmitError: string;
+}
+
+const STRINGS: Record<RegistrationLocale, WizardStrings> = {
   hu: {
     facePhotoLabel: "Arcfotó",
     facePhotoHint:
@@ -254,7 +337,7 @@ function PriorYearLookup({
 }: {
   control: Ctrl;
   onPrefill: (data: PriorYearPrefill) => void;
-  t: (typeof STRINGS)["hu"];
+  t: WizardStrings;
 }) {
   const email = useWatch({ control, name: "email" });
   const lastName = useWatch({ control, name: "lastName" });
@@ -316,7 +399,7 @@ function Step1({
   errors: Errs;
   facePhoto: FacePhotoState;
   onPrefill: (data: PriorYearPrefill) => void;
-  t: (typeof STRINGS)["hu"];
+  t: WizardStrings;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -452,7 +535,7 @@ function useClubOptions(): string[] {
   return clubs;
 }
 
-function Step2({ control, errors, t }: { control: Ctrl; errors: Errs; t: (typeof STRINGS)["hu"] }) {
+function Step2({ control, errors, t }: { control: Ctrl; errors: Errs; t: WizardStrings }) {
   const clubOptions = useClubOptions();
   return (
     <div className="flex flex-col gap-5">
@@ -547,7 +630,7 @@ function Step3({
   watchOpeners: { squat: string; bench: string; deadlift: string };
   sex: RegistrationInput["sex"] | undefined;
   bodyweight: string | undefined;
-  t: (typeof STRINGS)["hu"];
+  t: WizardStrings;
 }) {
   const total = num(watchOpeners.squat) + num(watchOpeners.bench) + num(watchOpeners.deadlift);
   const glPoints =
@@ -644,7 +727,7 @@ function Step4({
   control: Ctrl;
   errors: Errs;
   wantsShirt: boolean;
-  t: (typeof STRINGS)["hu"];
+  t: WizardStrings;
   formatPrice: (amount: number) => string;
   fees: { entryBase: number; entryWithShirt: number; premiumMedia: number };
 }) {
@@ -752,6 +835,7 @@ function Summary({
   showConsentError,
   t,
   formatPrice,
+  fees,
 }: {
   data: RegistrationInput;
   errors: Errs;
@@ -763,7 +847,7 @@ function Summary({
   // rendered until now). Only show it once the user has actually tried to
   // submit, not just because it's sitting in resolver state.
   showConsentError: boolean;
-  t: (typeof STRINGS)["hu"];
+  t: WizardStrings;
   formatPrice: (amount: number) => string;
   fees: { entryBase: number; entryWithShirt: number; premiumMedia: number };
 }) {
@@ -862,7 +946,8 @@ const MAX_FACE_PHOTO_MB = 20;
 export function RegistrationWizard({
   isAdminTest = false,
   locale = "hu",
-}: { isAdminTest?: boolean; locale?: RegistrationLocale } = {}) {
+  inviteCode,
+}: { isAdminTest?: boolean; locale?: RegistrationLocale; inviteCode?: string } = {}) {
   const router = useRouter();
   const t = STRINGS[locale];
   const fees = locale === "en" ? EVENT.feesEur : EVENT.fees;
@@ -1066,6 +1151,7 @@ export function RegistrationWizard({
         body: JSON.stringify({
           ...data,
           locale,
+          inviteCode,
           utm: typeof window !== "undefined" ? window.location.search : "",
           facePhoto: facePhotoDataUrl,
         }),
@@ -1076,8 +1162,6 @@ export function RegistrationWizard({
       }
       clearDraft();
       const koszonjukPath = locale === "en" ? "/en/nevezes/koszonjuk" : "/nevezes/koszonjuk";
-      const megszakitvaPath = locale === "en" ? "/en/nevezes/megszakitva" : "/nevezes/megszakitva";
-      void megszakitvaPath; // used by the API's Stripe cancel_url, not here
       if (json.waitlisted) {
         router.push(`${koszonjukPath}?rid=${json.registrationId}&waitlist=1`);
         return;
