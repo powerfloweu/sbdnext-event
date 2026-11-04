@@ -32,7 +32,7 @@ export function FeesSection() {
             </div>
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>Mindenki kap ingyenesen letölthető fotókat magáról a versenyen</li>
-              <li>A póló saját névvel/felirattal is kérhető, felár nélkül</li>
+              <li>A póló személyre szóló</li>
             </ul>
           </CardContent>
         </Card>
@@ -40,7 +40,9 @@ export function FeesSection() {
         <Card>
           <CardContent className="flex items-center justify-between gap-3 p-5">
             <div className="flex flex-col gap-0.5">
-              <span className="font-semibold text-foreground">Prémium média csomag</span>
+              <Link href="/premium-media" className="font-semibold text-foreground underline">
+                Prémium média csomag
+              </Link>
               <span className="text-xs text-muted-foreground">
                 3 fotó + 3 videó, kiemelt válogatás
               </span>
