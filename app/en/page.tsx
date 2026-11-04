@@ -221,8 +221,8 @@ export default function EnglishPage() {
               </div>
               <div>
                 <b>Póló fazon / méret *</b> – T-shirt cut (women&apos;s / men&apos;s) and size
-                (XS–4XL). Only required if you chose the Entry + shirt package — that shirt is
-                name-printed with your name.
+                (XS–4XL). Only required if you chose the Entry + shirt package. The shirt is
+                unique and name-printed.
               </div>
               <div>
                 <b>Prémium média csomag</b> – Optional add-on: 3 photos + 3 videos, priority

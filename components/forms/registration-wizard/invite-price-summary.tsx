@@ -35,8 +35,7 @@ export function InvitePriceSummary() {
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        Basic entry doesn&apos;t include a shirt; in the Entry + shirt package the shirt is name-printed with your
-        name.
+        Basic entry doesn&apos;t include a shirt. The shirt is unique and name-printed.
       </p>
       <div className="flex flex-wrap gap-3 border-t border-border pt-3 text-xs">
         <a

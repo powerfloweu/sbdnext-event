@@ -28,7 +28,7 @@ const FAQ = [
   },
   {
     q: "Mi van a nevezési díjban?",
-    a: "Media csomag (profi fotók rólad). A póló csak a Nevezés + póló csomagban jár, külön felár ellenében, és névre szóló. Prémium média csomag is külön vásárolható.",
+    a: "Media csomag (profi fotók rólad). A póló csak a Nevezés + póló csomagban jár, külön felár ellenében. A póló egyedi, névre szóló. Prémium média csomag is külön vásárolható.",
   },
   {
     q: "Lesz élő közvetítés?",

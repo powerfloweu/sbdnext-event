@@ -15,7 +15,7 @@ const STRINGS = {
     entryWithShirt: "Nevezés + póló",
     perks: [
       "Mindenki kap ingyenesen letölthető fotókat magáról a versenyen",
-      "A Nevezés + póló csomagban a póló névre szóló, rajta a neveddel",
+      "A póló egyedi, névre szóló.",
     ],
     premiumMedia: "Prémium média csomag",
     premiumMediaHint: "3 fotó + 3 videó, kiemelt válogatás",
@@ -40,7 +40,7 @@ const STRINGS = {
     entryWithShirt: "Entry + shirt",
     perks: [
       "Everyone gets free downloadable photos of themselves from the competition",
-      "In the Entry + shirt package, the shirt is name-printed with your name",
+      "The shirt is unique and name-printed.",
     ],
     premiumMedia: "Premium media package",
     premiumMediaHint: "3 photos + 3 videos, hand-picked selection",
