@@ -9,6 +9,7 @@ import { RegistrationFlowchart } from "@/components/admin/registration-flowchart
 import { WeightClassStats } from "@/components/admin/weight-class-stats";
 import { ResultsAdmin } from "@/components/admin/results-admin";
 import { AdminTabs } from "@/components/admin/admin-tabs";
+import { FeedbackAnalysis } from "@/components/admin/feedback-analysis";
 import { AdminTestTab } from "@/components/admin/admin-test-tab";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
@@ -77,6 +78,16 @@ interface EventFeedbackRow {
   email: string | null;
   participation_role: string | null;
   nps: number | null;
+  music: number | null;
+  lights: number | null;
+  mood: number | null;
+  athlete_experience: number | null;
+  schedule_score: number | null;
+  flow: number | null;
+  venue: number | null;
+  staff: number | null;
+  warmup_area: number | null;
+  attend_next: string | null;
   best: string | null;
   improve: string | null;
   comment: string | null;
@@ -215,7 +226,9 @@ export default async function AdminPage({
       .returns<{ sex: string; division: string; bodyweight: number | null }[]>(),
     admin
       .from("event_feedback")
-      .select("id, source, submitted_at, name, email, participation_role, nps, best, improve, comment, allow_quote")
+      .select(
+        "id, source, submitted_at, name, email, participation_role, nps, music, lights, mood, athlete_experience, schedule_score, flow, venue, staff, warmup_area, attend_next, best, improve, comment, allow_quote"
+      )
       .eq("source", "sbd_next_1_form")
       .order("submitted_at", { ascending: false })
       .returns<EventFeedbackRow[]>(),
@@ -549,7 +562,9 @@ export default async function AdminPage({
 
   const feedbackTab = (
     <section>
-      <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({unifiedFeedback.length})</h2>
+      <FeedbackAnalysis sbdNext1Rows={sbdNext1Feedback} newsletterCount={(feedbackSignups ?? []).length} />
+
+      <h2 className="mb-3 text-lg font-semibold">Összes válasz ({unifiedFeedback.length})</h2>
       <p className="mb-3 text-sm text-muted-foreground">
         A hírlevél-feliratkozók válasza (SBD Next 2) és az SBD Next 1 szervezői visszajelzés-űrlapjának importált
         válaszai együtt, forrás szerint jelölve.
