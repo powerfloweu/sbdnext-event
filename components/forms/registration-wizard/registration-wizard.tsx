@@ -923,7 +923,7 @@ function Summary({
             />
             <span>
               {t.consentPrefix}
-              <a href="/adatkezeles" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+              <a href={locale === "en" ? "/en/adatkezeles" : "/adatkezeles"} target="_blank" rel="noopener noreferrer" className="text-primary underline">
                 {t.consentPrivacy}
               </a>
               {t.consentMiddle}
