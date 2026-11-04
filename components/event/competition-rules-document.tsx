@@ -1,6 +1,7 @@
 import { ShieldCheck, Trophy, MapPin, Gavel, Users, Gift, Flag } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { WeightClassTable } from "@/components/event/weight-class-table";
 import { EVENT } from "@/config/event";
 import { formatHUF } from "@/lib/format";
 
@@ -51,10 +52,11 @@ export function CompetitionRulesDocument() {
           {/* eslint-disable @next/next/no-img-element */}
           <img src="/sbd_logo_transparent.png" alt="SBD Hungary" className="h-10 w-auto object-contain sm:h-12" />
           <img src="/powerflow_logo.png" alt="PowerFlow" className="h-10 w-auto object-contain sm:h-12" />
-          <span className="flex items-center gap-2">
-            <img src="/thor_gym_logo.png" alt="" className="h-9 w-auto object-contain sm:h-10" />
-            <span className="text-sm font-bold uppercase tracking-wide text-foreground">Thor Gym Újbuda</span>
-          </span>
+          <img
+            src="/thor_gym_logo.png"
+            alt="Thor Gym Újbuda"
+            className="h-9 w-auto rounded-md bg-white/90 object-contain px-2 py-1 sm:h-10"
+          />
           {/* eslint-enable @next/next/no-img-element */}
         </div>
       </div>
@@ -154,37 +156,38 @@ export function CompetitionRulesDocument() {
         <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-foreground">
           A MERSZ I. osztályú szintek (Open)
         </p>
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-xs sm:text-sm">
-            <thead>
-              <tr className="bg-muted/50 text-left text-foreground">
-                <th className="px-3 py-2 font-semibold">Nők (kg)</th>
-                <th className="px-3 py-2 font-semibold">Összetett (kg)</th>
-                <th className="px-3 py-2 font-semibold">Férfiak (kg)</th>
-                <th className="px-3 py-2 font-semibold">Összetett (kg)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {[
-                ["47", "250", "59", "480"],
-                ["52", "275", "66", "515"],
-                ["57", "300", "74", "545"],
-                ["63", "320", "83", "620"],
-                ["69", "340", "93", "650"],
-                ["76", "360", "105", "680"],
-                ["84", "375", "120", "690"],
-                ["84+", "380", "120+", "700"],
-              ].map((row) => (
-                <tr key={row[0]}>
-                  <td className="px-3 py-1.5 tabular-nums">{row[0]}</td>
-                  <td className="px-3 py-1.5 tabular-nums">{row[1]}</td>
-                  <td className="px-3 py-1.5 tabular-nums">{row[2]}</td>
-                  <td className="px-3 py-1.5 tabular-nums">{row[3]}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <WeightClassTable
+          groups={[
+            {
+              label: "Nők",
+              rows: [
+                ["47", "250"],
+                ["52", "275"],
+                ["57", "300"],
+                ["63", "320"],
+                ["69", "340"],
+                ["76", "360"],
+                ["84", "375"],
+                ["84+", "380"],
+              ],
+            },
+            {
+              label: "Férfiak",
+              rows: [
+                ["59", "480"],
+                ["66", "515"],
+                ["74", "545"],
+                ["83", "620"],
+                ["93", "650"],
+                ["105", "680"],
+                ["120", "690"],
+                ["120+", "700"],
+              ],
+            },
+          ]}
+          weightLabel="Testsúly (kg)"
+          totalLabel="Összetett (kg)"
+        />
       </DocSection>
 
       <DocSection icon={ShieldCheck} title="Bírók és csúcsok">
