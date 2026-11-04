@@ -64,7 +64,7 @@ export function RegistrationTeaser({
               {ctaLabel}
             </a>
           </FogCard>
-          {locale === "hu" && <Testimonials />}
+          <Testimonials locale={locale} />
         </div>
       </Section>
     );

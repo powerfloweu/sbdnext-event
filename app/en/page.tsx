@@ -9,7 +9,7 @@ import { SponsorGrid } from "@/components/site/sponsor-grid";
 import { FogGlow } from "@/components/site/fog-glow";
 import { Hero } from "@/components/event/hero";
 import { RegistrationTeaser } from "@/components/event/registration-teaser";
-import { FeesTeaser } from "@/components/event/fees-teaser";
+import { FeesSection } from "@/components/event/fees-section";
 import { VenueSection } from "@/components/event/venue-section";
 import { PhotoStrip } from "@/components/event/photo-strip";
 import { MoodVideoRow } from "@/components/event/mood-video";
@@ -64,7 +64,7 @@ export default function EnglishPage() {
               locale="en"
             />
 
-            <FeesTeaser locale="en" />
+            <FeesSection locale="en" />
 
             <MoodVideoRow locale="en" />
 
@@ -103,12 +103,13 @@ export default function EnglishPage() {
           </Link>
           <h1 className="text-2xl font-bold">SBD Next – English information for athletes</h1>
           <p className="text-sm text-foreground/90">
-            This page explains the main details of the event in English and helps you fill out
-            the (Hungarian) registration form correctly.
+            This page explains the main details of the event in English. If you were sent a
+            personal English registration link, use that — it opens a registration form in
+            English with EUR pricing. Otherwise, the registration form on the main site is in
+            Hungarian only; the glossary below helps you fill it out.
           </p>
           <p className="text-xs text-muted-foreground">
-            The registration form itself is in Hungarian only. If you are unsure about anything,
-            contact us at{" "}
+            If you are unsure about anything, contact us at{" "}
             <a href={`mailto:${EVENT.contact.email}`} className="text-primary underline">
               {EVENT.contact.email}
             </a>
@@ -150,7 +151,7 @@ export default function EnglishPage() {
           <CardContent className="flex flex-col gap-4 p-6 text-sm">
             <div className="flex items-center gap-2">
               <Info className="size-4 text-primary" aria-hidden="true" />
-              <h2 className="text-base font-semibold">How to fill out the registration form</h2>
+              <h2 className="text-base font-semibold">How to fill out the Hungarian registration form</h2>
             </div>
             <p className="text-xs text-muted-foreground">
               Below: the original Hungarian label → its English meaning. Fields marked{" "}
@@ -202,8 +203,9 @@ export default function EnglishPage() {
 
         <section className="flex flex-col items-center gap-3 text-center text-sm">
           <p className="text-foreground/90">
-            When ready, go to the main page and complete the registration form. If you end up on
-            the waitlist, you will be contacted by e-mail before you have to pay.
+            No personal English link? When ready, go to the main page and complete the (Hungarian)
+            registration form using the glossary above. If you end up on the waitlist, you will be
+            contacted by e-mail before you have to pay.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg">
