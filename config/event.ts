@@ -87,6 +87,9 @@ export const EVENT = {
     entryBase: 69,
     entryWithShirt: 99,
     premiumMedia: 68,
+    // Confirmed by the organiser 2026-11-04: spectator ticket is 3 € for
+    // the English site (was previously shown in HUF only).
+    spectator: 3,
   },
 
   // Entry + shirt + premium-media are now built as a Stripe Checkout Session
