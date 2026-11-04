@@ -81,7 +81,7 @@ export function PremiumMediaPreview({ locale = "hu" }: { locale?: RegistrationLo
       </div>
 
       <Link
-        href="/premium-media"
+        href={locale === "en" ? "/en/premium-media" : "/premium-media"}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"

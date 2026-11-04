@@ -21,8 +21,8 @@ const STRINGS = {
     premiumMediaHint: "3 fotó + 3 videó, kiemelt válogatás",
     spectator: "Nézői jegy",
     spectatorHint: "A helyszínen, készpénz vagy kártya",
-    premiumUpsell: "Már neveztél, de szeretnéd utólag megvásárolni a prémium média csomagot?",
-    premiumUpsellCta: "Prémium média csomag vásárlása",
+    premiumUpsell: "Kíváncsi vagy a prémium média csomagra?",
+    premiumUpsellCta: "Több infó a prémium média csomagról",
     resultsNote: (
       <>
         Az SBD Next I eredményei megtekinthetők a fenti menüben, az{" "}
@@ -46,8 +46,8 @@ const STRINGS = {
     premiumMediaHint: "3 photos + 3 videos, hand-picked selection",
     spectator: "Spectator ticket",
     spectatorHint: "At the venue, cash or card",
-    premiumUpsell: "Already registered, but want to add the premium media package afterwards?",
-    premiumUpsellCta: "Buy the premium media package",
+    premiumUpsell: "Curious about the premium media package?",
+    premiumUpsellCta: "More info about the premium media package",
     resultsNote: (
       <>
         Last year&apos;s (SBD Next I) results can be viewed in the menu above, under{" "}
@@ -65,6 +65,7 @@ export function FeesSection({ locale = "hu" }: { locale?: "hu" | "en" }) {
   const fees = locale === "en" ? EVENT.feesEur : EVENT.fees;
   const amount = (value: number) => (locale === "en" ? `€${formatEUR(value)}` : `${formatHUF(value)} ${EVENT.fees.currency}`);
   const shirtAddon = fees.entryWithShirt - fees.entryBase;
+  const premiumMediaHref = locale === "en" ? "/en/premium-media" : "/premium-media";
 
   return (
     <Section id="fees" icon={TicketCheck} eyebrow={t.eyebrow} title={t.title}>
@@ -96,7 +97,7 @@ export function FeesSection({ locale = "hu" }: { locale?: "hu" | "en" }) {
         <Card>
           <CardContent className="flex items-center justify-between gap-3 p-5">
             <div className="flex flex-col gap-0.5">
-              <Link href="/premium-media" className="font-semibold text-foreground underline">
+              <Link href={premiumMediaHref} className="font-semibold text-foreground underline">
                 {t.premiumMedia}
               </Link>
               <span className="text-xs text-muted-foreground">{t.premiumMediaHint}</span>
@@ -121,7 +122,7 @@ export function FeesSection({ locale = "hu" }: { locale?: "hu" | "en" }) {
           <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
             <p className="text-sm text-muted-foreground">{t.premiumUpsell}</p>
             <Button asChild variant="secondary">
-              <Link href="/premium-media">{t.premiumUpsellCta}</Link>
+              <Link href={premiumMediaHref}>{t.premiumUpsellCta}</Link>
             </Button>
           </CardContent>
         </Card>
