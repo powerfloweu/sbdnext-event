@@ -37,12 +37,15 @@ export const EVENT = {
   },
 
   registration: {
-    // Confirmed on the 2026-10-21 planning call: opens 2026-11-02 18:00
-    // (not Nov 1 — that's halottak napja). Newsletter subscribers
-    // (notify_signups) get a 1h early-access window from 17:00 — see
+    // Postponed indefinitely by the organiser (2026-11-04, via the project
+    // thread): the English registration flow isn't ready yet. No new date
+    // has been decided — these are a placeholder far enough out that the
+    // site stays in the "announced"/closed state until the organiser picks
+    // a real date and this gets updated again. Newsletter subscribers
+    // (notify_signups) get a 1h early-access window before opensAt — see
     // earlyAccessOpensAt and app/api/notify/check.
-    earlyAccessOpensAt: "2026-11-02T17:00:00+01:00",
-    opensAt: "2026-11-02T18:00:00+01:00",
+    earlyAccessOpensAt: "2026-11-25T18:00:00+01:00",
+    opensAt: "2026-11-25T19:00:00+01:00",
     closesAt: "2026-12-31T23:59:00+01:00",
     capacity: 220,
     waitlist: true,
@@ -66,10 +69,12 @@ export const EVENT = {
   // instead of being bundled into a single entry fee.
   fees: {
     currency: "HUF",
-    // Confirmed 2026-10-21, price corrected by the organiser 2026-10-22:
-    // entry 24 990 Ft, named shirt +7 990 Ft → 32 980 Ft with a shirt.
+    // Confirmed 2026-10-21, price corrected by the organiser 2026-10-22 to
+    // 32 980, then again 2026-11-03 to the final 4-package pricing: entry
+    // 24 990 Ft, entry+shirt 32 990 Ft, entry+premium media 49 980 Ft,
+    // entry+shirt+premium media 57 980 Ft.
     entryBase: 24990,
-    entryWithShirt: 32980,
+    entryWithShirt: 32990,
     spectator: 1000,
     premiumMedia: 24990,
   },

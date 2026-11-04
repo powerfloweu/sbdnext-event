@@ -16,9 +16,19 @@ interface AdminTabsProps {
   notifySignups: ReactNode;
   feedback: ReactNode;
   weightClassStats: ReactNode;
+  results: ReactNode;
+  testRegistration: ReactNode;
 }
 
-export function AdminTabs({ overview, registrations, notifySignups, feedback, weightClassStats }: AdminTabsProps) {
+export function AdminTabs({
+  overview,
+  registrations,
+  notifySignups,
+  feedback,
+  weightClassStats,
+  results,
+  testRegistration,
+}: AdminTabsProps) {
   return (
     <Tabs defaultValue="overview">
       <TabsList className="mb-6">
@@ -27,6 +37,8 @@ export function AdminTabs({ overview, registrations, notifySignups, feedback, we
         <TabsTrigger value="notify">Feliratkozók</TabsTrigger>
         <TabsTrigger value="feedback">Visszajelzések</TabsTrigger>
         <TabsTrigger value="weight-classes">Súlycsoport-statisztika</TabsTrigger>
+        <TabsTrigger value="results">Eredmények</TabsTrigger>
+        <TabsTrigger value="test">Teszt nevezés</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview">{overview}</TabsContent>
@@ -34,6 +46,8 @@ export function AdminTabs({ overview, registrations, notifySignups, feedback, we
       <TabsContent value="notify">{notifySignups}</TabsContent>
       <TabsContent value="feedback">{feedback}</TabsContent>
       <TabsContent value="weight-classes">{weightClassStats}</TabsContent>
+      <TabsContent value="results">{results}</TabsContent>
+      <TabsContent value="test">{testRegistration}</TabsContent>
     </Tabs>
   );
 }

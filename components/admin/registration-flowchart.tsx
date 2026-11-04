@@ -55,6 +55,12 @@ const STEPS: FlowStep[] = [
       "Google-login + e-mail allowlist (jelenleg: trainer.pod@gmail.com, feketemiklos@gmail.com). Itt látható minden nevezés, kereshető/szűrhető, CSV-exportálható, és kézzel is állítható a státusz (pl. Fizetve / Lemondás — banki átutalásos fizetéshez).",
     highlight: true,
   },
+  {
+    phase: "Önkiszolgáló",
+    title: "„Nevezési adatok megtekintése / szerkesztése” link",
+    detail:
+      "Az e-mailekben (jelentkezés + fizetés) szereplő linken a nevező saját maga is javíthat (pólóméret 2027. jan. 13-ig, a többi adat 2027. jan. 30-ig). Az arcfotó ennél tovább, a verseny kezdetéig bármikor pótolható ugyanitt.",
+  },
 ];
 
 export function RegistrationFlowchart() {
@@ -95,11 +101,6 @@ export function RegistrationFlowchart() {
             </div>
           </div>
         ))}
-      </div>
-      <div className="mt-2 rounded-lg border border-dashed border-border bg-card p-3 text-xs text-muted-foreground">
-        <span className="font-semibold text-foreground">Jelenleg nincs önkiszolgáló szerkesztés:</span>{" "}
-        a nevező egy beküldött nevezését csak az admin tudja módosítani (a fenti 7. lépés), mert még
-        nincs megépítve a visszaigazoló e-mailbeli „nevezés szerkesztése” link.
       </div>
     </section>
   );

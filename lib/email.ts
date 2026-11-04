@@ -168,3 +168,27 @@ export async function sendRegistrationOpenNotification(email: string, locale: Lo
   await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
   return true;
 }
+
+interface FacePhotoReminderData {
+  email: string;
+  firstName: string;
+  editUrl: string;
+}
+
+export async function sendFacePhotoReminderEmail(data: FacePhotoReminderData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+
+  await resend.emails.send({
+    from: FROM,
+    to: data.email,
+    subject: "SBD Next 2 — ne maradj le az arcfotódról",
+    html: `<p>Szia ${data.firstName}!</p>
+       <p>A nevezésedből még hiányzik az arcfotó — ez kell ahhoz, hogy a verseny után az
+       AI-alapú fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad
+       készült képeket.</p>
+       ${buttonHtml(data.editUrl, "Arcfotó feltöltése")}
+       <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+  });
+  return true;
+}

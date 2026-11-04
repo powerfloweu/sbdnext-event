@@ -52,6 +52,16 @@ export function getPhase(now: Date = new Date()): Phase {
   return "post";
 }
 
+// The face photo is optional at registration time and can be added later
+// from the self-service edit link — unlike the rest of that form, it's kept
+// open independently of registration.editClosesAt (which is about
+// shirt/data lock-in, not this), right up until the event itself starts.
+// See app/api/registration/[id]/route.ts and lib/email.ts
+// (sendFacePhotoReminderEmail).
+export function facePhotoEditOpen(now: Date = new Date()): boolean {
+  return now < firstDayStart();
+}
+
 export function volunteersOpen(now: Date = new Date()): boolean {
   const opensAt = new Date(EVENT.volunteers.opensAt);
   const closesAt = new Date(EVENT.volunteers.closesAt);

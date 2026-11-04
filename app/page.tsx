@@ -39,6 +39,7 @@ export default async function HomePage() {
     content.showSchedule && { href: "#schedule", label: "Időrend" },
     phase !== "announced" && { href: "#fees", label: "Díjak" },
     content.showFaq && { href: "#faq", label: "GYIK" },
+    { href: "/eredmenyek", label: "SBD Next I Eredmények", wordmarkRoman: "I" },
   ].filter((l): l is { href: string; label: string } => Boolean(l));
 
   return (
@@ -73,6 +74,7 @@ export default async function HomePage() {
               ctaLabel={content.registrationCtaLabel}
               ctaHref={content.registrationCtaHref}
               note={content.registrationNote}
+              earlyAccessNote={content.earlyAccessNote}
               notifyForm={phase === "announced"}
             />
           )}

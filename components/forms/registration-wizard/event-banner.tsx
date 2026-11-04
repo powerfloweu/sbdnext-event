@@ -21,16 +21,21 @@ export function EventBanner() {
           style={{ objectPosition: "50% 20%" }}
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/10" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-5 text-center">
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        {/* Bottom-anchored, not centered: the hero photo's subject sits in
+            the upper/middle portion, and a centered badge used to land
+            right on their face. The bottom third is always covered by the
+            gradient above, so it stays legible regardless of which photo
+            is used. */}
+        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1.5 p-4 pb-5 text-center sm:gap-2">
           <Image
             src="/sbd_next_logo_transparent.png"
             alt="SBD Next"
-            width={44}
-            height={44}
-            className="size-10 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] sm:size-11"
+            width={36}
+            height={36}
+            className="size-8 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] sm:size-9"
           />
-          <h2 className="text-2xl font-extrabold sm:text-3xl">
+          <h2 className="text-xl font-extrabold sm:text-2xl">
             SBD Next <span className="text-primary">{EVENT.editionRoman}</span>
           </h2>
           <p className="text-xs font-semibold text-foreground/90 sm:text-sm">

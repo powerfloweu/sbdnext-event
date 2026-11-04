@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { RegistrationFlowchart } from "@/components/admin/registration-flowchart";
 import { WeightClassStats } from "@/components/admin/weight-class-stats";
+import { ResultsAdmin } from "@/components/admin/results-admin";
 import { AdminTabs } from "@/components/admin/admin-tabs";
+import { AdminTestTab } from "@/components/admin/admin-test-tab";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { formatHUF, formatKg } from "@/lib/format";
@@ -156,6 +158,9 @@ export default async function AdminPage({
       "id, created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, utm, paid_at",
       { count: "exact" }
     )
+    // Admin-test walkthroughs (see components/admin/admin-test-tab.tsx) live
+    // in the same table but must never show up in the real roster or stats.
+    .eq("is_preview_test", false)
     .order("created_at", { ascending: false });
   if (status !== "all") regQuery = regQuery.eq("status", status);
   if (q) {
@@ -185,10 +190,16 @@ export default async function AdminPage({
     { data: feedbackSignups },
     { data: priorYearRows },
     { data: sbdNext1FeedbackRows },
+    { data: testRegistrations },
+    { data: priorYearSample },
   ] = await Promise.all([
     regQuery.range(regFrom, regTo).returns<RegistrationRow[]>(),
     notifyQuery.range(notifyFrom, notifyTo).returns<NotifySignupRow[]>(),
-    admin.from("registrations").select("status, total_fee").returns<{ status: string; total_fee: number }[]>(),
+    admin
+      .from("registrations")
+      .select("status, total_fee")
+      .eq("is_preview_test", false)
+      .returns<{ status: string; total_fee: number }[]>(),
     admin.from("notify_signups").select("id", { count: "exact", head: true }),
     // Independent of the notify-signups table's own pagination/search above —
     // the feedback list below always shows every submitted answer.
@@ -208,6 +219,26 @@ export default async function AdminPage({
       .eq("source", "sbd_next_1_form")
       .order("submitted_at", { ascending: false })
       .returns<EventFeedbackRow[]>(),
+    admin
+      .from("registrations")
+      .select("id, created_at, status, last_name, first_name, email, total_fee")
+      .eq("is_preview_test", true)
+      .order("created_at", { ascending: false })
+      .returns<
+        { id: string; created_at: string; status: string; last_name: string; first_name: string; email: string; total_fee: number }[]
+      >(),
+    // A single real example so the "Teszt nevezés" guide can tell Miki/D a
+    // concrete e-mail to test the "tavaly már versenyeztél?" prefill with —
+    // the Súlycsoport-statisztika tab only ever shows aggregated counts, not
+    // emails, so there was previously no way to find one from /admin at all
+    // (D, 2026-10-30).
+    admin
+      .from("prior_year_registrations")
+      .select("email, last_name, first_name")
+      .not("email", "ilike", "%e2e%")
+      .limit(1)
+      .maybeSingle()
+      .returns<{ email: string; last_name: string; first_name: string } | null>(),
   ]);
 
   const rows = registrations ?? [];
@@ -512,6 +543,10 @@ export default async function AdminPage({
     </>
   );
 
+  const testTab = (
+    <AdminTestTab registrations={testRegistrations ?? []} priorYearSample={priorYearSample ?? null} />
+  );
+
   const feedbackTab = (
     <section>
       <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({unifiedFeedback.length})</h2>
@@ -574,6 +609,8 @@ export default async function AdminPage({
         notifySignups={notifyTab}
         feedback={feedbackTab}
         weightClassStats={<WeightClassStats rows={priorYearRows ?? []} />}
+        results={<ResultsAdmin />}
+        testRegistration={testTab}
       />
     </div>
   );

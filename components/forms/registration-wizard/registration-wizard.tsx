@@ -159,12 +159,13 @@ function Step1({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
-        <label className="text-sm font-semibold text-foreground">
-          Arcfotó <span className="text-primary">*</span>
-        </label>
+        <label className="text-sm font-semibold text-foreground">Arcfotó</label>
         <p className="text-xs text-muted-foreground">
-          Egy tiszta, jól látható arcfotó kell, hogy a verseny után az AI-alapú fotóválogatónk
-          (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad készült képeket.
+          Egy tiszta, jól látható arcfotó kell ahhoz, hogy a verseny után az AI-alapú
+          fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad készült
+          képeket. Nem kötelező most feltölteni — a visszaigazoló e-mailben kapott linken bármikor
+          pótolhatod a verseny előttig, és a verseny előtt két héttel emlékeztetünk rá, ha még
+          hiányzik.
         </p>
         <div className="flex items-center gap-4">
           <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-background">
@@ -315,7 +316,8 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
                 },
                 {
                   value: "Versenyző" as const,
-                  desc: "Az elmúlt 2 évben versenyeztél MOB-on és/vagy elérted a minősítési szintet.",
+                  desc: "Az elmúlt 2 évben versenyeztél MOB-on és/vagy elérted a ",
+                  linkLabel: "minősítési szintet",
                 },
               ].map((opt) => {
                 const selected = field.value === opt.value;
@@ -335,7 +337,21 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
                       className="sr-only"
                     />
                     <span className="text-base font-semibold text-foreground">{opt.value}</span>
-                    <span className="text-xs text-muted-foreground">{opt.desc}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {opt.desc}
+                      {"linkLabel" in opt ? (
+                        <a
+                          href={EVENT.docs.qualification}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-primary underline underline-offset-2"
+                        >
+                          {opt.linkLabel}
+                        </a>
+                      ) : null}
+                      {"linkLabel" in opt ? "." : null}
+                    </span>
                   </label>
                 );
               })}
@@ -354,7 +370,7 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
         name="club"
         control={control}
         render={({ field }) => (
-          <Field id="club" label="Egyesület / Klub" hint="Nem kötelező">
+          <Field id="club" label="Egyesület / Klub" hint="Nem kötelező — válassz a listából, vagy írd be, ha nincs benne.">
             <Input id="club" placeholder="—" list="club-options" autoComplete="off" {...field} />
             <datalist id="club-options">
               {clubOptions.map((club) => (
@@ -685,7 +701,7 @@ function Summary({
 
 const MAX_FACE_PHOTO_MB = 20;
 
-export function RegistrationWizard() {
+export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: boolean } = {}) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -758,8 +774,11 @@ export function RegistrationWizard() {
     defaultValues: REGISTRATION_DEFAULTS,
     mode: "onBlur",
   });
-  // Restore a draft on mount.
+  // Restore a draft on mount — skipped in admin test mode, so each test run
+  // starts from a clean form instead of picking up a previous tester's
+  // leftover draft on the same browser (D, 2026-10-30).
   useEffect(() => {
+    if (isAdminTest) return;
     try {
       const raw = window.localStorage.getItem(DRAFT_KEY);
       if (raw) {
@@ -773,9 +792,12 @@ export function RegistrationWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist the draft on every change (skip the honeypot).
+  // Persist the draft on every change (skip the honeypot). Also skipped in
+  // admin test mode so test fills never overwrite a real in-progress draft
+  // on the same browser.
   const values = watch();
   useEffect(() => {
+    if (isAdminTest) return;
     const id = window.setTimeout(() => {
       try {
         const rest: Record<string, unknown> = { ...values };
@@ -825,24 +847,42 @@ export function RegistrationWizard() {
   const goNext = useCallback(async () => {
     const fields = STEP_FIELDS[step - 1];
     const valid = await trigger(fields);
+    // Arcfotó nem kötelező (D, 2026-10-30) — pótolható utólag az
+    // önkiszolgáló szerkesztő linken, lásd app/nevezes/szerkesztes/[id].
     if (step === 1) {
       setFacePhotoAttempted(true);
-      if (!facePhotoDataUrl) {
-        if (!facePhotoError) setFacePhotoError("Tölts fel egy arcfotót a folytatáshoz.");
-        return;
-      }
     }
     if (valid) {
       setSubmitError(null);
       setStep((s) => Math.min(5, s + 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [step, trigger, facePhotoDataUrl, facePhotoError]);
+  }, [step, trigger]);
 
   const goBack = useCallback(() => {
     setStep((s) => Math.max(1, s - 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  // Step 4's "Fizetés" button validates the WHOLE schema (shirt cut/size is
+  // only required if wantsShirt is set, via a superRefine on the merged
+  // schema), not just the current step — so a field left empty on an
+  // earlier step can fail silently here with no visible error, since that
+  // field isn't even rendered on step 5 (D, 2026-11-03: filled the shirt
+  // checkbox but not cut/size, pressed Fizetés on step 5, nothing happened
+  // — no request, no message). Jump back to the earliest step that has an
+  // invalid field and say so, instead of leaving the button looking broken.
+  const onInvalidSubmit = useCallback(
+    (formErrors: Errs) => {
+      const invalidStep = STEP_FIELDS.findIndex((fields) => fields.some((f) => formErrors[f]));
+      if (invalidStep !== -1) {
+        setStep(invalidStep + 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      setSubmitError("Néhány mező hiányzik vagy hibás — visszaugrottunk a megfelelő lépésre, ellenőrizd a pirossal jelölt mezőket.");
+    },
+    [setStep]
+  );
 
   const onSubmit = handleSubmit(async (data) => {
     if (data.honeypot) return; // silently drop bot submissions
@@ -888,7 +928,7 @@ export function RegistrationWizard() {
     } finally {
       setSubmitting(false);
     }
-  });
+  }, onInvalidSubmit);
 
   const openers = useMemo(
     () => ({
