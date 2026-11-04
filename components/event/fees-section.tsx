@@ -9,14 +9,13 @@ import { formatHUF, formatEUR } from "@/lib/format";
 
 const STRINGS = {
   hu: {
-    eyebrow: "Díjak",
-    title: "Mit kapsz a nevezésért",
-    entryFee: "Nevezési díj",
+    eyebrow: "Árak",
+    title: "Nevezési csomagok",
+    entryFee: "Alap nevezés",
     entryWithShirt: "Nevezés + póló",
     perks: [
-      "Média csomag: profi fotók rólad a platformon",
-      "IPF szabályok szerinti bírói stáb",
-      "Egyedi SBD versenypóló igény szerint, felár ellenében",
+      "Mindenki kap ingyenesen letölthető fotókat magáról a versenyen",
+      "A póló saját névvel/felirattal is kérhető, felár nélkül",
     ],
     premiumMedia: "Prémium média csomag",
     premiumMediaHint: "3 fotó + 3 videó, kiemelt válogatás",
@@ -24,16 +23,24 @@ const STRINGS = {
     spectatorHint: "A helyszínen, készpénz vagy kártya",
     premiumUpsell: "Már neveztél, de szeretnéd utólag megvásárolni a prémium média csomagot?",
     premiumUpsellCta: "Prémium média csomag vásárlása",
+    resultsNote: (
+      <>
+        Az SBD Next I eredményei megtekinthetők a fenti menüben, az{" "}
+        <Link href="/eredmenyek" className="font-semibold text-foreground underline">
+          Eredmények
+        </Link>{" "}
+        pontban.
+      </>
+    ),
   },
   en: {
-    eyebrow: "Fees",
-    title: "What you get with your entry",
-    entryFee: "Entry fee",
+    eyebrow: "Prices",
+    title: "Entry packages",
+    entryFee: "Standard entry",
     entryWithShirt: "Entry + shirt",
     perks: [
-      "Media package: professional photos of you on the platform",
-      "IPF-rules judging panel",
-      "Custom SBD competition shirt, as an optional add-on",
+      "Everyone gets free downloadable photos of themselves from the competition",
+      "The shirt can carry a custom name/print at no extra charge",
     ],
     premiumMedia: "Premium media package",
     premiumMediaHint: "3 photos + 3 videos, hand-picked selection",
@@ -41,6 +48,15 @@ const STRINGS = {
     spectatorHint: "At the venue, cash or card",
     premiumUpsell: "Already registered, but want to add the premium media package afterwards?",
     premiumUpsellCta: "Buy the premium media package",
+    resultsNote: (
+      <>
+        Last year&apos;s (SBD Next I) results can be viewed in the menu above, under{" "}
+        <Link href="/en/results" className="font-semibold text-foreground underline">
+          Results
+        </Link>
+        .
+      </>
+    ),
   },
 } as const;
 
@@ -48,6 +64,7 @@ export function FeesSection({ locale = "hu" }: { locale?: "hu" | "en" }) {
   const t = STRINGS[locale];
   const fees = locale === "en" ? EVENT.feesEur : EVENT.fees;
   const amount = (value: number) => (locale === "en" ? `€${formatEUR(value)}` : `${formatHUF(value)} ${EVENT.fees.currency}`);
+  const shirtAddon = fees.entryWithShirt - fees.entryBase;
 
   return (
     <Section id="fees" icon={TicketCheck} eyebrow={t.eyebrow} title={t.title}>
@@ -61,7 +78,9 @@ export function FeesSection({ locale = "hu" }: { locale?: "hu" | "en" }) {
               </span>
             </div>
             <div className="flex items-baseline justify-between gap-3 border-t border-border pt-3">
-              <span className="text-sm font-semibold text-foreground">{t.entryWithShirt}</span>
+              <span className="text-sm font-semibold text-foreground">
+                {t.entryWithShirt} <span className="text-muted-foreground">(+{amount(shirtAddon)})</span>
+              </span>
               <span className="font-display text-xl font-bold tabular-nums">
                 {amount(fees.entryWithShirt)}
               </span>
@@ -104,6 +123,8 @@ export function FeesSection({ locale = "hu" }: { locale?: "hu" | "en" }) {
             </Button>
           </CardContent>
         </Card>
+
+        <p className="text-center text-sm text-muted-foreground">{t.resultsNote}</p>
       </div>
     </Section>
   );
