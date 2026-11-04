@@ -47,6 +47,15 @@ export function CompetitionRulesDocument() {
         <p className="mt-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Nyílt erőemelő verseny
         </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-8 rounded-xl border border-border bg-card px-6 py-4">
+          {/* eslint-disable @next/next/no-img-element */}
+          <img src="/sbd_logo_transparent.png" alt="SBD Hungary" className="h-10 w-auto object-contain sm:h-12" />
+          <img src="/powerflow_logo.png" alt="PowerFlow" className="h-10 w-auto object-contain sm:h-12" />
+          <span className="text-sm font-bold uppercase tracking-wide text-foreground">
+            Thor Gym Újbuda
+          </span>
+          {/* eslint-enable @next/next/no-img-element */}
+        </div>
       </div>
 
       <DocSection icon={Flag} title="A verseny célja">
