@@ -45,7 +45,7 @@ const STRINGS = {
     premiumMedia: "Premium media package",
     premiumMediaHint: "3 photos + 3 videos, hand-picked selection",
     spectator: "Spectator ticket",
-    spectatorHint: "At the venue, cash or card",
+    spectatorHint: "At the venue, cash or card (priced in Hungarian forint, paid locally)",
     premiumUpsell: "Curious about the premium media package?",
     premiumUpsellCta: "More info about the premium media package",
     resultsNote: (
@@ -113,7 +113,7 @@ export function FeesSection({ locale = "hu" }: { locale?: "hu" | "en" }) {
               <span className="text-xs text-muted-foreground">{t.spectatorHint}</span>
             </div>
             <span className="font-display text-xl font-bold tabular-nums">
-              {formatHUF(EVENT.fees.spectator)} {EVENT.fees.currency}
+              {formatHUF(EVENT.fees.spectator)} {locale === "en" ? "HUF" : EVENT.fees.currency}
             </span>
           </CardContent>
         </Card>
