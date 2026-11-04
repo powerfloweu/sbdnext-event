@@ -216,7 +216,10 @@ export function CompetitionRulesDocumentEn() {
             Free downloadable photos of every competitor (a premium subscription gets the full photo and
             video package).
           </li>
-          <li>A custom SBD competition shirt: orderable for an extra fee, not included in the entry fee.</li>
+          <li>
+            A custom, name-printed SBD competition shirt: orderable for an extra fee as part of
+            the Entry + shirt package, not included in the standard entry fee.
+          </li>
         </ul>
       </DocSection>
     </div>

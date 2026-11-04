@@ -23,7 +23,7 @@ export const revalidate = 60;
 const title = "SBD Next II – Open Powerlifting Competition | Thor Gym, Budapest, 13–14 February 2027";
 const ogTitle = "SBD Next II – Open Powerlifting Competition";
 const description =
-  "SBD Next – an IPF-rules powerlifting competition for novice and competitive lifters at Thor Gym, Budapest. Full power meet with a media package and a custom SBD competition shirt.";
+  "SBD Next – an IPF-rules powerlifting competition for novice and competitive lifters at Thor Gym, Budapest. Full power meet with a media package and an optional name-printed SBD competition shirt.";
 const ogDescription = "An IPF-rules powerlifting meet for novice and competitive lifters at Thor Gym, Budapest.";
 
 export const metadata: Metadata = {
@@ -221,7 +221,8 @@ export default function EnglishPage() {
               </div>
               <div>
                 <b>Póló fazon / méret *</b> – T-shirt cut (women&apos;s / men&apos;s) and size
-                (XS–4XL). This is the meet shirt included in your entry fee.
+                (XS–4XL). Only required if you chose the Entry + shirt package — that shirt is
+                name-printed with your name.
               </div>
               <div>
                 <b>Prémium média csomag</b> – Optional add-on: 3 photos + 3 videos, priority

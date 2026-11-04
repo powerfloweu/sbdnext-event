@@ -221,7 +221,10 @@ export function CompetitionRulesDocument() {
             Ingyenesen letölthető fotóanyag minden versenyzőről (prémium előfizetéssel teljes fotó- és
             videócsomag is kérhető).
           </li>
-          <li>SBD egyedi versenypóló: külön díj fejében rendelhető, a nevezési díj nem tartalmazza.</li>
+          <li>
+            SBD egyedi, névre szóló versenypóló: külön díj fejében rendelhető a Nevezés + póló
+            csomagban, az alap nevezési díj nem tartalmazza.
+          </li>
         </ul>
       </DocSection>
     </div>
