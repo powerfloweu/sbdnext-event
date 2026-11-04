@@ -49,7 +49,7 @@ export default function EnglishPage() {
             badgeTone="neutral"
             description="The next level. An open powerlifting competition for novice and competitive lifters, under IPF rules."
             primaryCta={{ label: "Notify me", href: "#register" }}
-            secondaryCta={null}
+            secondaryCta={{ label: "Competition Rules", href: "/en/versenykiiras" }}
             countdown={null}
             capacity={null}
             locale="en"
