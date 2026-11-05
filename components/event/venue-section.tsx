@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import { MapPin, ExternalLink } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,8 +6,8 @@ import { Section } from "@/components/site/section";
 import { EVENT } from "@/config/event";
 
 const STRINGS = {
-  hu: { eyebrow: "Helyszín", directions: "Útvonaltervezés", loadMap: "Térkép betöltése", mapTitle: "Térkép" },
-  en: { eyebrow: "Venue", directions: "Get directions", loadMap: "Load map", mapTitle: "Map" },
+  hu: { eyebrow: "Helyszín", directions: "Útvonaltervezés", mapTitle: "Térkép" },
+  en: { eyebrow: "Venue", directions: "Get directions", mapTitle: "Map" },
 } as const;
 
 interface VenueSectionProps {
@@ -18,7 +15,6 @@ interface VenueSectionProps {
 }
 
 export function VenueSection({ locale = "hu" }: VenueSectionProps) {
-  const [mapLoaded, setMapLoaded] = useState(false);
   const t = STRINGS[locale];
   const parking = locale === "en" ? EVENT.venue.parkingEn : EVENT.venue.parking;
   const amenities = locale === "en" ? EVENT.venue.amenitiesEn : EVENT.venue.amenities;
@@ -42,25 +38,14 @@ export function VenueSection({ locale = "hu" }: VenueSectionProps) {
         </Card>
 
         <div className="h-[300px] overflow-hidden rounded-xl border border-border bg-card sm:h-[360px]">
-          {mapLoaded ? (
-            <iframe
-              title={t.mapTitle}
-              src={EVENT.venue.mapEmbedSrc}
-              className="h-full w-full"
-              style={{ border: 0 }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setMapLoaded(true)}
-              className="flex h-full w-full flex-col items-center justify-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <MapPin className="size-6 text-primary" aria-hidden="true" />
-              {t.loadMap}
-            </button>
-          )}
+          <iframe
+            title={t.mapTitle}
+            src={EVENT.venue.mapEmbedSrc}
+            className="h-full w-full"
+            style={{ border: 0 }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         </div>
       </div>
     </Section>

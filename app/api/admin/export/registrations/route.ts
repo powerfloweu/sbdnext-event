@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   let query = admin
     .from("registrations")
     .select(
-      "created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, utm, paid_at"
+      "created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, currency, utm, paid_at"
     )
     .order("created_at", { ascending: false });
 
@@ -43,6 +43,11 @@ export async function GET(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // The DB keeps the original enum values ("Újonc"/"Versenyző") so existing
+  // rows stay intact, but the versenykiírás's public category names are
+  // "Tehetségkutató" and "Versenyzői" — export those instead.
+  const DIVISION_LABELS: Record<string, string> = { Újonc: "Tehetségkutató", Versenyző: "Versenyzői" };
 
   const csv = toCsv(
     [
@@ -68,6 +73,7 @@ export async function GET(request: NextRequest) {
       "Prémium média",
       "Nevezési díj",
       "Összeg",
+      "Pénznem",
       "UTM",
       "Fizetve",
     ],
@@ -83,7 +89,7 @@ export async function GET(request: NextRequest) {
         r.first_name,
         r.email,
         r.birth_year,
-        r.division,
+        DIVISION_LABELS[r.division] ?? r.division,
         r.sex,
         r.club ?? "",
         r.bodyweight,
@@ -99,6 +105,7 @@ export async function GET(request: NextRequest) {
         r.premium_media ? "igen" : "nem",
         r.entry_fee,
         r.total_fee,
+        r.currency,
         r.utm ?? "",
         r.paid_at ?? "",
       ];

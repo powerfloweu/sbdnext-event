@@ -68,7 +68,20 @@ const PAGE_SIZE = 4;
 const PAGE_COUNT = Math.ceil(QUOTES.length / PAGE_SIZE);
 const INTERVAL_MS = 15000;
 
-export function Testimonials() {
+const EYEBROW = {
+  hu: "Ezt mondták az SBD Next I versenyzői",
+  // The quotes themselves stay in the athletes' own Hungarian words (see
+  // comment above) — only this heading is translated, so an English reader
+  // knows what they're looking at.
+  en: "What SBD Next I athletes said (in their own words, Hungarian)",
+} as const;
+
+const PAGE_ARIA = {
+  hu: (page: number) => `Vélemények, ${page}. oldal`,
+  en: (page: number) => `Reviews, page ${page}`,
+} as const;
+
+export function Testimonials({ locale = "hu" }: { locale?: "hu" | "en" } = {}) {
   const [page, setPage] = useState(0);
 
   useEffect(() => {
@@ -82,7 +95,7 @@ export function Testimonials() {
     <div className="flex flex-col gap-3">
       <span className="eyebrow flex items-center gap-1.5">
         <Quote className="size-3.5" aria-hidden="true" />
-        Ezt mondták az SBD Next I versenyzői
+        {EYEBROW[locale]}
       </span>
       <div className="grid gap-3 sm:grid-cols-2">
         {visible.map((q) => (
@@ -103,7 +116,7 @@ export function Testimonials() {
             <button
               key={idx}
               type="button"
-              aria-label={`Vélemények, ${idx + 1}. oldal`}
+              aria-label={PAGE_ARIA[locale](idx + 1)}
               aria-current={idx === page}
               onClick={() => setPage(idx)}
               className={`size-2 rounded-full transition-colors ${

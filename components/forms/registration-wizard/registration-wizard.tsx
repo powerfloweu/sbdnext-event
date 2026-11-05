@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, ChevronRight, Lock, Camera } from "lucide-react";
 
 import { compressImageToDataUrl } from "@/lib/client-image";
+import { trackFunnelEvent } from "@/lib/analytics";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,21 +27,290 @@ import { WizardHeader } from "@/components/forms/registration-wizard/wizard-head
 import { EventBanner } from "@/components/forms/registration-wizard/event-banner";
 import { WizardSponsorStrip } from "@/components/forms/registration-wizard/wizard-sponsor-strip";
 import { PremiumMediaPreview } from "@/components/forms/registration-wizard/premium-media-preview";
+import { InvitePriceSummary } from "@/components/forms/registration-wizard/invite-price-summary";
 
 import { EVENT } from "@/config/event";
-import { formatHUF } from "@/lib/format";
+import { formatHUF, formatEUR } from "@/lib/format";
 import { computeGLPoints } from "@/lib/gl-points";
 import {
-  registrationSchema,
+  buildRegistrationSchema,
   REGISTRATION_DEFAULTS,
   STEP_FIELDS,
   type RegistrationInput,
+  type RegistrationLocale,
 } from "@/lib/validation/registration";
 
 const DRAFT_KEY = "sbdnext2:registration-draft";
 
 type Ctrl = Control<RegistrationInput, unknown, RegistrationInput>;
 type Errs = FieldErrors<RegistrationInput>;
+
+// All user-facing copy for the wizard, keyed by locale. See
+// lib/validation/registration.ts for the matching validation messages.
+// Typed explicitly (rather than inferred from the hu object) so hu and en —
+// which otherwise infer incompatible literal string types — are assignable
+// to the same WizardStrings parameter type throughout the step components.
+interface WizardStrings {
+  facePhotoLabel: string;
+  facePhotoHint: string;
+  facePhotoAlt: string;
+  facePhotoSelectAria: string;
+  facePhotoReplace: string;
+  facePhotoSelect: string;
+  facePhotoProcessing: string;
+  facePhotoTypeError: string;
+  facePhotoSizeError: (mb: number) => string;
+  facePhotoProcessError: string;
+  lastName: string;
+  firstName: string;
+  email: string;
+  birthYear: string;
+  birthYearHint: string;
+  sex: string;
+  sexLabels: Record<string, string>;
+  selectPlaceholder: string;
+  priorLookupSearching: string;
+  priorLookupButton: string;
+  priorLookupFound: string;
+  priorLookupNotFound: string;
+  priorLookupError: string;
+  division: string;
+  divisionNovice: "Újonc";
+  divisionNoviceLabel: string;
+  divisionNoviceDesc: string;
+  divisionCompetitor: "Versenyző";
+  divisionCompetitorLabel: string;
+  divisionCompetitorDesc: string;
+  divisionCompetitorLink: string;
+  club: string;
+  clubHint: string;
+  bodyweight: string;
+  bodyweightHint: string;
+  kg: string;
+  openersLegend: string;
+  openerSquat: string;
+  openerBench: string;
+  openerDeadlift: string;
+  openerTotal: string;
+  glPoints: string;
+  glPointsHint: string;
+  mcText: string;
+  mcTextPlaceholder: string;
+  optional: string;
+  shirtWantLabel: (price: string) => string;
+  shirtWantHint1: string;
+  shirtWantHint2: string;
+  shirtCut: string;
+  shirtCutLabels: Record<string, string>;
+  shirtSize: string;
+  notes: string;
+  notesPlaceholder: string;
+  premiumLabel: (price: string) => string;
+  premiumHint: string;
+  summaryName: string;
+  summaryEmail: string;
+  summaryCategory: string;
+  summaryWeightTotal: string;
+  summaryShirt: string;
+  edit: string;
+  entryFeeLabel: (withShirt: boolean) => string;
+  premiumMediaLabel: string;
+  payable: string;
+  consentPrefix: string;
+  consentPrivacy: string;
+  consentMiddle: string;
+  consentInvitation: string;
+  consentSuffix: string;
+  draftRestored: string;
+  stepTitles: readonly string[];
+  next: string;
+  submitting: string;
+  pay: (price: string) => string;
+  draftSavedHint: string;
+  stripeHint: string;
+  invalidSubmit: string;
+  earlyAccessError: string;
+  registrationClosedError: string;
+  genericSubmitError: string;
+}
+
+const STRINGS: Record<RegistrationLocale, WizardStrings> = {
+  hu: {
+    facePhotoLabel: "Arcfotó",
+    facePhotoHint:
+      "Egy tiszta, jól látható arcfotó kell ahhoz, hogy a verseny után az AI-alapú fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad készült képeket. Nem kötelező most feltölteni — a visszaigazoló e-mailben kapott linken bármikor pótolhatod a verseny előttig, és a verseny előtt két héttel emlékeztetünk rá, ha még hiányzik.",
+    facePhotoAlt: "Feltöltött arcfotó előnézete",
+    facePhotoSelectAria: "Arcfotó kiválasztása",
+    facePhotoReplace: "Fotó cseréje",
+    facePhotoSelect: "Fotó kiválasztása",
+    facePhotoProcessing: "Feldolgozás…",
+    facePhotoTypeError: "Csak képfájlt tudunk elfogadni (jpg, png, heic).",
+    facePhotoSizeError: (mb: number) => `A fájl túl nagy (max. ${mb} MB).`,
+    facePhotoProcessError: "A fotó feldolgozása nem sikerült, próbálj egy másik képet.",
+    lastName: "Vezetéknév",
+    firstName: "Keresztnév",
+    email: "E-mail",
+    birthYear: "Születési év",
+    birthYearHint: "pl. 1995",
+    sex: "Nem",
+    sexLabels: { Nő: "Nő", Férfi: "Férfi" },
+    selectPlaceholder: "Válassz",
+    priorLookupSearching: "Keresés…",
+    priorLookupButton: "Tavaly már versenyeztél? Töltsd ki automatikusan",
+    priorLookupFound:
+      "Megtaláltuk a tavalyi adataidat, kitöltöttük neked — nézd át, és ahol kell, módosítsd.",
+    priorLookupNotFound:
+      "Nem találtunk egyezést sem az e-mail címre, sem a névre és születési évre, nyugodtan töltsd ki manuálisan.",
+    priorLookupError: "A keresés nem sikerült, töltsd ki manuálisan.",
+    division: "Kategória",
+    divisionNovice: "Újonc" as const,
+    divisionNoviceLabel: "Tehetségkutató",
+    divisionNoviceDesc:
+      "2025-ben és/vagy 2026-ban nem indultál a MERSZ I. osztályú magyar bajnokságon, illetve IPF nemzetközi (vagy azzal egyenértékű külföldi) versenyen.",
+    divisionCompetitor: "Versenyző" as const,
+    divisionCompetitorLabel: "Versenyzői",
+    divisionCompetitorDesc: "Indultál a MERSZ 2025-ös vagy 2026-os Felnőtt Magyar Bajnokságán, és/vagy elérted a ",
+    divisionCompetitorLink: "minősítési szintet",
+    club: "Egyesület / Klub",
+    clubHint: "Nem kötelező — válassz a listából, vagy írd be, ha nincs benne.",
+    bodyweight: "Tervezett testsúly",
+    bodyweightHint: "A versenyen tervezett testsúlyod, ±3 kg pontossággal. A beosztás miatt fontos.",
+    kg: "kg",
+    openersLegend: "Nevezési súlyok (első fogás)",
+    openerSquat: "Guggolás",
+    openerBench: "Fekvenyomás",
+    openerDeadlift: "Felhúzás",
+    openerTotal: "Nevezési total",
+    glPoints: "GL pontszám",
+    glPointsHint: "(tájékoztató, a nevezési súlyokból)",
+    mcText: "Bemondó szöveg",
+    mcTextPlaceholder: "Mióta edzel, miért jelentkeztél, mi a célod…",
+    optional: "Nem kötelező",
+    shirtWantLabel: (price: string) => `Kérek pólót is (+${price})`,
+    shirtWantHint1: "Ha nem kéred, a nevezési díj a póló nélküli áron marad.",
+    shirtWantHint2: "A póló egyedi, névre szóló.",
+    shirtCut: "Póló fazon",
+    shirtCutLabels: { Női: "Női", Férfi: "Férfi" },
+    shirtSize: "Pólóméret",
+    notes: "Megjegyzés, kérés a szervezőknek",
+    notesPlaceholder: "Pl. külön kérés vagy egészségügyi infó.",
+    premiumLabel: (price: string) => `Prémium média csomag (+${price})`,
+    premiumHint: "Minimum 3 fotó és 3 videó, minden gyakorlat legjobb kísérletéről.",
+    summaryName: "Név",
+    summaryEmail: "E-mail",
+    summaryCategory: "Kategória",
+    summaryWeightTotal: "Testsúly / total",
+    summaryShirt: "Póló",
+    edit: "Módosítom",
+    entryFeeLabel: (withShirt: boolean) => `Nevezési díj${withShirt ? " + póló" : ""}`,
+    premiumMediaLabel: "Prémium média csomag",
+    payable: "Fizetendő",
+    consentPrefix: "Elfogadom az ",
+    consentPrivacy: "adatkezelési tájékoztatót",
+    consentMiddle: " és a ",
+    consentInvitation: "versenykiírást",
+    consentSuffix: ". Tudomásul veszem, hogy a nevezés a fizetéssel válik véglegessé.",
+    draftRestored: "Folytatod a korábban megkezdett nevezésedet. A korábbi adataid betöltöttük.",
+    stepTitles: ["Alapadatok", "Kategória", "Nevezési adatok", "Póló és extrák", "Ellenőrizd az adataid"],
+    next: "Tovább",
+    submitting: "Feldolgozás…",
+    pay: (price: string) => `Fizetés – ${price}`,
+    draftSavedHint: "Piszkozat mentve, később folytathatod.",
+    stripeHint: "Biztonságos fizetés a Stripe-on keresztül. Ezután átirányítunk.",
+    invalidSubmit:
+      "Néhány mező hiányzik vagy hibás — visszaugrottunk a megfelelő lépésre, ellenőrizd a pirossal jelölt mezőket.",
+    earlyAccessError:
+      "Ezzel az e-mail címmel nem találtunk korai hozzáférést. A nevezés 18:00-kor mindenki számára megnyílik — addig csak a hírlevél-feliratkozók nevezhetnek ezzel az e-mail címükkel.",
+    registrationClosedError: "A nevezés jelenleg nincs nyitva. Próbáld újra a nevezési időszakban.",
+    genericSubmitError: "A jelentkezés beküldése nem sikerült. A piszkozatod megmaradt, próbáld újra, vagy írj nekünk e-mailt.",
+  },
+  en: {
+    facePhotoLabel: "Face photo",
+    facePhotoHint:
+      "A clear, visible face photo lets our AI photo sorter (Excire Photo) automatically find and collect your competition photos afterwards. You don't have to upload it now — you can add it any time before the event via the link in your confirmation e-mail, and we'll remind you two weeks before if it's still missing.",
+    facePhotoAlt: "Uploaded face photo preview",
+    facePhotoSelectAria: "Select face photo",
+    facePhotoReplace: "Replace photo",
+    facePhotoSelect: "Select photo",
+    facePhotoProcessing: "Processing…",
+    facePhotoTypeError: "Only image files are accepted (jpg, png, heic).",
+    facePhotoSizeError: (mb: number) => `File is too large (max. ${mb} MB).`,
+    facePhotoProcessError: "Couldn't process that photo, try a different one.",
+    lastName: "Last name",
+    firstName: "First name",
+    email: "E-mail",
+    birthYear: "Birth year",
+    birthYearHint: "e.g. 1995",
+    sex: "Sex",
+    sexLabels: { Nő: "Female", Férfi: "Male" },
+    selectPlaceholder: "Select",
+    priorLookupSearching: "Searching…",
+    priorLookupButton: "Competed last year? Auto-fill your details",
+    priorLookupFound: "We found your details from last year and filled them in — review and adjust as needed.",
+    priorLookupNotFound: "No match found by e-mail or by name and birth year — feel free to fill it in manually.",
+    priorLookupError: "The lookup failed, please fill it in manually.",
+    division: "Division",
+    divisionNovice: "Újonc" as const,
+    divisionNoviceLabel: "Rookie",
+    divisionNoviceDesc:
+      "You didn't compete at the MERSZ first-division Hungarian National Championship, or an equivalent IPF international/foreign competition, in 2025 and/or 2026.",
+    divisionCompetitor: "Versenyző" as const,
+    divisionCompetitorLabel: "Lifter",
+    divisionCompetitorDesc: "You competed at the MERSZ 2025 or 2026 Adult National Championship, and/or reached the ",
+    divisionCompetitorLink: "qualification level",
+    club: "Club / Team",
+    clubHint: "Optional — pick from the list, or type one in if it's not there.",
+    bodyweight: "Expected bodyweight",
+    bodyweightHint: "Your expected bodyweight on competition day, ±3 kg. Important for flighting.",
+    kg: "kg",
+    openersLegend: "Opening attempts",
+    openerSquat: "Squat",
+    openerBench: "Bench press",
+    openerDeadlift: "Deadlift",
+    openerTotal: "Opening total",
+    glPoints: "GL points",
+    glPointsHint: "(for reference, based on your opening attempts)",
+    mcText: "Announcer text",
+    mcTextPlaceholder: "How long you've trained, why you entered, your goal…",
+    optional: "Optional",
+    shirtWantLabel: (price: string) => `I'd also like a shirt (+${price})`,
+    shirtWantHint1: "If you skip it, the entry fee stays at the no-shirt price.",
+    shirtWantHint2: "The shirt is unique and name-printed.",
+    shirtCut: "Shirt cut",
+    shirtCutLabels: { Női: "Women's", Férfi: "Men's" },
+    shirtSize: "Shirt size",
+    notes: "Note or request for the organisers",
+    notesPlaceholder: "E.g. a special request or health info.",
+    premiumLabel: (price: string) => `Premium media package (+${price})`,
+    premiumHint: "At least 3 photos and 3 videos, of your best attempt on each lift.",
+    summaryName: "Name",
+    summaryEmail: "E-mail",
+    summaryCategory: "Division",
+    summaryWeightTotal: "Bodyweight / total",
+    summaryShirt: "Shirt",
+    edit: "Edit",
+    entryFeeLabel: (withShirt: boolean) => `Entry fee${withShirt ? " + shirt" : ""}`,
+    premiumMediaLabel: "Premium media package",
+    payable: "Total due",
+    consentPrefix: "I accept the ",
+    consentPrivacy: "privacy notice",
+    consentMiddle: " and the ",
+    consentInvitation: "competition invitation",
+    consentSuffix: ". I understand that registration is only final once paid.",
+    draftRestored: "Picking up your earlier registration — we loaded your previous answers.",
+    stepTitles: ["Basic details", "Division", "Registration details", "Shirt & extras", "Review your details"],
+    next: "Next",
+    submitting: "Processing…",
+    pay: (price: string) => `Pay – ${price}`,
+    draftSavedHint: "Draft saved, you can continue later.",
+    stripeHint: "Secure payment via Stripe. You'll be redirected afterwards.",
+    invalidSubmit: "Some fields are missing or invalid — we jumped back to the right step, check the fields marked in red.",
+    earlyAccessError:
+      "We couldn't find early access for this e-mail address. Registration opens for everyone at 18:00 — until then, only newsletter subscribers can register with their subscribed e-mail address.",
+    registrationClosedError: "Registration isn't open right now. Please try again during the registration window.",
+    genericSubmitError: "Submitting your registration failed. Your draft is still saved — try again, or e-mail us.",
+  },
+} as const;
 
 type PriorYearPrefill = Pick<
   RegistrationInput,
@@ -73,15 +343,17 @@ interface FacePhotoState {
   onSelect: (file: File | null) => void;
 }
 
-// ---------- Step 1: alapadatok ----------
+// ---------- Step 1: basic details ----------
 type PriorLookupStatus = "idle" | "loading" | "found" | "not_found" | "error";
 
 function PriorYearLookup({
   control,
   onPrefill,
+  t,
 }: {
   control: Ctrl;
   onPrefill: (data: PriorYearPrefill) => void;
+  t: WizardStrings;
 }) {
   const email = useWatch({ control, name: "email" });
   const lastName = useWatch({ control, name: "lastName" });
@@ -123,22 +395,11 @@ function PriorYearLookup({
   return (
     <div className="flex flex-col gap-1.5">
       <Button type="button" variant="secondary" size="sm" onClick={lookup} disabled={disabled}>
-        {status === "loading" ? "Keresés…" : "Tavaly már versenyeztél? Töltsd ki automatikusan"}
+        {status === "loading" ? t.priorLookupSearching : t.priorLookupButton}
       </Button>
-      {status === "found" && (
-        <p className="text-xs font-medium text-success">
-          Megtaláltuk a tavalyi adataidat, kitöltöttük neked — nézd át, és ahol kell, módosítsd.
-        </p>
-      )}
-      {status === "not_found" && (
-        <p className="text-xs text-muted-foreground">
-          Nem találtunk egyezést sem az e-mail címre, sem a névre és születési évre, nyugodtan töltsd
-          ki manuálisan.
-        </p>
-      )}
-      {status === "error" && (
-        <p className="text-xs text-muted-foreground">A keresés nem sikerült, töltsd ki manuálisan.</p>
-      )}
+      {status === "found" && <p className="text-xs font-medium text-success">{t.priorLookupFound}</p>}
+      {status === "not_found" && <p className="text-xs text-muted-foreground">{t.priorLookupNotFound}</p>}
+      {status === "error" && <p className="text-xs text-muted-foreground">{t.priorLookupError}</p>}
     </div>
   );
 }
@@ -148,30 +409,26 @@ function Step1({
   errors,
   facePhoto,
   onPrefill,
+  t,
 }: {
   control: Ctrl;
   errors: Errs;
   facePhoto: FacePhotoState;
   onPrefill: (data: PriorYearPrefill) => void;
+  t: WizardStrings;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
-        <label className="text-sm font-semibold text-foreground">Arcfotó</label>
-        <p className="text-xs text-muted-foreground">
-          Egy tiszta, jól látható arcfotó kell ahhoz, hogy a verseny után az AI-alapú
-          fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad készült
-          képeket. Nem kötelező most feltölteni — a visszaigazoló e-mailben kapott linken bármikor
-          pótolhatod a verseny előttig, és a verseny előtt két héttel emlékeztetünk rá, ha még
-          hiányzik.
-        </p>
+        <label className="text-sm font-semibold text-foreground">{t.facePhotoLabel}</label>
+        <p className="text-xs text-muted-foreground">{t.facePhotoHint}</p>
         <div className="flex items-center gap-4">
           <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-background">
             {facePhoto.previewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={facePhoto.previewUrl} alt="Feltöltött arcfotó előnézete" className="size-full object-cover" />
+              <img src={facePhoto.previewUrl} alt={t.facePhotoAlt} className="size-full object-cover" />
             ) : (
               <Camera className="size-6 text-muted-foreground" aria-hidden="true" />
             )}
@@ -183,7 +440,7 @@ function Step1({
               accept="image/*"
               onChange={(e) => facePhoto.onSelect(e.target.files?.[0] ?? null)}
               className="sr-only"
-              aria-label="Arcfotó kiválasztása"
+              aria-label={t.facePhotoSelectAria}
             />
             <Button
               type="button"
@@ -191,13 +448,11 @@ function Step1({
               size="sm"
               onClick={() => fileInputRef.current?.click()}
             >
-              {facePhoto.previewUrl ? "Fotó cseréje" : "Fotó kiválasztása"}
+              {facePhoto.previewUrl ? t.facePhotoReplace : t.facePhotoSelect}
             </Button>
           </div>
         </div>
-        {facePhoto.processing && (
-          <p className="text-xs text-muted-foreground">Feldolgozás…</p>
-        )}
+        {facePhoto.processing && <p className="text-xs text-muted-foreground">{t.facePhotoProcessing}</p>}
         {facePhoto.showError && facePhoto.error && (
           <p role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
             <AlertCircle className="size-3.5" aria-hidden="true" />
@@ -211,7 +466,7 @@ function Step1({
           name="lastName"
           control={control}
           render={({ field }) => (
-            <Field id="lastName" label="Vezetéknév" required error={errors.lastName?.message}>
+            <Field id="lastName" label={t.lastName} required error={errors.lastName?.message}>
               <Input id="lastName" autoComplete="family-name" aria-invalid={!!errors.lastName} {...field} />
             </Field>
           )}
@@ -220,7 +475,7 @@ function Step1({
           name="firstName"
           control={control}
           render={({ field }) => (
-            <Field id="firstName" label="Keresztnév" required error={errors.firstName?.message}>
+            <Field id="firstName" label={t.firstName} required error={errors.firstName?.message}>
               <Input id="firstName" autoComplete="given-name" aria-invalid={!!errors.firstName} {...field} />
             </Field>
           )}
@@ -231,7 +486,7 @@ function Step1({
         name="email"
         control={control}
         render={({ field }) => (
-          <Field id="email" label="E-mail" required error={errors.email?.message}>
+          <Field id="email" label={t.email} required error={errors.email?.message}>
             <Input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} {...field} />
           </Field>
         )}
@@ -242,7 +497,7 @@ function Step1({
           name="birthYear"
           control={control}
           render={({ field }) => (
-            <Field id="birthYear" label="Születési év" required hint="pl. 1995" error={errors.birthYear?.message}>
+            <Field id="birthYear" label={t.birthYear} required hint={t.birthYearHint} error={errors.birthYear?.message}>
               <Input id="birthYear" inputMode="numeric" maxLength={4} aria-invalid={!!errors.birthYear} {...field} />
             </Field>
           )}
@@ -251,15 +506,15 @@ function Step1({
           name="sex"
           control={control}
           render={({ field }) => (
-            <Field id="sex" label="Nem" required error={errors.sex?.message}>
+            <Field id="sex" label={t.sex} required error={errors.sex?.message}>
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger id="sex" aria-invalid={!!errors.sex}>
-                  <SelectValue placeholder="Válassz" />
+                  <SelectValue placeholder={t.selectPlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
                   {EVENT.sexes.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s}
+                      {t.sexLabels[s] ?? s}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -269,12 +524,12 @@ function Step1({
         />
       </div>
 
-      <PriorYearLookup control={control} onPrefill={onPrefill} />
+      <PriorYearLookup control={control} onPrefill={onPrefill} t={t} />
     </div>
   );
 }
 
-// ---------- Step 2: kategória ----------
+// ---------- Step 2: division ----------
 // Suggestions only — the field stays free text, so typing a club that
 // isn't in the list is simply how you "add" it (see app/api/clubs).
 function useClubOptions(): string[] {
@@ -296,7 +551,7 @@ function useClubOptions(): string[] {
   return clubs;
 }
 
-function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
+function Step2({ control, errors, t }: { control: Ctrl; errors: Errs; t: WizardStrings }) {
   const clubOptions = useClubOptions();
   return (
     <div className="flex flex-col gap-5">
@@ -306,18 +561,16 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
         render={({ field }) => (
           <fieldset>
             <legend className="mb-2 text-sm font-semibold text-foreground">
-              Kategória <span className="text-primary">*</span>
+              {t.division} <span className="text-primary">*</span>
             </legend>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
+                { value: t.divisionNovice, label: t.divisionNoviceLabel, desc: t.divisionNoviceDesc },
                 {
-                  value: "Újonc" as const,
-                  desc: "Nem versenyeztél még Magyar Országos Bajnokságon (open, I. osztály).",
-                },
-                {
-                  value: "Versenyző" as const,
-                  desc: "Az elmúlt 2 évben versenyeztél MOB-on és/vagy elérted a ",
-                  linkLabel: "minősítési szintet",
+                  value: t.divisionCompetitor,
+                  label: t.divisionCompetitorLabel,
+                  desc: t.divisionCompetitorDesc,
+                  linkLabel: t.divisionCompetitorLink,
                 },
               ].map((opt) => {
                 const selected = field.value === opt.value;
@@ -336,7 +589,7 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
                       onChange={() => field.onChange(opt.value)}
                       className="sr-only"
                     />
-                    <span className="text-base font-semibold text-foreground">{opt.value}</span>
+                    <span className="text-base font-semibold text-foreground">{opt.label}</span>
                     <span className="text-xs text-muted-foreground">
                       {opt.desc}
                       {"linkLabel" in opt ? (
@@ -370,7 +623,7 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
         name="club"
         control={control}
         render={({ field }) => (
-          <Field id="club" label="Egyesület / Klub" hint="Nem kötelező — válassz a listából, vagy írd be, ha nincs benne.">
+          <Field id="club" label={t.club} hint={t.clubHint}>
             <Input id="club" placeholder="—" list="club-options" autoComplete="off" {...field} />
             <datalist id="club-options">
               {clubOptions.map((club) => (
@@ -384,19 +637,21 @@ function Step2({ control, errors }: { control: Ctrl; errors: Errs }) {
   );
 }
 
-// ---------- Step 3: nevezési adatok ----------
+// ---------- Step 3: registration details ----------
 function Step3({
   control,
   errors,
   watchOpeners,
   sex,
   bodyweight,
+  t,
 }: {
   control: Ctrl;
   errors: Errs;
   watchOpeners: { squat: string; bench: string; deadlift: string };
   sex: RegistrationInput["sex"] | undefined;
   bodyweight: string | undefined;
+  t: WizardStrings;
 }) {
   const total = num(watchOpeners.squat) + num(watchOpeners.bench) + num(watchOpeners.deadlift);
   const glPoints =
@@ -408,17 +663,11 @@ function Step3({
         name="bodyweight"
         control={control}
         render={({ field }) => (
-          <Field
-            id="bodyweight"
-            label="Tervezett testsúly"
-            required
-            hint="A versenyen tervezett testsúlyod, ±3 kg pontossággal. A beosztás miatt fontos."
-            error={errors.bodyweight?.message}
-          >
+          <Field id="bodyweight" label={t.bodyweight} required hint={t.bodyweightHint} error={errors.bodyweight?.message}>
             <div className="relative">
               <Input id="bodyweight" inputMode="decimal" aria-invalid={!!errors.bodyweight} {...field} />
               <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                kg
+                {t.kg}
               </span>
             </div>
           </Field>
@@ -427,14 +676,14 @@ function Step3({
 
       <fieldset className="flex flex-col gap-3">
         <legend className="text-sm font-semibold text-foreground">
-          Nevezési súlyok (első fogás) <span className="text-primary">*</span>
+          {t.openersLegend} <span className="text-primary">*</span>
         </legend>
         <div className="grid gap-3 sm:grid-cols-3">
           <Controller
             name="openerSquat"
             control={control}
             render={({ field }) => (
-              <Field id="openerSquat" label="Guggolás" error={errors.openerSquat?.message}>
+              <Field id="openerSquat" label={t.openerSquat} error={errors.openerSquat?.message}>
                 <Input id="openerSquat" inputMode="decimal" aria-invalid={!!errors.openerSquat} {...field} />
               </Field>
             )}
@@ -443,7 +692,7 @@ function Step3({
             name="openerBench"
             control={control}
             render={({ field }) => (
-              <Field id="openerBench" label="Fekvenyomás" error={errors.openerBench?.message}>
+              <Field id="openerBench" label={t.openerBench} error={errors.openerBench?.message}>
                 <Input id="openerBench" inputMode="decimal" aria-invalid={!!errors.openerBench} {...field} />
               </Field>
             )}
@@ -452,26 +701,24 @@ function Step3({
             name="openerDeadlift"
             control={control}
             render={({ field }) => (
-              <Field id="openerDeadlift" label="Felhúzás" error={errors.openerDeadlift?.message}>
+              <Field id="openerDeadlift" label={t.openerDeadlift} error={errors.openerDeadlift?.message}>
                 <Input id="openerDeadlift" inputMode="decimal" aria-invalid={!!errors.openerDeadlift} {...field} />
               </Field>
             )}
           />
         </div>
         <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
-          <span className="text-sm text-muted-foreground">Nevezési total</span>
+          <span className="text-sm text-muted-foreground">{t.openerTotal}</span>
           <span className="font-display text-2xl font-bold tabular-nums">
-            {total || "—"} <span className="font-sans text-sm font-normal text-muted-foreground">kg</span>
+            {total || "—"} <span className="font-sans text-sm font-normal text-muted-foreground">{t.kg}</span>
           </span>
         </div>
         {glPoints != null && (
           <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
             <span className="text-sm text-muted-foreground">
-              GL pontszám <span className="text-xs">(tájékoztató, a nevezési súlyokból)</span>
+              {t.glPoints} <span className="text-xs">{t.glPointsHint}</span>
             </span>
-            <span className="font-display text-2xl font-bold tabular-nums">
-              {glPoints.toFixed(2)}
-            </span>
+            <span className="font-display text-2xl font-bold tabular-nums">{glPoints.toFixed(2)}</span>
           </div>
         )}
       </fieldset>
@@ -480,8 +727,8 @@ function Step3({
         name="mcText"
         control={control}
         render={({ field }) => (
-          <Field id="mcText" label="Bemondó szöveg" hint="Nem kötelező">
-            <Textarea id="mcText" placeholder="Mióta edzel, miért jelentkeztél, mi a célod…" {...field} />
+          <Field id="mcText" label={t.mcText} hint={t.optional}>
+            <Textarea id="mcText" placeholder={t.mcTextPlaceholder} {...field} />
           </Field>
         )}
       />
@@ -489,8 +736,24 @@ function Step3({
   );
 }
 
-// ---------- Step 4: póló & extrák ----------
-function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; wantsShirt: boolean }) {
+// ---------- Step 4: shirt & extras ----------
+function Step4({
+  control,
+  errors,
+  wantsShirt,
+  t,
+  formatPrice,
+  fees,
+  locale,
+}: {
+  control: Ctrl;
+  errors: Errs;
+  wantsShirt: boolean;
+  t: WizardStrings;
+  formatPrice: (amount: number) => string;
+  fees: { entryBase: number; entryWithShirt: number; premiumMedia: number };
+  locale: RegistrationLocale;
+}) {
   return (
     <div className="flex flex-col gap-5">
       <Controller
@@ -501,14 +764,10 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
             <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(Boolean(v))} />
             <span className="flex flex-col gap-0.5 text-sm">
               <span className="font-semibold text-foreground">
-                Kérek pólót is (+{formatHUF(EVENT.fees.entryWithShirt - EVENT.fees.entryBase)} Ft)
+                {t.shirtWantLabel(formatPrice(fees.entryWithShirt - fees.entryBase))}
               </span>
-              <span className="text-xs text-muted-foreground">
-                Ha nem kéred, a nevezési díj a póló nélküli áron marad.
-              </span>
-              <span className="text-xs text-muted-foreground">
-                A póló névre szóló lesz, rajta a neveddel.
-              </span>
+              <span className="text-xs text-muted-foreground">{t.shirtWantHint1}</span>
+              <span className="text-xs text-muted-foreground">{t.shirtWantHint2}</span>
             </span>
           </label>
         )}
@@ -520,15 +779,15 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
             name="shirtCut"
             control={control}
             render={({ field }) => (
-              <Field id="shirtCut" label="Póló fazon" required error={errors.shirtCut?.message}>
+              <Field id="shirtCut" label={t.shirtCut} required error={errors.shirtCut?.message}>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger id="shirtCut" aria-invalid={!!errors.shirtCut}>
-                    <SelectValue placeholder="Válassz" />
+                    <SelectValue placeholder={t.selectPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {EVENT.shirt.cuts.map((c) => (
                       <SelectItem key={c} value={c}>
-                        {c}
+                        {t.shirtCutLabels[c] ?? c}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -540,10 +799,10 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
             name="shirtSize"
             control={control}
             render={({ field }) => (
-              <Field id="shirtSize" label="Pólóméret" required error={errors.shirtSize?.message}>
+              <Field id="shirtSize" label={t.shirtSize} required error={errors.shirtSize?.message}>
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger id="shirtSize" aria-invalid={!!errors.shirtSize}>
-                    <SelectValue placeholder="Válassz" />
+                    <SelectValue placeholder={t.selectPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {EVENT.shirt.sizes.map((s) => (
@@ -563,8 +822,8 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
         name="notes"
         control={control}
         render={({ field }) => (
-          <Field id="notes" label="Megjegyzés, kérés a szervezőknek" hint="Nem kötelező">
-            <Textarea id="notes" placeholder="Pl. külön kérés vagy egészségügyi infó." {...field} />
+          <Field id="notes" label={t.notes} hint={t.optional}>
+            <Textarea id="notes" placeholder={t.notesPlaceholder} {...field} />
           </Field>
         )}
       />
@@ -577,26 +836,30 @@ function Step4({ control, errors, wantsShirt }: { control: Ctrl; errors: Errs; w
             <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(Boolean(v))} />
             <span className="flex flex-col gap-0.5 text-sm">
               <span className="font-semibold text-foreground">
-                Prémium média csomag (+{formatHUF(EVENT.fees.premiumMedia)} Ft)
+                {t.premiumLabel(formatPrice(fees.premiumMedia))}
               </span>
-              <span className="text-xs text-muted-foreground">3 fotó + 3 videó, kiemelt válogatás.</span>
+              <span className="text-xs text-muted-foreground">{t.premiumHint}</span>
             </span>
           </label>
         )}
       />
 
-      <PremiumMediaPreview />
+      <PremiumMediaPreview locale={locale} />
     </div>
   );
 }
 
-// ---------- Step 5: összegzés ----------
+// ---------- Step 5: summary ----------
 function Summary({
   data,
   errors,
   control,
   onEdit,
   showConsentError,
+  t,
+  formatPrice,
+  fees,
+  locale,
 }: {
   data: RegistrationInput;
   errors: Errs;
@@ -608,18 +871,32 @@ function Summary({
   // rendered until now). Only show it once the user has actually tried to
   // submit, not just because it's sitting in resolver state.
   showConsentError: boolean;
+  t: WizardStrings;
+  formatPrice: (amount: number) => string;
+  fees: { entryBase: number; entryWithShirt: number; premiumMedia: number };
+  locale: RegistrationLocale;
 }) {
   const total = num(data.openerSquat) + num(data.openerBench) + num(data.openerDeadlift);
-  const entryFee = data.wantsShirt ? EVENT.fees.entryWithShirt : EVENT.fees.entryBase;
-  const payable = entryFee + (data.premiumMedia ? EVENT.fees.premiumMedia : 0);
+  const entryFee = data.wantsShirt ? fees.entryWithShirt : fees.entryBase;
+  const payable = entryFee + (data.premiumMedia ? fees.premiumMedia : 0);
 
   const rows: [string, string, number][] = [
-    ["Név", `${data.lastName} ${data.firstName}`, 1],
-    ["E-mail", data.email, 1],
-    ["Kategória", `${data.division} · ${data.sex} · ${data.birthYear}`, 2],
-    ["Testsúly / total", `${data.bodyweight || "—"} kg · ${total || "—"} kg`, 3],
+    [t.summaryName, `${data.lastName} ${data.firstName}`, 1],
+    [t.summaryEmail, data.email, 1],
+    [
+      t.summaryCategory,
+      `${data.division === t.divisionNovice ? t.divisionNoviceLabel : t.divisionCompetitorLabel} · ${t.sexLabels[data.sex] ?? data.sex} · ${data.birthYear}`,
+      2,
+    ],
+    [t.summaryWeightTotal, `${data.bodyweight || "—"} ${t.kg} · ${total || "—"} ${t.kg}`, 3],
     ...(data.wantsShirt
-      ? ([["Póló", `${data.shirtCut || "—"} · ${data.shirtSize || "—"}`, 4]] as [string, string, number][])
+      ? ([
+          [
+            t.summaryShirt,
+            `${data.shirtCut ? t.shirtCutLabels[data.shirtCut] ?? data.shirtCut : "—"} · ${data.shirtSize || "—"}`,
+            4,
+          ],
+        ] as [string, string, number][])
       : []),
   ];
 
@@ -636,7 +913,7 @@ function Summary({
                 onClick={() => onEdit(step)}
                 className="text-xs font-semibold text-primary hover:underline"
               >
-                Módosítom
+                {t.edit}
               </button>
             </span>
           </div>
@@ -646,20 +923,20 @@ function Summary({
       <Card>
         <CardContent className="flex flex-col gap-2 p-5">
           <div className="flex justify-between text-sm">
-            <span>Nevezési díj{data.wantsShirt ? " + póló" : ""}</span>
-            <span className="tabular-nums">{formatHUF(entryFee)} Ft</span>
+            <span>{t.entryFeeLabel(!!data.wantsShirt)}</span>
+            <span className="tabular-nums">{formatPrice(entryFee)}</span>
           </div>
           {data.premiumMedia && (
             <div className="flex justify-between text-sm">
-              <span>Prémium média csomag</span>
-              <span className="tabular-nums">{formatHUF(EVENT.fees.premiumMedia)} Ft</span>
+              <span>{t.premiumMediaLabel}</span>
+              <span className="tabular-nums">{formatPrice(fees.premiumMedia)}</span>
             </div>
           )}
           <div className="my-1 h-px bg-border" />
           <div className="flex items-baseline justify-between">
-            <span className="font-semibold">Fizetendő</span>
+            <span className="font-semibold">{t.payable}</span>
             <span className="font-display text-2xl font-extrabold text-primary tabular-nums">
-              {formatHUF(payable)} Ft
+              {formatPrice(payable)}
             </span>
           </div>
         </CardContent>
@@ -676,15 +953,20 @@ function Summary({
               aria-invalid={showConsentError && !!errors.consent}
             />
             <span>
-              Elfogadom az{" "}
-              <a href="/adatkezeles" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                adatkezelési tájékoztatót
-              </a>{" "}
-              és a{" "}
-              <a href={EVENT.docs.invitation} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                versenykiírást
+              {t.consentPrefix}
+              <a href={locale === "en" ? "/en/adatkezeles" : "/adatkezeles"} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                {t.consentPrivacy}
               </a>
-              . Tudomásul veszem, hogy a nevezés a fizetéssel válik véglegessé.
+              {t.consentMiddle}
+              <a
+                href={locale === "en" ? "/en/versenykiiras" : EVENT.docs.invitation}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline"
+              >
+                {t.consentInvitation}
+              </a>
+              {t.consentSuffix}
             </span>
           </label>
         )}
@@ -701,8 +983,19 @@ function Summary({
 
 const MAX_FACE_PHOTO_MB = 20;
 
-export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: boolean } = {}) {
+export function RegistrationWizard({
+  isAdminTest = false,
+  locale = "hu",
+  inviteCode,
+}: { isAdminTest?: boolean; locale?: RegistrationLocale; inviteCode?: string } = {}) {
   const router = useRouter();
+  const t = STRINGS[locale];
+  const fees = locale === "en" ? EVENT.feesEur : EVENT.fees;
+  const formatPrice = useCallback(
+    (amount: number) => (locale === "en" ? `€${formatEUR(amount)}` : `${formatHUF(amount)} Ft`),
+    [locale]
+  );
+  const schema = useMemo(() => buildRegistrationSchema(locale).schema, [locale]);
   const [step, setStep] = useState(1);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -715,44 +1008,47 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
   const [facePhotoAttempted, setFacePhotoAttempted] = useState(false);
   const facePhotoObjectUrl = useRef<string | null>(null);
 
-  const handleFacePhotoSelect = useCallback(async (file: File | null) => {
-    if (facePhotoObjectUrl.current) {
-      URL.revokeObjectURL(facePhotoObjectUrl.current);
-      facePhotoObjectUrl.current = null;
-    }
-    if (!file) {
-      setFacePhotoDataUrl(null);
-      setFacePhotoPreviewUrl(null);
-      return;
-    }
-    if (!file.type.startsWith("image/")) {
-      setFacePhotoError("Csak képfájlt tudunk elfogadni (jpg, png, heic).");
-      setFacePhotoDataUrl(null);
-      setFacePhotoPreviewUrl(null);
-      return;
-    }
-    if (file.size > MAX_FACE_PHOTO_MB * 1024 * 1024) {
-      setFacePhotoError(`A fájl túl nagy (max. ${MAX_FACE_PHOTO_MB} MB).`);
-      setFacePhotoDataUrl(null);
-      setFacePhotoPreviewUrl(null);
-      return;
-    }
-    setFacePhotoError(null);
-    setFacePhotoProcessing(true);
-    try {
-      const dataUrl = await compressImageToDataUrl(file);
-      setFacePhotoDataUrl(dataUrl);
-      const previewUrl = URL.createObjectURL(file);
-      facePhotoObjectUrl.current = previewUrl;
-      setFacePhotoPreviewUrl(previewUrl);
-    } catch {
-      setFacePhotoError("A fotó feldolgozása nem sikerült, próbálj egy másik képet.");
-      setFacePhotoDataUrl(null);
-      setFacePhotoPreviewUrl(null);
-    } finally {
-      setFacePhotoProcessing(false);
-    }
-  }, []);
+  const handleFacePhotoSelect = useCallback(
+    async (file: File | null) => {
+      if (facePhotoObjectUrl.current) {
+        URL.revokeObjectURL(facePhotoObjectUrl.current);
+        facePhotoObjectUrl.current = null;
+      }
+      if (!file) {
+        setFacePhotoDataUrl(null);
+        setFacePhotoPreviewUrl(null);
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        setFacePhotoError(t.facePhotoTypeError);
+        setFacePhotoDataUrl(null);
+        setFacePhotoPreviewUrl(null);
+        return;
+      }
+      if (file.size > MAX_FACE_PHOTO_MB * 1024 * 1024) {
+        setFacePhotoError(t.facePhotoSizeError(MAX_FACE_PHOTO_MB));
+        setFacePhotoDataUrl(null);
+        setFacePhotoPreviewUrl(null);
+        return;
+      }
+      setFacePhotoError(null);
+      setFacePhotoProcessing(true);
+      try {
+        const dataUrl = await compressImageToDataUrl(file);
+        setFacePhotoDataUrl(dataUrl);
+        const previewUrl = URL.createObjectURL(file);
+        facePhotoObjectUrl.current = previewUrl;
+        setFacePhotoPreviewUrl(previewUrl);
+      } catch {
+        setFacePhotoError(t.facePhotoProcessError);
+        setFacePhotoDataUrl(null);
+        setFacePhotoPreviewUrl(null);
+      } finally {
+        setFacePhotoProcessing(false);
+      }
+    },
+    [t]
+  );
 
   useEffect(() => {
     return () => {
@@ -770,10 +1066,19 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
     getValues,
     formState: { errors, isSubmitted },
   } = useForm<RegistrationInput>({
-    resolver: zodResolver(registrationSchema),
+    resolver: zodResolver(schema),
     defaultValues: REGISTRATION_DEFAULTS,
     mode: "onBlur",
   });
+
+  // Funnel entry point. Skipped in admin test mode so D/Miki's own test
+  // runs on /admin never show up as real drop-off data.
+  useEffect(() => {
+    if (isAdminTest) return;
+    trackFunnelEvent("nevezes_view", { locale, invited: !!inviteCode });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Restore a draft on mount — skipped in admin test mode, so each test run
   // starts from a clean form instead of picking up a previous tester's
   // leftover draft on the same browser (D, 2026-10-30).
@@ -854,26 +1159,56 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
     }
     if (valid) {
       setSubmitError(null);
-      setStep((s) => Math.min(5, s + 1));
+      const nextStep = Math.min(5, step + 1);
+      setStep(nextStep);
+      if (!isAdminTest) trackFunnelEvent("nevezes_step_reached", { step: nextStep, locale });
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (!isAdminTest) {
+      trackFunnelEvent("nevezes_validation_error", { step, locale });
     }
-  }, [step, trigger]);
+  }, [step, trigger, isAdminTest, locale]);
 
   const goBack = useCallback(() => {
     setStep((s) => Math.max(1, s - 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  // Step 4's "Fizetés" button validates the WHOLE schema (shirt cut/size is
+  // only required if wantsShirt is set, via a superRefine on the merged
+  // schema), not just the current step — so a field left empty on an
+  // earlier step can fail silently here with no visible error, since that
+  // field isn't even rendered on step 5 (D, 2026-11-03: filled the shirt
+  // checkbox but not cut/size, pressed Fizetés on step 5, nothing happened
+  // — no request, no message). Jump back to the earliest step that has an
+  // invalid field and say so, instead of leaving the button looking broken.
+  const onInvalidSubmit = useCallback(
+    (formErrors: Errs) => {
+      const invalidStep = STEP_FIELDS.findIndex((fields) => fields.some((f) => formErrors[f]));
+      if (invalidStep !== -1) {
+        setStep(invalidStep + 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      setSubmitError(t.invalidSubmit);
+      if (!isAdminTest) {
+        trackFunnelEvent("nevezes_validation_error", { step: invalidStep + 1, locale });
+      }
+    },
+    [setStep, t, isAdminTest, locale]
+  );
+
   const onSubmit = handleSubmit(async (data) => {
     if (data.honeypot) return; // silently drop bot submissions
     setSubmitting(true);
     setSubmitError(null);
+    if (!isAdminTest) trackFunnelEvent("nevezes_submit_attempt", { locale });
     try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
+          locale,
+          inviteCode,
           utm: typeof window !== "undefined" ? window.location.search : "",
           facePhoto: facePhotoDataUrl,
         }),
@@ -883,32 +1218,34 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
         throw new Error(json?.error ?? "unknown");
       }
       clearDraft();
+      const koszonjukPath = locale === "en" ? "/en/nevezes/koszonjuk" : "/nevezes/koszonjuk";
+      const testParam = isAdminTest ? "&test=1" : "";
       if (json.waitlisted) {
-        router.push(`/nevezes/koszonjuk?rid=${json.registrationId}&waitlist=1`);
+        if (!isAdminTest) trackFunnelEvent("nevezes_waitlisted", { locale });
+        router.push(`${koszonjukPath}?rid=${json.registrationId}&waitlist=1${testParam}`);
         return;
       }
       if (json.stripeUrl) {
+        if (!isAdminTest) trackFunnelEvent("nevezes_stripe_redirect", { locale });
         window.location.assign(json.stripeUrl as string);
         return;
       }
-      router.push(`/nevezes/koszonjuk?rid=${json.registrationId}`);
+      if (!isAdminTest) trackFunnelEvent("nevezes_submit_success", { locale, demo: !!json.demo });
+      router.push(`${koszonjukPath}?rid=${json.registrationId}${testParam}`);
     } catch (err) {
       const code = err instanceof Error ? err.message : "unknown";
       if (code === "early_access_required") {
-        setSubmitError(
-          "Ezzel az e-mail címmel nem találtunk korai hozzáférést. A nevezés 18:00-kor mindenki számára megnyílik — addig csak a hírlevél-feliratkozók nevezhetnek ezzel az e-mail címükkel."
-        );
+        setSubmitError(t.earlyAccessError);
       } else if (code === "registration_closed") {
-        setSubmitError("A nevezés jelenleg nincs nyitva. Próbáld újra a nevezési időszakban.");
+        setSubmitError(t.registrationClosedError);
       } else {
-        setSubmitError(
-          "A jelentkezés beküldése nem sikerült. A piszkozatod megmaradt, próbáld újra, vagy írj nekünk e-mailt."
-        );
+        setSubmitError(t.genericSubmitError);
       }
+      if (!isAdminTest) trackFunnelEvent("nevezes_submit_error", { locale, reason: code });
     } finally {
       setSubmitting(false);
     }
-  });
+  }, onInvalidSubmit);
 
   const openers = useMemo(
     () => ({
@@ -921,30 +1258,21 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
 
   return (
     <div className="flex min-h-screen flex-col">
-      <WizardHeader step={step} onBack={step > 1 ? goBack : undefined} />
+      <WizardHeader step={step} onBack={step > 1 ? goBack : undefined} locale={locale} />
 
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
-        {step === 1 && <EventBanner />}
+        {step === 1 && <EventBanner locale={locale} />}
+        {step === 1 && locale === "en" && inviteCode && <InvitePriceSummary />}
 
         {restoredDraft && step === 1 && (
           <Alert>
             <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
-            <span>Folytatod a korábban megkezdett nevezésedet. A korábbi adataid betöltöttük.</span>
+            <span>{t.draftRestored}</span>
           </Alert>
         )}
 
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold sm:text-3xl">
-            {
-              [
-                "Alapadatok",
-                "Kategória",
-                "Nevezési adatok",
-                "Póló és extrák",
-                "Ellenőrizd az adataid",
-              ][step - 1]
-            }
-          </h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">{t.stepTitles[step - 1]}</h1>
         </div>
 
         {/*
@@ -986,9 +1314,10 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
                 onSelect: handleFacePhotoSelect,
               }}
               onPrefill={applyPriorYearPrefill}
+              t={t}
             />
           )}
-          {step === 2 && <Step2 control={control} errors={errors} />}
+          {step === 2 && <Step2 control={control} errors={errors} t={t} />}
           {step === 3 && (
             <Step3
               control={control}
@@ -996,9 +1325,20 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
               watchOpeners={openers}
               sex={values.sex}
               bodyweight={values.bodyweight}
+              t={t}
             />
           )}
-          {step === 4 && <Step4 control={control} errors={errors} wantsShirt={!!values.wantsShirt} />}
+          {step === 4 && (
+            <Step4
+              control={control}
+              errors={errors}
+              wantsShirt={!!values.wantsShirt}
+              t={t}
+              formatPrice={formatPrice}
+              fees={fees}
+              locale={locale}
+            />
+          )}
           {step === 5 && (
             <Summary
               data={getValues()}
@@ -1006,6 +1346,10 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
               control={control}
               onEdit={setStep}
               showConsentError={isSubmitted}
+              t={t}
+              formatPrice={formatPrice}
+              fees={fees}
+              locale={locale}
             />
           )}
 
@@ -1019,24 +1363,24 @@ export function RegistrationWizard({ isAdminTest = false }: { isAdminTest?: bool
           <div className="mt-auto flex flex-col gap-2 border-t border-border pt-4">
             {step < 5 ? (
               <Button type="button" size="lg" onClick={goNext}>
-                Tovább
+                {t.next}
                 <ChevronRight className="size-5" />
               </Button>
             ) : (
               <Button type="button" size="lg" disabled={submitting} onClick={onSubmit}>
                 <Lock className="size-4" />
                 {submitting
-                  ? "Feldolgozás…"
-                  : `Fizetés – ${formatHUF(
-                      (values.wantsShirt ? EVENT.fees.entryWithShirt : EVENT.fees.entryBase) +
-                        (values.premiumMedia ? EVENT.fees.premiumMedia : 0)
-                    )} Ft`}
+                  ? t.submitting
+                  : t.pay(
+                      formatPrice(
+                        (values.wantsShirt ? fees.entryWithShirt : fees.entryBase) +
+                          (values.premiumMedia ? fees.premiumMedia : 0)
+                      )
+                    )}
               </Button>
             )}
             <p className="text-center text-xs text-muted-foreground">
-              {step < 5
-                ? "Piszkozat mentve, később folytathatod."
-                : "Biztonságos fizetés a Stripe-on keresztül. Ezután átirányítunk."}
+              {step < 5 ? t.draftSavedHint : t.stripeHint}
             </p>
           </div>
         </form>

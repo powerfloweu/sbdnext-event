@@ -37,12 +37,15 @@ export const EVENT = {
   },
 
   registration: {
-    // Moved by the organiser (2026-10-30, via the project thread) from
-    // 2026-11-02 to 2026-11-03 18:00 (Nov 1 is halottak napja). Newsletter
-    // subscribers (notify_signups) still get a 1h early-access window from
-    // 17:00 — see earlyAccessOpensAt and app/api/notify/check.
-    earlyAccessOpensAt: "2026-11-03T17:00:00+01:00",
-    opensAt: "2026-11-03T18:00:00+01:00",
+    // Postponed indefinitely by the organiser (2026-11-04, via the project
+    // thread): the English registration flow isn't ready yet. No new date
+    // has been decided — these are a placeholder far enough out that the
+    // site stays in the "announced"/closed state until the organiser picks
+    // a real date and this gets updated again. Newsletter subscribers
+    // (notify_signups) get a 1h early-access window before opensAt — see
+    // earlyAccessOpensAt and app/api/notify/check.
+    earlyAccessOpensAt: "2026-11-25T18:00:00+01:00",
+    opensAt: "2026-11-25T19:00:00+01:00",
     closesAt: "2026-12-31T23:59:00+01:00",
     capacity: 220,
     waitlist: true,
@@ -66,12 +69,27 @@ export const EVENT = {
   // instead of being bundled into a single entry fee.
   fees: {
     currency: "HUF",
-    // Confirmed 2026-10-21, price corrected by the organiser 2026-10-22:
-    // entry 24 990 Ft, named shirt +7 990 Ft → 32 980 Ft with a shirt.
+    // Confirmed 2026-10-21, price corrected by the organiser 2026-10-22 to
+    // 32 980, then again 2026-11-03 to 32 990, then again 2026-11-04 once
+    // the final shirt cost was set: entry 24 990 Ft, entry+shirt 35 980 Ft
+    // (shirt add-on 10 990 Ft), entry+premium media 49 980 Ft,
+    // entry+shirt+premium media 60 970 Ft.
     entryBase: 24990,
-    entryWithShirt: 32980,
+    entryWithShirt: 35980,
     spectator: 1000,
     premiumMedia: 24990,
+  },
+
+  // EUR pricing for foreign athletes (English registration flow). Confirmed
+  // by the organiser 2026-11-04: entry 69€, +shirt 99€, +premium media
+  // 137€, +shirt+premium 167€ (all "99-ending" per D).
+  feesEur: {
+    entryBase: 69,
+    entryWithShirt: 99,
+    premiumMedia: 68,
+    // Confirmed by the organiser 2026-11-04: spectator ticket is 3 € for
+    // the English site (was previously shown in HUF only).
+    spectator: 3,
   },
 
   // Entry + shirt + premium-media are now built as a Stripe Checkout Session
@@ -110,6 +128,7 @@ export const EVENT = {
     { name: "SBD Hungary", logo: "/sbd_logo_transparent.png", url: "https://www.sbdhungary.hu/" },
     { name: "PowerFlow", logo: "/powerflow_logo.png", url: "https://power-flow.eu/" },
     { name: "Avancus", logo: "/avancus_logo.png", url: "https://power-flow.eu/" },
+    { name: "Thor Gym Újbuda", logo: "/thor_gym_logo.png", url: "https://ujbuda.thorgym.hu/" },
   ],
 
   mediaTeam: [
@@ -120,7 +139,7 @@ export const EVENT = {
   ],
 
   docs: {
-    invitation: "/docs/SBD_Next_versenykiiras.pdf",
+    invitation: "/versenykiiras",
     rules: "/docs/IPF_MERSZ_szabalyzat_2025.pdf",
     qualification: "/docs/MERSZ_Open_Minositesi_Szintek_2025.pdf",
   },

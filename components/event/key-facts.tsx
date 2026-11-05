@@ -17,7 +17,7 @@ export function KeyFacts() {
         eyebrow="Kategóriák"
         value={
           <>
-            Újonc · Versenyző
+            Tehetségkutató · Versenyzői
             <br />
             Női · Férfi
           </>
@@ -37,8 +37,9 @@ export function KeyFacts() {
         eyebrow="A díj tartalmazza"
         value={
           <>
-            Média csomag +<br />
-            SBD versenypóló
+            Média csomag,
+            <br />
+            profi fotók mindenkinek
           </>
         }
       />

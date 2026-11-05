@@ -10,10 +10,10 @@ import { formatKg } from "@/lib/format";
 import type { LeaderboardCategory, LeaderboardRow } from "@/lib/sheets";
 
 const TAB_LABELS: Record<LeaderboardCategory, string> = {
-  ujoncNoi: "Újonc – Nők",
-  ujoncFerfi: "Újonc – Férfiak",
-  versenyzoNoi: "Versenyző – Nők",
-  versenyzoFerfi: "Versenyző – Férfiak",
+  ujoncNoi: "Tehetségkutató – Nők",
+  ujoncFerfi: "Tehetségkutató – Férfiak",
+  versenyzoNoi: "Versenyzői – Nők",
+  versenyzoFerfi: "Versenyzői – Férfiak",
 };
 
 const TAB_ORDER: LeaderboardCategory[] = [

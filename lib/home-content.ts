@@ -9,6 +9,11 @@ export interface HomeContent {
   badgeTone: "open" | "neutral" | "closed";
   description: string;
   primaryCta: { label: string; href: string };
+  // Shorter label for the always-visible header button, when the full
+  // primaryCta.label (used in the Hero and elsewhere) would otherwise be
+  // repeated verbatim across header + hero + the registration teaser's own
+  // form — defaults to primaryCta.label when not set.
+  headerCtaLabel?: string;
   secondaryCta: { label: string; href: string } | null;
   countdown: { target: string; label: string } | null;
   showCapacity: boolean;
@@ -58,7 +63,8 @@ export function getHomeContent(phase: Phase): HomeContent {
         badgeTone: "neutral",
         description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Értesítést kérek", href: "#register" },
-        secondaryCta: null,
+        headerCtaLabel: "Értesítés",
+        secondaryCta: { label: "Versenykiírás", href: "/versenykiiras" },
         countdown: null,
         showCapacity: false,
         showRegistrationTeaser: true,

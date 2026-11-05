@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 
   const { data: rows, error } = await admin
     .from("registrations")
-    .select("id, email, first_name, edit_token")
+    .select("id, email, first_name, edit_token, locale")
     .is("face_photo_path", null)
     .is("face_photo_reminder_sent_at", null)
     .eq("is_preview_test", false)
@@ -67,6 +67,7 @@ export async function GET(req: NextRequest) {
         email: row.email,
         firstName: row.first_name,
         editUrl: `${EVENT.siteUrl}/nevezes/szerkesztes/${row.id}?token=${row.edit_token}`,
+        locale: row.locale === "en" ? "en" : "hu",
       });
       const { error: updateError } = await admin
         .from("registrations")

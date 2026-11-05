@@ -1,6 +1,7 @@
-import { CalendarDays, MapPin, Timer, ExternalLink } from "lucide-react";
+import { CalendarDays, MapPin, Timer, ExternalLink, BookOpenText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { PhaseBanner } from "@/components/site/phase-banner";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { Progress } from "@/components/ui/progress";
@@ -13,13 +14,40 @@ const FACT_LABELS = {
   en: { date: "Date", time: "Time", venue: "Venue" },
 } as const;
 
+// Facts pulled from the actual rulebook (components/event/competition-rules-document.tsx)
+// rather than repeating the hero's own description/date/venue, which are already
+// shown above this card.
+const RULES_CARD = {
+  hu: {
+    title: "Versenykiírás",
+    summary: [
+      "Két kategória: Tehetségkutató (újonc) és Versenyzői, mindkettő IPF GL pontok alapján",
+      "Tehetségkutató kategóriában nem kötelező a versenyfelszerelés (mez) — cicanadrág vagy rövidnadrág is jó",
+      "A helyezéseket mindkét kategóriában IPF GL pontok alapján állapítjuk meg",
+    ],
+    cta: "Tovább a részletekért",
+  },
+  en: {
+    title: "Competition rules",
+    summary: [
+      "Two categories: Rookie and Lifter, both ranked by IPF GL points",
+      "Rookie category doesn't require a competition singlet — fitted leggings or shorts are fine",
+      "Standings in both categories are decided by IPF GL points",
+    ],
+    cta: "More details",
+  },
+} as const;
+
 interface HeroProps {
   dateLabel: string;
   timeLabel: string;
   badgeLabel: string;
   badgeTone: "open" | "neutral" | "closed";
   description: string;
-  primaryCta: { label: string; href: string };
+  // null when the header's own CTA (and, further down, the registration
+  // teaser's signup form) already cover this action — avoids repeating the
+  // exact same CTA a third time in the hero.
+  primaryCta: { label: string; href: string } | null;
   secondaryCta: { label: string; href: string } | null;
   countdown: { target: string; label: string } | null;
   capacity: { used: number; limit: number } | null;
@@ -42,7 +70,7 @@ export function Hero({
 }: HeroProps) {
   return (
     <section className="relative overflow-hidden">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-8 pb-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:items-center lg:pb-16">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-8 pb-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:items-stretch lg:pb-16">
         <div className="flex flex-col gap-6 lg:col-span-6">
           <PhaseBanner label={badgeLabel} tone={badgeTone} className="self-start" />
           <h1>
@@ -72,17 +100,20 @@ export function Hero({
               </div>
             </div>
           </FogCard>
+          {(primaryCta || (secondaryCta && !secondaryCta.href.includes("versenykiiras"))) && (
           <div className="flex flex-wrap gap-3 pt-2">
-            <Button asChild size="lg">
-              <a
-                href={primaryCta.href}
-                target={primaryCta.href.startsWith("/") || primaryCta.href.startsWith("#") ? undefined : "_blank"}
-                rel="noopener noreferrer"
-              >
-                {primaryCta.label}
-              </a>
-            </Button>
-            {secondaryCta && (
+            {primaryCta && (
+              <Button asChild size="lg">
+                <a
+                  href={primaryCta.href}
+                  target={primaryCta.href.startsWith("/") || primaryCta.href.startsWith("#") ? undefined : "_blank"}
+                  rel="noopener noreferrer"
+                >
+                  {primaryCta.label}
+                </a>
+              </Button>
+            )}
+            {secondaryCta && !secondaryCta.href.includes("versenykiiras") && (
               <Button asChild variant="secondary" size="lg">
                 <a
                   href={secondaryCta.href}
@@ -95,10 +126,39 @@ export function Hero({
               </Button>
             )}
           </div>
+          )}
+
+          {secondaryCta && secondaryCta.href.includes("versenykiiras") && (
+            <Card className="border-primary/70 bg-gradient-to-br from-primary/15 via-card to-card">
+              <CardContent className="flex flex-col gap-3 p-6">
+                <div className="flex items-center gap-2">
+                  <BookOpenText className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                  <span className="font-display text-xl font-extrabold text-primary">
+                    {RULES_CARD[locale].title}
+                  </span>
+                </div>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-foreground/80">
+                  {RULES_CARD[locale].summary.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+                <Button asChild variant="secondary" size="lg" className="mt-1 self-start">
+                  <a
+                    href={secondaryCta.href}
+                    target={secondaryCta.href.startsWith("/") ? undefined : "_blank"}
+                    rel="noopener noreferrer"
+                  >
+                    {RULES_CARD[locale].cta}
+                    <ExternalLink className="size-4" />
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="relative lg:col-span-6">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:h-[420px] lg:aspect-auto">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:aspect-auto lg:h-full lg:min-h-[420px]">
             <HeroPhoto locale={locale} />
             <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/10 to-transparent" />
             {(countdown || capacity) && (

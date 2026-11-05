@@ -82,8 +82,8 @@ function SplitTable({ title, data }: { title: string; data: ClassCount[] }) {
         <thead className="border-b border-border text-xs uppercase text-muted-foreground">
           <tr>
             <th className="p-2">Súlycsoport</th>
-            <th className="p-2 text-right">Versenyző</th>
-            <th className="p-2 text-right">Újonc</th>
+            <th className="p-2 text-right">Versenyzői</th>
+            <th className="p-2 text-right">Tehetségkutató</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">

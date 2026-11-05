@@ -19,7 +19,14 @@ export default function AdminLoginPage() {
       const supabase = getSupabaseBrowser();
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin` },
+        // No ?next= query string here on purpose: Supabase's Redirect URLs
+        // allow-list match fails when the actual redirect URL carries a
+        // query string the configured entry doesn't have, and silently
+        // falls back to the Site URL (production) instead of erroring —
+        // that's what caused the preview login loop. /auth/callback's own
+        // default is already "/admin", so dropping the query string keeps
+        // this an exact match against the allow-list entry.
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       setStatus(error ? "error" : "sent");
     } catch {
@@ -33,7 +40,7 @@ export default function AdminLoginPage() {
       const supabase = getSupabaseBrowser();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/auth/callback?next=/admin` },
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) setGoogleStatus("error");
       // On success the browser navigates away to Google, so no further state change needed here.

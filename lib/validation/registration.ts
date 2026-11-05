@@ -1,80 +1,128 @@
 import { z } from "zod";
 import { EVENT } from "@/config/event";
 
-const numericString = (min: number, max: number, message: string) =>
+export type RegistrationLocale = "hu" | "en";
+
+const MESSAGES = {
+  hu: {
+    required: "Kötelező mező.",
+    lastName: "Add meg a vezetékneved.",
+    firstName: "Add meg a keresztneved.",
+    email: "Add meg az e-mail címed.",
+    emailInvalid: "Érvénytelen e-mail cím.",
+    birthYearFormat: "Négy számjegyű évszám (pl. 1995).",
+    birthYearRange: (min: number, max: number) => `A születési évnek ${min} és ${max} közé kell esnie.`,
+    sex: "Válaszd ki a nemed.",
+    division: "Válaszd ki a kategóriát.",
+    weightRange: (min: number, max: number) => `${min} és ${max} kg közé essen.`,
+    consent: "A nevezéshez el kell fogadnod a feltételeket.",
+    shirtCut: "Válaszd ki a póló fazonját.",
+    shirtSize: "Válaszd ki a pólóméretet.",
+  },
+  en: {
+    required: "Required.",
+    lastName: "Enter your last name.",
+    firstName: "Enter your first name.",
+    email: "Enter your e-mail address.",
+    emailInvalid: "Invalid e-mail address.",
+    birthYearFormat: "Four-digit year (e.g. 1995).",
+    birthYearRange: (min: number, max: number) => `Birth year must be between ${min} and ${max}.`,
+    sex: "Select your sex.",
+    division: "Select a division.",
+    weightRange: (min: number, max: number) => `Must be between ${min} and ${max} kg.`,
+    consent: "You must accept the terms to register.",
+    shirtCut: "Select a shirt cut.",
+    shirtSize: "Select a shirt size.",
+  },
+} as const;
+
+const numericString = (min: number, max: number, requiredMsg: string, rangeMsg: string) =>
   z
     .string()
     .trim()
-    .min(1, "Kötelező mező.")
+    .min(1, requiredMsg)
     .refine((v) => {
       const n = Number(v.replace(",", "."));
       return Number.isFinite(n) && n >= min && n <= max;
-    }, message);
+    }, rangeMsg);
 
-export const step1Schema = z.object({
-  lastName: z.string().trim().min(1, "Add meg a vezetékneved."),
-  firstName: z.string().trim().min(1, "Add meg a keresztneved."),
-  email: z.string().trim().min(1, "Add meg az e-mail címed.").email("Érvénytelen e-mail cím."),
-  birthYear: z
-    .string()
-    .trim()
-    .regex(/^\d{4}$/, "Négy számjegyű évszám (pl. 1995).")
-    .refine((v) => {
-      const n = Number(v);
-      return n >= EVENT.registration.minBirthYear && n <= EVENT.registration.maxBirthYear;
-    }, `A születési évnek ${EVENT.registration.minBirthYear} és ${EVENT.registration.maxBirthYear} közé kell esnie.`),
-  sex: z.enum(["Nő", "Férfi"], { message: "Válaszd ki a nemed." }),
-});
+export function buildRegistrationSchema(locale: RegistrationLocale = "hu") {
+  const m = MESSAGES[locale];
 
-export const step2Schema = z.object({
-  division: z.enum(["Újonc", "Versenyző"], { message: "Válaszd ki a kategóriát." }),
-  club: z.string().trim().optional(),
-});
-
-export const step3Schema = z.object({
-  bodyweight: numericString(30, 250, "30 és 250 kg közé essen."),
-  openerSquat: numericString(20, 400, "20 és 400 kg közé essen."),
-  openerBench: numericString(20, 400, "20 és 400 kg közé essen."),
-  openerDeadlift: numericString(20, 400, "20 és 400 kg közé essen."),
-  mcText: z.string().trim().optional(),
-  notes: z.string().trim().optional(),
-});
-
-export const step4Schema = z.object({
-  wantsShirt: z.boolean(),
-  shirtCut: z.enum(["Női", "Férfi"]).optional(),
-  shirtSize: z.enum(EVENT.shirt.sizes as unknown as [string, ...string[]]).optional(),
-  premiumMedia: z.boolean(),
-});
-
-export const step5Schema = z.object({
-  consent: z.literal(true, { message: "A nevezéshez el kell fogadnod a feltételeket." }),
-  honeypot: z.string().max(0, "").optional(),
-});
-
-export const registrationSchema = step1Schema
-  .merge(step2Schema)
-  .merge(step3Schema)
-  .merge(step4Schema)
-  .merge(step5Schema)
-  .superRefine((data, ctx) => {
-    if (!data.wantsShirt) return;
-    if (!data.shirtCut) {
-      ctx.addIssue({ code: "custom", path: ["shirtCut"], message: "Válaszd ki a póló fazonját." });
-    }
-    if (!data.shirtSize) {
-      ctx.addIssue({ code: "custom", path: ["shirtSize"], message: "Válaszd ki a pólóméretet." });
-    }
+  const step1Schema = z.object({
+    lastName: z.string().trim().min(1, m.lastName),
+    firstName: z.string().trim().min(1, m.firstName),
+    email: z.string().trim().min(1, m.email).email(m.emailInvalid),
+    birthYear: z
+      .string()
+      .trim()
+      .regex(/^\d{4}$/, m.birthYearFormat)
+      .refine((v) => {
+        const n = Number(v);
+        return n >= EVENT.registration.minBirthYear && n <= EVENT.registration.maxBirthYear;
+      }, m.birthYearRange(EVENT.registration.minBirthYear, EVENT.registration.maxBirthYear)),
+    sex: z.enum(["Nő", "Férfi"], { message: m.sex }),
   });
 
+  const step2Schema = z.object({
+    division: z.enum(["Újonc", "Versenyző"], { message: m.division }),
+    club: z.string().trim().optional(),
+  });
+
+  const step3Schema = z.object({
+    bodyweight: numericString(30, 250, m.required, m.weightRange(30, 250)),
+    openerSquat: numericString(20, 400, m.required, m.weightRange(20, 400)),
+    openerBench: numericString(20, 400, m.required, m.weightRange(20, 400)),
+    openerDeadlift: numericString(20, 400, m.required, m.weightRange(20, 400)),
+    mcText: z.string().trim().optional(),
+    notes: z.string().trim().optional(),
+  });
+
+  const step4Schema = z.object({
+    wantsShirt: z.boolean(),
+    shirtCut: z.enum(["Női", "Férfi"]).optional(),
+    shirtSize: z.enum(EVENT.shirt.sizes as unknown as [string, ...string[]]).optional(),
+    premiumMedia: z.boolean(),
+  });
+
+  const step5Schema = z.object({
+    consent: z.literal(true, { message: m.consent }),
+    honeypot: z.string().max(0, "").optional(),
+  });
+
+  const schema = step1Schema
+    .merge(step2Schema)
+    .merge(step3Schema)
+    .merge(step4Schema)
+    .merge(step5Schema)
+    .superRefine((data, ctx) => {
+      if (!data.wantsShirt) return;
+      if (!data.shirtCut) {
+        ctx.addIssue({ code: "custom", path: ["shirtCut"], message: m.shirtCut });
+      }
+      if (!data.shirtSize) {
+        ctx.addIssue({ code: "custom", path: ["shirtSize"], message: m.shirtSize });
+      }
+    });
+
+  return { schema, step1Schema, step2Schema, step3Schema, step4Schema, step5Schema };
+}
+
+// Hungarian is the default wizard's schema — kept as the original named
+// exports so the existing (hu-only) call sites don't need to change.
+const hu = buildRegistrationSchema("hu");
+export const registrationSchema = hu.schema;
+export const step1Schema = hu.step1Schema;
+export const step2Schema = hu.step2Schema;
+export const step3Schema = hu.step3Schema;
 export type RegistrationInput = z.infer<typeof registrationSchema>;
 
 export const STEP_FIELDS = [
-  Object.keys(step1Schema.shape) as (keyof RegistrationInput)[],
-  Object.keys(step2Schema.shape) as (keyof RegistrationInput)[],
-  Object.keys(step3Schema.shape) as (keyof RegistrationInput)[],
-  Object.keys(step4Schema.shape) as (keyof RegistrationInput)[],
-  Object.keys(step5Schema.shape) as (keyof RegistrationInput)[],
+  Object.keys(hu.step1Schema.shape) as (keyof RegistrationInput)[],
+  Object.keys(hu.step2Schema.shape) as (keyof RegistrationInput)[],
+  Object.keys(hu.step3Schema.shape) as (keyof RegistrationInput)[],
+  Object.keys(hu.step4Schema.shape) as (keyof RegistrationInput)[],
+  Object.keys(hu.step5Schema.shape) as (keyof RegistrationInput)[],
 ];
 
 export const REGISTRATION_DEFAULTS: RegistrationInput = {

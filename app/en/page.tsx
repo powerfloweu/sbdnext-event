@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { SponsorGrid } from "@/components/site/sponsor-grid";
 import { FogGlow } from "@/components/site/fog-glow";
 import { Hero } from "@/components/event/hero";
 import { RegistrationTeaser } from "@/components/event/registration-teaser";
-import { FeesTeaser } from "@/components/event/fees-teaser";
+import { FeesSection } from "@/components/event/fees-section";
 import { VenueSection } from "@/components/event/venue-section";
 import { PhotoStrip } from "@/components/event/photo-strip";
 import { MoodVideoRow } from "@/components/event/mood-video";
@@ -18,6 +19,39 @@ import { EVENT } from "@/config/event";
 import { getPhase } from "@/lib/phase";
 
 export const revalidate = 60;
+
+const title = "SBD Next II – Open Powerlifting Competition | Thor Gym, Budapest, 13–14 February 2027";
+const ogTitle = "SBD Next II – Open Powerlifting Competition";
+const description =
+  "SBD Next – an IPF-rules powerlifting competition for novice and competitive lifters at Thor Gym, Budapest. Full power meet with a media package and an optional name-printed SBD competition shirt.";
+const ogDescription = "An IPF-rules powerlifting meet for novice and competitive lifters at Thor Gym, Budapest.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  openGraph: {
+    title: ogTitle,
+    description: ogDescription,
+    url: `${EVENT.siteUrl}/en`,
+    siteName: EVENT.name,
+    images: [
+      {
+        url: "/photos/hero-desktop.jpg",
+        width: 1600,
+        height: 900,
+        alt: "SBD Next – powerlifting meet at Thor Gym",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: ogTitle,
+    description: ogDescription,
+    images: ["/photos/hero-desktop.jpg"],
+  },
+};
 
 // This page mirrors app/page.tsx, translated. It's only fully translated for
 // the "announced" teaser phase, since that's the only phase actually live
@@ -34,10 +68,13 @@ export default function EnglishPage() {
         <FogGlow />
 
         <Header
-          ctaLabel="Notify me"
+          ctaLabel="Notify"
           ctaHref="#register"
           showVolunteerLink={false}
-          navLinks={[{ href: "/en/results", label: "SBD Next I Results", wordmarkRoman: "I" }]}
+          navLinks={[
+            { href: "#fees", label: "Registration", emphasized: true },
+            { href: "/en/results", label: "SBD Next I Results", wordmarkRoman: "I" },
+          ]}
           locale="en"
         />
 
@@ -48,8 +85,8 @@ export default function EnglishPage() {
             badgeLabel="Registration and details coming soon"
             badgeTone="neutral"
             description="The next level. An open powerlifting competition for novice and competitive lifters, under IPF rules."
-            primaryCta={{ label: "Notify me", href: "#register" }}
-            secondaryCta={null}
+            primaryCta={null}
+            secondaryCta={{ label: "Competition Rules", href: "/en/versenykiiras" }}
             countdown={null}
             capacity={null}
             locale="en"
@@ -64,7 +101,7 @@ export default function EnglishPage() {
               locale="en"
             />
 
-            <FeesTeaser locale="en" />
+            <FeesSection locale="en" />
 
             <MoodVideoRow locale="en" />
 
@@ -103,12 +140,13 @@ export default function EnglishPage() {
           </Link>
           <h1 className="text-2xl font-bold">SBD Next – English information for athletes</h1>
           <p className="text-sm text-foreground/90">
-            This page explains the main details of the event in English and helps you fill out
-            the (Hungarian) registration form correctly.
+            This page explains the main details of the event in English. If you were sent a
+            personal English registration link, use that — it opens a registration form in
+            English with EUR pricing. Otherwise, the registration form on the main site is in
+            Hungarian only; the glossary below helps you fill it out.
           </p>
           <p className="text-xs text-muted-foreground">
-            The registration form itself is in Hungarian only. If you are unsure about anything,
-            contact us at{" "}
+            If you are unsure about anything, contact us at{" "}
             <a href={`mailto:${EVENT.contact.email}`} className="text-primary underline">
               {EVENT.contact.email}
             </a>
@@ -150,7 +188,7 @@ export default function EnglishPage() {
           <CardContent className="flex flex-col gap-4 p-6 text-sm">
             <div className="flex items-center gap-2">
               <Info className="size-4 text-primary" aria-hidden="true" />
-              <h2 className="text-base font-semibold">How to fill out the registration form</h2>
+              <h2 className="text-base font-semibold">How to fill out the Hungarian registration form</h2>
             </div>
             <p className="text-xs text-muted-foreground">
               Below: the original Hungarian label → its English meaning. Fields marked{" "}
@@ -176,8 +214,8 @@ export default function EnglishPage() {
                 <b>Nem *</b> – Sex (&quot;Nő&quot; = female, &quot;Férfi&quot; = male)
               </div>
               <div>
-                <b>Újonc / Versenyző *</b> – Division: <b>Újonc</b> = Novice (no national
-                championships yet), <b>Versenyző</b> = Competitive (national-level experience)
+                <b>Tehetségkutató / Versenyzői *</b> – Division: <b>Tehetségkutató</b> = Rookie (no
+                national championships yet), <b>Versenyzői</b> = Lifter (national-level experience)
               </div>
               <div>
                 <b>Testsúly / nevezési súlyok *</b> – Planned bodyweight and opening attempts (kg)
@@ -186,11 +224,12 @@ export default function EnglishPage() {
               </div>
               <div>
                 <b>Póló fazon / méret *</b> – T-shirt cut (women&apos;s / men&apos;s) and size
-                (XS–4XL). This is the meet shirt included in your entry fee.
+                (XS–4XL). Only required if you chose the Entry + shirt package. The shirt is
+                unique and name-printed.
               </div>
               <div>
-                <b>Prémium média csomag</b> – Optional add-on: 3 photos + 3 videos, priority
-                selection.
+                <b>Prémium média csomag</b> – Optional add-on: at least 3 photos and 3 videos, of
+                your best attempt on each lift.
               </div>
               <div>
                 <b>Hozzájárulok…</b> – Consent checkbox: data processing, meet rules, and that
@@ -202,8 +241,9 @@ export default function EnglishPage() {
 
         <section className="flex flex-col items-center gap-3 text-center text-sm">
           <p className="text-foreground/90">
-            When ready, go to the main page and complete the registration form. If you end up on
-            the waitlist, you will be contacted by e-mail before you have to pay.
+            No personal English link? When ready, go to the main page and complete the (Hungarian)
+            registration form using the glossary above. If you end up on the waitlist, you will be
+            contacted by e-mail before you have to pay.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg">

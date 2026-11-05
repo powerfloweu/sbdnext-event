@@ -22,7 +22,7 @@ const STRINGS = {
     documents: "Documents",
     invitation: "Competition invitation (PDF, Hungarian)",
     rules: "IPF / MERSZ rulebook (Hungarian)",
-    privacy: "Privacy notice (Hungarian)",
+    privacy: "Privacy notice",
     language: "Language",
     currentLang: "English",
     otherLangHref: "/",
@@ -98,9 +98,16 @@ export function Footer({ showInvitation = true, locale = "hu" }: FooterProps) {
               {t.invitation}
             </a>
           )}
-          {/* Not linked for now — no confirmed URL/final document yet. */}
+          {/* Rules PDF not linked here yet — see the EN/HU rulebook translation
+              question flagged in the project thread (2026-11-04); the
+              privacy notice (interim placeholder on both locales) is. */}
           <span className="text-muted-foreground">{t.rules}</span>
-          <span className="text-muted-foreground">{t.privacy}</span>
+          <Link
+            href={locale === "en" ? "/en/adatkezeles" : "/adatkezeles"}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            {t.privacy}
+          </Link>
         </div>
 
         <div className="flex flex-col gap-3">

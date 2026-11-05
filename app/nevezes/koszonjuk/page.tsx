@@ -3,18 +3,24 @@ import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { FunnelPageView } from "@/components/analytics/funnel-page-view";
 import { EVENT } from "@/config/event";
 
 export default async function ThankYouPage({
   searchParams,
 }: {
-  searchParams: Promise<{ rid?: string; waitlist?: string }>;
+  searchParams: Promise<{ rid?: string; waitlist?: string; test?: string }>;
 }) {
-  const { rid, waitlist } = await searchParams;
+  const { rid, waitlist, test } = await searchParams;
   const isWaitlist = waitlist === "1";
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
+      <FunnelPageView
+        event="nevezes_koszonjuk_view"
+        props={{ locale: "hu", waitlist: isWaitlist }}
+        isTest={test === "1"}
+      />
       <CheckCircle2 className="size-12 text-success" aria-hidden="true" />
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">

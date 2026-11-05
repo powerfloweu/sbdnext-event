@@ -2,6 +2,7 @@ import Link from "next/link";
 import { XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { FunnelPageView } from "@/components/analytics/funnel-page-view";
 import { EVENT } from "@/config/event";
 
 export default async function CancelledPage({
@@ -13,6 +14,7 @@ export default async function CancelledPage({
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
+      <FunnelPageView event="nevezes_cancelled_view" props={{ locale: "hu" }} />
       <XCircle className="size-12 text-muted-foreground" aria-hidden="true" />
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">A fizetés megszakadt</h1>

@@ -11,7 +11,6 @@ import { ListsSection } from "@/components/event/lists-section";
 import { ScheduleSection } from "@/components/event/schedule-section";
 import { RulesSection } from "@/components/event/rules-section";
 import { FeesSection } from "@/components/event/fees-section";
-import { FeesTeaser } from "@/components/event/fees-teaser";
 import { VenueSection } from "@/components/event/venue-section";
 import { PhotoStrip } from "@/components/event/photo-strip";
 import { MoodVideoRow } from "@/components/event/mood-video";
@@ -37,7 +36,7 @@ export default async function HomePage() {
     content.showInfoSection && { href: "#info", label: "Infók" },
     content.showLists && { href: "#lists", label: "Nevezési lista" },
     content.showSchedule && { href: "#schedule", label: "Időrend" },
-    phase !== "announced" && { href: "#fees", label: "Díjak" },
+    { href: "#fees", label: "Nevezés", emphasized: true },
     content.showFaq && { href: "#faq", label: "GYIK" },
     { href: "/eredmenyek", label: "SBD Next I Eredmények", wordmarkRoman: "I" },
   ].filter((l): l is { href: string; label: string } => Boolean(l));
@@ -47,7 +46,7 @@ export default async function HomePage() {
       {phase === "announced" && <FogGlow />}
 
       <Header
-        ctaLabel={content.primaryCta.label}
+        ctaLabel={content.headerCtaLabel ?? content.primaryCta.label}
         ctaHref={content.primaryCta.href}
         showVolunteerLink={volunteersOpen() || phase === "closed"}
         navLinks={navLinks}
@@ -60,7 +59,7 @@ export default async function HomePage() {
           badgeLabel={content.badgeLabel}
           badgeTone={content.badgeTone}
           description={content.description}
-          primaryCta={content.primaryCta}
+          primaryCta={phase === "announced" ? null : content.primaryCta}
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}
           capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}
@@ -87,7 +86,7 @@ export default async function HomePage() {
 
           {content.showRules && <RulesSection />}
 
-          {phase === "announced" ? <FeesTeaser /> : <FeesSection />}
+          <FeesSection />
 
           <MoodVideoRow />
 
@@ -107,7 +106,7 @@ export default async function HomePage() {
         </div>
       </main>
 
-      <Footer showInvitation={phase !== "announced"} />
+      <Footer showInvitation />
 
       {phase === "registration" && (
         <>

@@ -9,11 +9,12 @@ import { RegistrationFlowchart } from "@/components/admin/registration-flowchart
 import { WeightClassStats } from "@/components/admin/weight-class-stats";
 import { ResultsAdmin } from "@/components/admin/results-admin";
 import { AdminTabs } from "@/components/admin/admin-tabs";
+import { FeedbackAnalysis } from "@/components/admin/feedback-analysis";
 import { AdminTestTab } from "@/components/admin/admin-test-tab";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
-import { formatHUF, formatKg } from "@/lib/format";
-import { updateRegistrationStatus } from "./actions";
+import { formatHUF, formatEUR, formatKg } from "@/lib/format";
+import { updateRegistrationStatus, resendRegistrationEmail } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -54,8 +55,14 @@ interface RegistrationRow {
   premium_media: boolean;
   entry_fee: number;
   total_fee: number;
+  currency: "HUF" | "EUR";
   utm: string | null;
   paid_at: string | null;
+  face_photo_path: string | null;
+}
+
+function formatAmount(amount: number, currency: "HUF" | "EUR"): string {
+  return currency === "EUR" ? `${formatEUR(amount)} €` : `${formatHUF(amount)} Ft`;
 }
 
 interface NotifySignupRow {
@@ -69,6 +76,35 @@ interface NotifySignupRow {
   notified_at: string | null;
 }
 
+interface EventFeedbackRow {
+  id: string;
+  source: "sbd_next_1_form" | "newsletter";
+  submitted_at: string | null;
+  name: string | null;
+  email: string | null;
+  participation_role: string | null;
+  nps: number | null;
+  music: number | null;
+  lights: number | null;
+  mood: number | null;
+  athlete_experience: number | null;
+  schedule_score: number | null;
+  flow: number | null;
+  venue: number | null;
+  staff: number | null;
+  warmup_area: number | null;
+  attend_next: string | null;
+  best: string | null;
+  improve: string | null;
+  comment: string | null;
+  allow_quote: boolean | null;
+}
+
+const FEEDBACK_SOURCE_LABELS: Record<string, string> = {
+  sbd_next_1_form: "SBD Next 1 (visszajelzés űrlap)",
+  newsletter: "Hírlevél (SBD Next 2)",
+};
+
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
   return new Intl.DateTimeFormat("hu-HU", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
@@ -76,6 +112,15 @@ function fmtDate(iso: string | null): string {
 
 function fmtKg(value: number | null): string {
   return value === null ? "—" : formatKg(value);
+}
+
+// The DB keeps the original enum values ("Újonc"/"Versenyző") so existing
+// rows stay intact, but the versenykiírás's public category names are
+// "Tehetségkutató" and "Versenyzői" — show those here instead.
+function divisionLabel(division: string): string {
+  if (division === "Újonc") return "Tehetségkutató";
+  if (division === "Versenyző") return "Versenyzői";
+  return division;
 }
 
 function openerTotal(r: Pick<RegistrationRow, "opener_squat" | "opener_bench" | "opener_deadlift">): number | null {
@@ -136,7 +181,7 @@ export default async function AdminPage({
   let regQuery = admin
     .from("registrations")
     .select(
-      "id, created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, utm, paid_at",
+      "id, created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, currency, utm, paid_at, face_photo_path",
       { count: "exact" }
     )
     // Admin-test walkthroughs (see components/admin/admin-test-tab.tsx) live
@@ -170,6 +215,7 @@ export default async function AdminPage({
     { count: totalNotifyCount },
     { data: feedbackSignups },
     { data: priorYearRows },
+    { data: sbdNext1FeedbackRows },
     { data: testRegistrations },
     { data: priorYearSample },
   ] = await Promise.all([
@@ -177,9 +223,9 @@ export default async function AdminPage({
     notifyQuery.range(notifyFrom, notifyTo).returns<NotifySignupRow[]>(),
     admin
       .from("registrations")
-      .select("status, total_fee")
+      .select("status, total_fee, currency")
       .eq("is_preview_test", false)
-      .returns<{ status: string; total_fee: number }[]>(),
+      .returns<{ status: string; total_fee: number; currency: "HUF" | "EUR" }[]>(),
     admin.from("notify_signups").select("id", { count: "exact", head: true }),
     // Independent of the notify-signups table's own pagination/search above —
     // the feedback list below always shows every submitted answer.
@@ -193,6 +239,14 @@ export default async function AdminPage({
       .from("prior_year_registrations")
       .select("sex, division, bodyweight")
       .returns<{ sex: string; division: string; bodyweight: number | null }[]>(),
+    admin
+      .from("event_feedback")
+      .select(
+        "id, source, submitted_at, name, email, participation_role, nps, music, lights, mood, athlete_experience, schedule_score, flow, venue, staff, warmup_area, attend_next, best, improve, comment, allow_quote"
+      )
+      .eq("source", "sbd_next_1_form")
+      .order("submitted_at", { ascending: false })
+      .returns<EventFeedbackRow[]>(),
     admin
       .from("registrations")
       .select("id, created_at, status, last_name, first_name, email, total_fee")
@@ -217,12 +271,42 @@ export default async function AdminPage({
 
   const rows = registrations ?? [];
   const notify = notifySignups ?? [];
-  const feedbackRows = feedbackSignups ?? [];
+  const sbdNext1Feedback = sbdNext1FeedbackRows ?? [];
+
+  // Unified feedback list for the admin tab: the newsletter question
+  // (notify_signups.feedback_text) plus the SBD Next 1 organiser's post-event
+  // form, imported once into event_feedback (see
+  // supabase/migrations/0008_event_feedback.sql) — same tab, sorted together
+  // by date, each row tagged with its source.
+  const unifiedFeedback = [
+    ...(feedbackSignups ?? []).map((n) => ({
+      id: n.id,
+      source: "newsletter" as const,
+      submittedAt: n.feedback_at,
+      name: null as string | null,
+      email: n.email,
+      nps: null as number | null,
+      text: n.feedback_text,
+      allowQuote: null as boolean | null,
+    })),
+    ...sbdNext1Feedback.map((f) => ({
+      id: f.id,
+      source: f.source,
+      submittedAt: f.submitted_at,
+      name: f.name,
+      email: f.email,
+      nps: f.nps,
+      text: [f.best, f.improve, f.comment].filter(Boolean).join("\n\n"),
+      allowQuote: f.allow_quote,
+    })),
+  ].sort((a, b) => (b.submittedAt ?? "").localeCompare(a.submittedAt ?? ""));
 
   const allStats = statsRows ?? [];
   const totalRegistrations = allStats.length;
   const totalPaid = allStats.filter((r) => r.status === "paid").length;
-  const paidTotal = allStats.filter((r) => r.status === "paid").reduce((sum, r) => sum + r.total_fee, 0);
+  const paidRows = allStats.filter((r) => r.status === "paid");
+  const paidTotalHuf = paidRows.filter((r) => r.currency !== "EUR").reduce((sum, r) => sum + r.total_fee, 0);
+  const paidTotalEur = paidRows.filter((r) => r.currency === "EUR").reduce((sum, r) => sum + r.total_fee, 0);
 
   const regTotalPages = Math.max(1, Math.ceil((regCount ?? 0) / PAGE_SIZE));
   const notifyTotalPages = Math.max(1, Math.ceil((notifyCount ?? 0) / PAGE_SIZE));
@@ -236,7 +320,10 @@ export default async function AdminPage({
         {[
           { label: "Nevezések", value: totalRegistrations },
           { label: "Fizetve", value: totalPaid },
-          { label: "Bevétel (fizetett)", value: `${formatHUF(paidTotal)} Ft` },
+          {
+            label: "Bevétel (fizetett)",
+            value: paidTotalEur > 0 ? `${formatHUF(paidTotalHuf)} Ft + ${formatEUR(paidTotalEur)} €` : `${formatHUF(paidTotalHuf)} Ft`,
+          },
           { label: "Notify feliratkozók", value: totalNotifyCount ?? 0 },
         ].map((s) => (
           <Card key={s.label}>
@@ -259,12 +346,20 @@ export default async function AdminPage({
           <h2 className="text-lg font-semibold">
             Nevezések ({regCount ?? 0})
           </h2>
-          <a
-            href={`/api/admin/export/registrations${buildQuery(regFilterQs)}`}
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-          >
-            CSV export
-          </a>
+          <div className="flex flex-wrap gap-4">
+            <a
+              href={`/api/admin/export/registrations${buildQuery(regFilterQs)}`}
+              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              CSV export
+            </a>
+            <a
+              href="/api/admin/export/face-photos"
+              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Arcfotók ZIP export (Excire Photo)
+            </a>
+          </div>
         </div>
 
         <form className="mb-3 flex flex-wrap gap-2" action="/admin">
@@ -314,13 +409,14 @@ export default async function AdminPage({
                 <th className="p-3">Nyitó total</th>
                 <th className="p-3">Státusz</th>
                 <th className="p-3">Összeg</th>
+                <th className="p-3">Fotó</th>
                 <th className="p-3">Művelet</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className="p-4 text-center text-muted-foreground">
+                  <td colSpan={15} className="p-4 text-center text-muted-foreground">
                     Nincs a szűrésnek megfelelő nevezés.
                   </td>
                 </tr>
@@ -334,7 +430,7 @@ export default async function AdminPage({
                         {r.last_name} {r.first_name}
                       </td>
                       <td className="p-3 text-muted-foreground">{r.email}</td>
-                      <td className="p-3">{r.division}</td>
+                      <td className="p-3">{divisionLabel(r.division)}</td>
                       <td className="p-3">{r.sex}</td>
                       <td className="p-3 text-muted-foreground">{r.club || "—"}</td>
                       <td className="p-3 whitespace-nowrap">{fmtKg(r.bodyweight)}</td>
@@ -343,7 +439,21 @@ export default async function AdminPage({
                       <td className="p-3 whitespace-nowrap">{fmtKg(r.opener_deadlift)}</td>
                       <td className="p-3 whitespace-nowrap font-medium">{fmtKg(openerTotal(r))}</td>
                       <td className="p-3">{STATUS_LABELS[r.status] ?? r.status}</td>
-                      <td className="p-3 whitespace-nowrap">{formatHUF(r.total_fee)} Ft</td>
+                      <td className="p-3 whitespace-nowrap">{formatAmount(r.total_fee, r.currency)}</td>
+                      <td className="p-3 whitespace-nowrap">
+                        {r.face_photo_path ? (
+                          <a
+                            href={`/api/admin/face-photo/${r.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-primary underline-offset-4 hover:underline"
+                          >
+                            Megnézem
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1.5">
                           {r.status !== "paid" && (
@@ -366,6 +476,13 @@ export default async function AdminPage({
                               </Button>
                             </form>
                           )}
+                          <form action={resendRegistrationEmail}>
+                            <input type="hidden" name="id" value={r.id} />
+                            <input type="hidden" name="redirectTo" value={redirectTo} />
+                            <Button type="submit" variant="ghost" size="sm" title="Visszaigazoló email újraküldése a jelenlegi státusz/nyelv/pénznem alapján">
+                              Email újraküldése
+                            </Button>
+                          </form>
                         </div>
                       </td>
                     </tr>
@@ -495,29 +612,43 @@ export default async function AdminPage({
 
   const feedbackTab = (
     <section>
-      <h2 className="mb-3 text-lg font-semibold">Visszajelzések ({feedbackRows.length})</h2>
+      <FeedbackAnalysis sbdNext1Rows={sbdNext1Feedback} newsletterCount={(feedbackSignups ?? []).length} />
+
+      <h2 className="mb-3 text-lg font-semibold">Összes válasz ({unifiedFeedback.length})</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        A hírlevél-feliratkozók válasza (SBD Next 2) és az SBD Next 1 szervezői visszajelzés-űrlapjának importált
+        válaszai együtt, forrás szerint jelölve.
+      </p>
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[800px] text-left text-sm">
           <thead className="border-b border-border text-xs uppercase text-muted-foreground">
             <tr>
               <th className="p-3">Beérkezett</th>
-              <th className="p-3">E-mail</th>
+              <th className="p-3">Forrás</th>
+              <th className="p-3">Név / e-mail</th>
+              <th className="p-3">NPS</th>
               <th className="p-3">Visszajelzés</th>
+              <th className="p-3">Idézhető</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {feedbackRows.length === 0 ? (
+            {unifiedFeedback.length === 0 ? (
               <tr>
-                <td colSpan={3} className="p-4 text-center text-muted-foreground">
+                <td colSpan={6} className="p-4 text-center text-muted-foreground">
                   Még nem érkezett visszajelzés.
                 </td>
               </tr>
             ) : (
-              feedbackRows.map((n) => (
-                <tr key={n.id}>
-                  <td className="p-3 whitespace-nowrap text-muted-foreground">{fmtDate(n.feedback_at)}</td>
-                  <td className="p-3">{n.email}</td>
-                  <td className="p-3 text-muted-foreground">{n.feedback_text}</td>
+              unifiedFeedback.map((f) => (
+                <tr key={`${f.source}-${f.id}`}>
+                  <td className="p-3 whitespace-nowrap text-muted-foreground">{fmtDate(f.submittedAt)}</td>
+                  <td className="p-3 whitespace-nowrap text-muted-foreground">
+                    {FEEDBACK_SOURCE_LABELS[f.source] ?? f.source}
+                  </td>
+                  <td className="p-3">{f.name || f.email || "—"}</td>
+                  <td className="p-3">{f.nps ?? "—"}</td>
+                  <td className="p-3 whitespace-pre-wrap text-muted-foreground">{f.text || "—"}</td>
+                  <td className="p-3">{f.allowQuote === null ? "—" : f.allowQuote ? "Igen" : "Nem"}</td>
                 </tr>
               ))
             )}

@@ -24,8 +24,8 @@ export function InfoSection() {
             helyek a sikeres <b>fizetés</b> sorrendjében telnek be.
           </div>
           <div>
-            <span className="font-medium">Felszerelés:</span> Versenyző kategóriában a MERSZ
-            szabályai szerint, Újonc kategóriában elegendő a testhez simuló ruházat.
+            <span className="font-medium">Felszerelés:</span> Versenyzői kategóriában a MERSZ
+            szabályai szerint, Tehetségkutató kategóriában elegendő a testhez simuló ruházat.
           </div>
           <div>
             <div className="text-xs text-muted-foreground">Jelentkezés kezdete</div>
