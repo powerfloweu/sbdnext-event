@@ -129,7 +129,7 @@ export function summaryFromRow(row: {
 // ("Nő"/"Férfi", "Újonc"/"Versenyző", "Női"/"Férfi") regardless of the
 // registrant's locale — translate them for the English email only.
 const SEX_EN: Record<string, string> = { Nő: "Female", Férfi: "Male" };
-const DIVISION_EN: Record<string, string> = { Újonc: "Novice", Versenyző: "Competitive" };
+const DIVISION_EN: Record<string, string> = { Újonc: "Rookie", Versenyző: "Lifter" };
 const SHIRT_CUT_EN: Record<string, string> = { Női: "Women's", Férfi: "Men's" };
 
 function summaryTableHtml(summary: RegistrationSummary, locale: RegistrationLocale): string {
