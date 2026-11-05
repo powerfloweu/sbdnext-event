@@ -44,6 +44,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // The DB keeps the original enum values ("Újonc"/"Versenyző") so existing
+  // rows stay intact, but the versenykiírás's public category names are
+  // "Tehetségkutató" and "Versenyzői" — export those instead.
+  const DIVISION_LABELS: Record<string, string> = { Újonc: "Tehetségkutató", Versenyző: "Versenyzői" };
+
   const csv = toCsv(
     [
       "Beérkezett",
@@ -84,7 +89,7 @@ export async function GET(request: NextRequest) {
         r.first_name,
         r.email,
         r.birth_year,
-        r.division,
+        DIVISION_LABELS[r.division] ?? r.division,
         r.sex,
         r.club ?? "",
         r.bodyweight,
