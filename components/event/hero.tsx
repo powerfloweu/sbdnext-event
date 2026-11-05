@@ -42,7 +42,10 @@ interface HeroProps {
   badgeLabel: string;
   badgeTone: "open" | "neutral" | "closed";
   description: string;
-  primaryCta: { label: string; href: string };
+  // null when the header's own CTA (and, further down, the registration
+  // teaser's signup form) already cover this action — avoids repeating the
+  // exact same CTA a third time in the hero.
+  primaryCta: { label: string; href: string } | null;
   secondaryCta: { label: string; href: string } | null;
   countdown: { target: string; label: string } | null;
   capacity: { used: number; limit: number } | null;
@@ -95,16 +98,19 @@ export function Hero({
               </div>
             </div>
           </FogCard>
+          {(primaryCta || (secondaryCta && !secondaryCta.href.includes("versenykiiras"))) && (
           <div className="flex flex-wrap gap-3 pt-2">
-            <Button asChild size="lg">
-              <a
-                href={primaryCta.href}
-                target={primaryCta.href.startsWith("/") || primaryCta.href.startsWith("#") ? undefined : "_blank"}
-                rel="noopener noreferrer"
-              >
-                {primaryCta.label}
-              </a>
-            </Button>
+            {primaryCta && (
+              <Button asChild size="lg">
+                <a
+                  href={primaryCta.href}
+                  target={primaryCta.href.startsWith("/") || primaryCta.href.startsWith("#") ? undefined : "_blank"}
+                  rel="noopener noreferrer"
+                >
+                  {primaryCta.label}
+                </a>
+              </Button>
+            )}
             {secondaryCta && !secondaryCta.href.includes("versenykiiras") && (
               <Button asChild variant="secondary" size="lg">
                 <a
@@ -118,6 +124,7 @@ export function Hero({
               </Button>
             )}
           </div>
+          )}
 
           {secondaryCta && secondaryCta.href.includes("versenykiiras") && (
             <Card className="border-primary/40">
@@ -149,7 +156,7 @@ export function Hero({
         </div>
 
         <div className="relative lg:col-span-6">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:aspect-auto lg:h-full lg:min-h-[420px] lg:max-h-[640px]">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:aspect-auto lg:h-full lg:min-h-[420px]">
             <HeroPhoto locale={locale} />
             <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/10 to-transparent" />
             {(countdown || capacity) && (

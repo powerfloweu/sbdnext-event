@@ -46,7 +46,7 @@ export default async function HomePage() {
       {phase === "announced" && <FogGlow />}
 
       <Header
-        ctaLabel={content.primaryCta.label}
+        ctaLabel={content.headerCtaLabel ?? content.primaryCta.label}
         ctaHref={content.primaryCta.href}
         showVolunteerLink={volunteersOpen() || phase === "closed"}
         navLinks={navLinks}
@@ -59,7 +59,7 @@ export default async function HomePage() {
           badgeLabel={content.badgeLabel}
           badgeTone={content.badgeTone}
           description={content.description}
-          primaryCta={content.primaryCta}
+          primaryCta={phase === "announced" ? null : content.primaryCta}
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}
           capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}
