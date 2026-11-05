@@ -8,31 +8,33 @@ import { Progress } from "@/components/ui/progress";
 import { HeroPhoto } from "@/components/event/hero-photo";
 import { FogCard } from "@/components/site/fog-card";
 import { EVENT } from "@/config/event";
-import { formatDateRange } from "@/lib/format";
 
 const FACT_LABELS = {
   hu: { date: "Dátum", time: "Idő", venue: "Helyszín" },
   en: { date: "Date", time: "Time", venue: "Venue" },
 } as const;
 
+// Facts pulled from the actual rulebook (components/event/competition-rules-document.tsx)
+// rather than repeating the hero's own description/date/venue, which are already
+// shown above this card.
 const RULES_CARD = {
   hu: {
     title: "Versenykiírás",
     summary: [
-      "Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint",
-      `${formatDateRange(EVENT.days)}, ${EVENT.venue.name}`,
-      "Súlycsoportok, mérlegelés és a teljes szabályzat a versenykiírásban",
+      "Két kategória: Tehetségkutató (újonc) és Versenyzői, mindkettő IPF GL pontok alapján",
+      "Tehetségkutató kategóriában nem kötelező a versenyfelszerelés (mez) — cicanadrág vagy rövidnadrág is jó",
+      "A helyezéseket mindkét kategóriában IPF GL pontok alapján állapítjuk meg",
     ],
-    cta: "Olvasd el a részletekért",
+    cta: "Tovább a részletekért",
   },
   en: {
     title: "Competition rules",
     summary: [
-      "Open, IPF-rules powerlifting meet for novice and competitive lifters",
-      `${formatDateRange(EVENT.days, "en")}, ${EVENT.venue.name}`,
-      "Weight classes, weigh-in and the full rulebook are in the competition rules",
+      "Two categories: Rookie and Lifter, both ranked by IPF GL points",
+      "Rookie category doesn't require a competition singlet — fitted leggings or shorts are fine",
+      "Standings in both categories are decided by IPF GL points",
     ],
-    cta: "Read the full rules",
+    cta: "More details",
   },
 } as const;
 
@@ -140,7 +142,7 @@ export function Hero({
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
-                <Button asChild size="lg" className="mt-1 self-start">
+                <Button asChild variant="secondary" size="lg" className="mt-1 self-start">
                   <a
                     href={secondaryCta.href}
                     target={secondaryCta.href.startsWith("/") ? undefined : "_blank"}
