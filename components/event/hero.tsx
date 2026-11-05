@@ -65,7 +65,7 @@ export function Hero({
 }: HeroProps) {
   return (
     <section className="relative overflow-hidden">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-8 pb-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:items-center lg:pb-16">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-8 pb-10 sm:px-8 sm:pt-14 lg:grid-cols-12 lg:items-stretch lg:pb-16">
         <div className="flex flex-col gap-6 lg:col-span-6">
           <PhaseBanner label={badgeLabel} tone={badgeTone} className="self-start" />
           <h1>
@@ -149,7 +149,7 @@ export function Hero({
         </div>
 
         <div className="relative lg:col-span-6">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:h-[420px] lg:aspect-auto">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border sm:aspect-video lg:aspect-auto lg:h-full lg:min-h-[420px] lg:max-h-[640px]">
             <HeroPhoto locale={locale} />
             <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/10 to-transparent" />
             {(countdown || capacity) && (
