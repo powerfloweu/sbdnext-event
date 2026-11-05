@@ -40,7 +40,26 @@ export function parsePrivacyNoticeText(text: string): PrivacyBlock[] {
   return blocks;
 }
 
-// Code-level fallback, identical to the seed row inserted by
+// Shown on the public pages only when nothing has ever been published yet
+// (privacy_notice.published_text is null) — the original short placeholder
+// text, deliberately NOT the detailed [KITÖLTENDŐ]-marked draft below. D
+// wants to review/edit the draft from /admin before it's visible to actual
+// visitors; the draft only reaches the public page once "Közzététel" runs.
+export function unpublishedPlaceholder(locale: PrivacyLocale, contactEmail: string): string {
+  return locale === "hu"
+    ? `Ez az oldal egyelőre helykitöltő. A végleges adatkezelési tájékoztató szövegét a szervező adja meg — addig ne tekintsd ezt hivatalos tájékoztatásnak.
+
+A nevezés és az önkéntes jelentkezés során megadott adatokat (név, e-mail cím, születési év, testsúly, nevezési súlyok, póló adatok) kizárólag a verseny szervezéséhez, a beosztás elkészítéséhez és a kapcsolattartáshoz használjuk fel.
+
+Kérdés esetén írj nekünk: ${contactEmail}`
+    : `This page is a placeholder for now. The organiser will provide the final privacy notice text later — until then, don't treat this as an official notice.
+
+Data submitted during registration and volunteer sign-up (name, e-mail address, year of birth, bodyweight, planned opening attempts, shirt details) is used solely to organise the competition, build the flight schedule, and get in touch with you.
+
+If you have any questions, write to us at ${contactEmail}`;
+}
+
+// Code-level fallback for the admin "Adatkezelés" tab's draft text, identical to the seed row inserted by
 // supabase/migrations/0011_privacy_notice.sql — used when Supabase isn't
 // configured on an environment, or the row hasn't been created yet, so the
 // public pages never show a blank screen. Keep in sync with that migration
