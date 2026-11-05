@@ -127,20 +127,20 @@ export function Hero({
           )}
 
           {secondaryCta && secondaryCta.href.includes("versenykiiras") && (
-            <Card className="border-primary/40">
+            <Card className="border-primary/70 bg-gradient-to-br from-primary/15 via-card to-card">
               <CardContent className="flex flex-col gap-3 p-6">
                 <div className="flex items-center gap-2">
                   <BookOpenText className="size-5 shrink-0 text-primary" aria-hidden="true" />
-                  <span className="font-display text-xl font-extrabold text-foreground">
+                  <span className="font-display text-xl font-extrabold text-primary">
                     {RULES_CARD[locale].title}
                   </span>
                 </div>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                <ul className="list-disc space-y-1 pl-5 text-sm text-foreground/80">
                   {RULES_CARD[locale].summary.map((line) => (
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
-                <Button asChild variant="secondary" size="lg" className="mt-1 self-start">
+                <Button asChild size="lg" className="mt-1 self-start">
                   <a
                     href={secondaryCta.href}
                     target={secondaryCta.href.startsWith("/") ? undefined : "_blank"}
