@@ -67,6 +67,106 @@ function buttonHtml(href: string, label: string): string {
   return `<p style="margin:20px 0;"><a href="${href}" style="display:inline-block;background:#e52428;color:#ffffff;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">${label}</a></p>`;
 }
 
+// What the athlete actually submitted — shown back to them in the
+// registration/payment e-mails so a typo surfaces immediately instead of
+// only at check-in. Optional because a resend of an older row may not have
+// all of these (e.g. sent before this recap existed).
+export interface RegistrationSummary {
+  lastName: string;
+  firstName: string;
+  division: string;
+  sex: string;
+  birthYear: number;
+  club: string | null;
+  bodyweight: number;
+  openerSquat: number;
+  openerBench: number;
+  openerDeadlift: number;
+  wantsShirt: boolean;
+  shirtCut: string | null;
+  shirtSize: string | null;
+  premiumMedia: boolean;
+}
+
+// Builds a RegistrationSummary from the DB row's snake_case columns — the
+// shape every caller outside app/api/register/route.ts (which already has
+// the camelCase wizard payload) actually has on hand.
+export function summaryFromRow(row: {
+  last_name: string;
+  first_name: string;
+  division: string;
+  sex: string;
+  birth_year: number;
+  club: string | null;
+  bodyweight: number;
+  opener_squat: number;
+  opener_bench: number;
+  opener_deadlift: number;
+  wants_shirt: boolean;
+  shirt_cut: string | null;
+  shirt_size: string | null;
+  premium_media: boolean;
+}): RegistrationSummary {
+  return {
+    lastName: row.last_name,
+    firstName: row.first_name,
+    division: row.division,
+    sex: row.sex,
+    birthYear: row.birth_year,
+    club: row.club,
+    bodyweight: row.bodyweight,
+    openerSquat: row.opener_squat,
+    openerBench: row.opener_bench,
+    openerDeadlift: row.opener_deadlift,
+    wantsShirt: row.wants_shirt,
+    shirtCut: row.shirt_cut,
+    shirtSize: row.shirt_size,
+    premiumMedia: row.premium_media,
+  };
+}
+
+function summaryTableHtml(summary: RegistrationSummary, locale: RegistrationLocale): string {
+  const rows: [string, string][] =
+    locale === "en"
+      ? [
+          ["Name", `${summary.lastName} ${summary.firstName}`],
+          ["Birth year", String(summary.birthYear)],
+          ["Sex", summary.sex],
+          ["Division", summary.division],
+          ["Bodyweight", `${summary.bodyweight} kg`],
+          ["Club", summary.club || "—"],
+          [
+            "Opening attempts",
+            `squat ${summary.openerSquat} kg · bench ${summary.openerBench} kg · deadlift ${summary.openerDeadlift} kg`,
+          ],
+          ["Shirt", summary.wantsShirt ? `${summary.shirtCut ?? "—"}, size ${summary.shirtSize ?? "—"}` : "not ordered"],
+          ["Premium media package", summary.premiumMedia ? "yes" : "no"],
+        ]
+      : [
+          ["Név", `${summary.lastName} ${summary.firstName}`],
+          ["Születési év", String(summary.birthYear)],
+          ["Nem", summary.sex],
+          ["Kategória", summary.division],
+          ["Testsúly", `${summary.bodyweight} kg`],
+          ["Klub", summary.club || "—"],
+          [
+            "Nyitó súlyok",
+            `guggolás ${summary.openerSquat} kg · fekvenyomás ${summary.openerBench} kg · felhúzás ${summary.openerDeadlift} kg`,
+          ],
+          ["Póló", summary.wantsShirt ? `${summary.shirtCut ?? "—"} fazon, ${summary.shirtSize ?? "—"} méret` : "nem kért"],
+          ["Prémium média csomag", summary.premiumMedia ? "igen" : "nem"],
+        ];
+
+  const body = rows
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding:4px 12px 4px 0;color:#555;white-space:nowrap;">${label}:</td><td style="padding:4px 0;"><b>${value}</b></td></tr>`
+    )
+    .join("");
+
+  return `<table style="margin:16px 0;font-size:14px;border-collapse:collapse;">${body}</table>`;
+}
+
 interface RegistrationEmailData {
   email: string;
   firstName: string;
@@ -74,6 +174,7 @@ interface RegistrationEmailData {
   totalFee: number;
   currency: "HUF" | "EUR";
   editUrl: string;
+  summary?: RegistrationSummary;
   locale?: RegistrationLocale;
 }
 
@@ -117,11 +218,13 @@ export async function sendRegistrationReceivedEmail(data: RegistrationEmailData)
            <b>${amount}</b>. Ha a fizetés sikeres volt, hamarosan külön
            visszaigazolást kapsz.</p>`;
 
+  const summaryHtml = data.summary ? summaryTableHtml(data.summary, locale) : "";
+
   await resend.emails.send({
     from: FROM,
     to: data.email,
     subject,
-    html: `${body}${buttonHtml(data.editUrl, editLabel)}<p class="text-xs">${locale === "en" ? editHintEn : editHintHu}</p><p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+    html: `${body}${summaryHtml}${buttonHtml(data.editUrl, editLabel)}<p class="text-xs">${locale === "en" ? editHintEn : editHintHu}</p><p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }
@@ -132,6 +235,7 @@ interface PaymentEmailData {
   totalFee: number;
   currency: "HUF" | "EUR";
   editUrl?: string;
+  summary?: RegistrationSummary;
   locale?: RegistrationLocale;
 }
 
@@ -152,6 +256,8 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
       }</p>`
     : "";
 
+  const summaryHtml = data.summary ? summaryTableHtml(data.summary, locale) : "";
+
   await resend.emails.send({
     from: FROM,
     to: data.email,
@@ -164,11 +270,11 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
         ? `<p>Hi ${data.firstName}!</p>
        <p>Your payment of <b>${amount}</b> has been received, your registration is
        <b>confirmed</b>. See you at the competition!</p>
-       ${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`
+       ${summaryHtml}${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`
         : `<p>Szia ${data.firstName}!</p>
        <p>A(z) <b>${amount}</b> befizetésed megérkezett, a nevezésed
        <b>véglegesítve</b> van. Találkozunk a versenyen!</p>
-       ${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+       ${summaryHtml}${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }
@@ -224,17 +330,27 @@ interface FacePhotoReminderData {
   email: string;
   firstName: string;
   editUrl: string;
+  locale?: RegistrationLocale;
 }
 
 export async function sendFacePhotoReminderEmail(data: FacePhotoReminderData): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
 
+  const locale = data.locale ?? "hu";
+
   await resend.emails.send({
     from: FROM,
     to: data.email,
-    subject: "SBD Next 2 — ne maradj le az arcfotódról",
-    html: `<p>Szia ${data.firstName}!</p>
+    subject: locale === "en" ? "SBD Next 2 — don't miss adding your face photo" : "SBD Next 2 — ne maradj le az arcfotódról",
+    html:
+      locale === "en"
+        ? `<p>Hi ${data.firstName}!</p>
+       <p>Your registration is still missing a face photo — this is what lets our AI-based photo
+       sorter (Excire Photo) automatically find and collect the shots of you after the competition.</p>
+       ${buttonHtml(data.editUrl, "Upload face photo")}
+       <p>Questions? Write to us: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`
+        : `<p>Szia ${data.firstName}!</p>
        <p>A nevezésedből még hiányzik az arcfotó — ez kell ahhoz, hogy a verseny után az
        AI-alapú fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad
        készült képeket.</p>

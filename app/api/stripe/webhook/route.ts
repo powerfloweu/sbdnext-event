@@ -3,7 +3,7 @@ import Stripe from "stripe";
 
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { sendPaymentConfirmedEmail } from "@/lib/email";
+import { sendPaymentConfirmedEmail, summaryFromRow } from "@/lib/email";
 import { EVENT } from "@/config/event";
 
 export const runtime = "nodejs";
@@ -63,7 +63,9 @@ export async function POST(req: NextRequest) {
 
   const { data: registration, error: fetchError } = await admin
     .from("registrations")
-    .select("id, email, first_name, total_fee, status, edit_token, locale, currency")
+    .select(
+      "id, email, first_name, last_name, total_fee, status, edit_token, locale, currency, division, sex, birth_year, club, bodyweight, opener_squat, opener_bench, opener_deadlift, wants_shirt, shirt_cut, shirt_size, premium_media"
+    )
     .eq("id", registrationId)
     .maybeSingle();
 
@@ -99,6 +101,7 @@ export async function POST(req: NextRequest) {
         editUrl: registration.edit_token
           ? `${EVENT.siteUrl}/nevezes/szerkesztes/${registrationId}?token=${registration.edit_token}`
           : undefined,
+        summary: summaryFromRow(registration),
       });
       await admin
         .from("registrations")

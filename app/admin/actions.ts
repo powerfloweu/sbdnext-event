@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { ADMIN_TEST_COOKIE } from "@/lib/admin-test";
-import { sendPaymentConfirmedEmail, sendRegistrationReceivedEmail } from "@/lib/email";
+import { sendPaymentConfirmedEmail, sendRegistrationReceivedEmail, summaryFromRow } from "@/lib/email";
 import { EVENT } from "@/config/event";
 
 const REGISTRATION_STATUSES = ["pending_payment", "waitlist", "paid", "cancelled"] as const;
@@ -74,7 +74,9 @@ export async function resendRegistrationEmail(formData: FormData): Promise<void>
 
   const { data: registration, error } = await admin
     .from("registrations")
-    .select("id, email, first_name, status, total_fee, currency, locale, edit_token")
+    .select(
+      "id, email, first_name, last_name, status, total_fee, currency, locale, edit_token, division, sex, birth_year, club, bodyweight, opener_squat, opener_bench, opener_deadlift, wants_shirt, shirt_cut, shirt_size, premium_media"
+    )
     .eq("id", id)
     .maybeSingle();
   if (error || !registration) {
@@ -95,6 +97,7 @@ export async function resendRegistrationEmail(formData: FormData): Promise<void>
       currency,
       locale,
       editUrl,
+      summary: summaryFromRow(registration),
     });
   } else {
     await sendRegistrationReceivedEmail({
@@ -105,6 +108,7 @@ export async function resendRegistrationEmail(formData: FormData): Promise<void>
       currency,
       locale,
       editUrl: editUrl ?? `${EVENT.siteUrl}/nevezes`,
+      summary: summaryFromRow(registration),
     });
   }
 
@@ -167,7 +171,9 @@ export async function simulateTestPayment(formData: FormData): Promise<void> {
 
   const { data: registration, error: fetchError } = await admin
     .from("registrations")
-    .select("id, email, first_name, total_fee, status, edit_token, is_preview_test, locale, currency")
+    .select(
+      "id, email, first_name, last_name, total_fee, status, edit_token, is_preview_test, locale, currency, division, sex, birth_year, club, bodyweight, opener_squat, opener_bench, opener_deadlift, wants_shirt, shirt_cut, shirt_size, premium_media"
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -197,6 +203,7 @@ export async function simulateTestPayment(formData: FormData): Promise<void> {
         editUrl: registration.edit_token
           ? `${EVENT.siteUrl}/nevezes/szerkesztes/${id}?token=${registration.edit_token}`
           : undefined,
+        summary: summaryFromRow(registration),
       });
       await admin.from("registrations").update({ payment_email_sent_at: new Date().toISOString() }).eq("id", id);
     } catch (err) {
