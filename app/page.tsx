@@ -36,7 +36,7 @@ export default async function HomePage() {
     content.showInfoSection && { href: "#info", label: "Infók" },
     content.showLists && { href: "#lists", label: "Nevezési lista" },
     content.showSchedule && { href: "#schedule", label: "Időrend" },
-    { href: "#fees", label: "Díjak" },
+    { href: "#fees", label: "Nevezés", emphasized: true },
     content.showFaq && { href: "#faq", label: "GYIK" },
     { href: "/eredmenyek", label: "SBD Next I Eredmények", wordmarkRoman: "I" },
   ].filter((l): l is { href: string; label: string } => Boolean(l));

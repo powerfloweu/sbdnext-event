@@ -71,7 +71,10 @@ export default function EnglishPage() {
           ctaLabel="Notify me"
           ctaHref="#register"
           showVolunteerLink={false}
-          navLinks={[{ href: "/en/results", label: "SBD Next I Results", wordmarkRoman: "I" }]}
+          navLinks={[
+            { href: "#fees", label: "Registration", emphasized: true },
+            { href: "/en/results", label: "SBD Next I Results", wordmarkRoman: "I" },
+          ]}
           locale="en"
         />
 

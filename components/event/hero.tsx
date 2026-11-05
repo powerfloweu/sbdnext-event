@@ -83,14 +83,19 @@ export function Hero({
               </a>
             </Button>
             {secondaryCta && (
-              <Button asChild variant="secondary" size="lg">
+              <Button
+                asChild
+                variant="secondary"
+                size="lg"
+                className="h-14 border-2 border-primary/50 px-8 text-base font-bold hover:border-primary hover:bg-primary/10 sm:h-16 sm:px-9 sm:text-lg"
+              >
                 <a
                   href={secondaryCta.href}
                   target={secondaryCta.href.startsWith("/") || secondaryCta.href.startsWith("#") ? undefined : "_blank"}
                   rel="noopener noreferrer"
                 >
                   {secondaryCta.label}
-                  <ExternalLink className="size-4" />
+                  <ExternalLink className="size-4 sm:size-5" />
                 </a>
               </Button>
             )}
