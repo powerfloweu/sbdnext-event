@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, ChevronRight, Lock, Camera } from "lucide-react";
 
 import { compressImageToDataUrl } from "@/lib/client-image";
+import { trackFunnelEvent } from "@/lib/analytics";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1040,6 +1041,15 @@ export function RegistrationWizard({
     defaultValues: REGISTRATION_DEFAULTS,
     mode: "onBlur",
   });
+
+  // Funnel entry point. Skipped in admin test mode so D/Miki's own test
+  // runs on /admin never show up as real drop-off data.
+  useEffect(() => {
+    if (isAdminTest) return;
+    trackFunnelEvent("nevezes_view", { locale, invited: !!inviteCode });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Restore a draft on mount — skipped in admin test mode, so each test run
   // starts from a clean form instead of picking up a previous tester's
   // leftover draft on the same browser (D, 2026-10-30).
@@ -1120,10 +1130,14 @@ export function RegistrationWizard({
     }
     if (valid) {
       setSubmitError(null);
-      setStep((s) => Math.min(5, s + 1));
+      const nextStep = Math.min(5, step + 1);
+      setStep(nextStep);
+      if (!isAdminTest) trackFunnelEvent("nevezes_step_reached", { step: nextStep, locale });
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (!isAdminTest) {
+      trackFunnelEvent("nevezes_validation_error", { step, locale });
     }
-  }, [step, trigger]);
+  }, [step, trigger, isAdminTest, locale]);
 
   const goBack = useCallback(() => {
     setStep((s) => Math.max(1, s - 1));
@@ -1146,14 +1160,18 @@ export function RegistrationWizard({
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
       setSubmitError(t.invalidSubmit);
+      if (!isAdminTest) {
+        trackFunnelEvent("nevezes_validation_error", { step: invalidStep + 1, locale });
+      }
     },
-    [setStep, t]
+    [setStep, t, isAdminTest, locale]
   );
 
   const onSubmit = handleSubmit(async (data) => {
     if (data.honeypot) return; // silently drop bot submissions
     setSubmitting(true);
     setSubmitError(null);
+    if (!isAdminTest) trackFunnelEvent("nevezes_submit_attempt", { locale });
     try {
       const res = await fetch("/api/register", {
         method: "POST",
@@ -1172,15 +1190,19 @@ export function RegistrationWizard({
       }
       clearDraft();
       const koszonjukPath = locale === "en" ? "/en/nevezes/koszonjuk" : "/nevezes/koszonjuk";
+      const testParam = isAdminTest ? "&test=1" : "";
       if (json.waitlisted) {
-        router.push(`${koszonjukPath}?rid=${json.registrationId}&waitlist=1`);
+        if (!isAdminTest) trackFunnelEvent("nevezes_waitlisted", { locale });
+        router.push(`${koszonjukPath}?rid=${json.registrationId}&waitlist=1${testParam}`);
         return;
       }
       if (json.stripeUrl) {
+        if (!isAdminTest) trackFunnelEvent("nevezes_stripe_redirect", { locale });
         window.location.assign(json.stripeUrl as string);
         return;
       }
-      router.push(`${koszonjukPath}?rid=${json.registrationId}`);
+      if (!isAdminTest) trackFunnelEvent("nevezes_submit_success", { locale, demo: !!json.demo });
+      router.push(`${koszonjukPath}?rid=${json.registrationId}${testParam}`);
     } catch (err) {
       const code = err instanceof Error ? err.message : "unknown";
       if (code === "early_access_required") {
@@ -1190,6 +1212,7 @@ export function RegistrationWizard({
       } else {
         setSubmitError(t.genericSubmitError);
       }
+      if (!isAdminTest) trackFunnelEvent("nevezes_submit_error", { locale, reason: code });
     } finally {
       setSubmitting(false);
     }
