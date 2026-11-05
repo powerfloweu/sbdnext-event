@@ -1,16 +1,39 @@
-import { CalendarDays, MapPin, Timer, ExternalLink } from "lucide-react";
+import { CalendarDays, MapPin, Timer, ExternalLink, BookOpenText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { PhaseBanner } from "@/components/site/phase-banner";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { Progress } from "@/components/ui/progress";
 import { HeroPhoto } from "@/components/event/hero-photo";
 import { FogCard } from "@/components/site/fog-card";
 import { EVENT } from "@/config/event";
+import { formatDateRange } from "@/lib/format";
 
 const FACT_LABELS = {
   hu: { date: "Dátum", time: "Idő", venue: "Helyszín" },
   en: { date: "Date", time: "Time", venue: "Venue" },
+} as const;
+
+const RULES_CARD = {
+  hu: {
+    title: "Versenykiírás",
+    summary: [
+      "Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint",
+      `${formatDateRange(EVENT.days)}, ${EVENT.venue.name}`,
+      "Súlycsoportok, mérlegelés és a teljes szabályzat a versenykiírásban",
+    ],
+    cta: "Olvasd el a részletekért",
+  },
+  en: {
+    title: "Competition rules",
+    summary: [
+      "Open, IPF-rules powerlifting meet for novice and competitive lifters",
+      `${formatDateRange(EVENT.days, "en")}, ${EVENT.venue.name}`,
+      "Weight classes, weigh-in and the full rulebook are in the competition rules",
+    ],
+    cta: "Read the full rules",
+  },
 } as const;
 
 interface HeroProps {
@@ -82,24 +105,47 @@ export function Hero({
                 {primaryCta.label}
               </a>
             </Button>
-            {secondaryCta && (
-              <Button
-                asChild
-                variant="secondary"
-                size="lg"
-                className="h-14 border-2 border-primary/50 px-8 text-base font-bold hover:border-primary hover:bg-primary/10 sm:h-16 sm:px-9 sm:text-lg"
-              >
+            {secondaryCta && !secondaryCta.href.includes("versenykiiras") && (
+              <Button asChild variant="secondary" size="lg">
                 <a
                   href={secondaryCta.href}
                   target={secondaryCta.href.startsWith("/") || secondaryCta.href.startsWith("#") ? undefined : "_blank"}
                   rel="noopener noreferrer"
                 >
                   {secondaryCta.label}
-                  <ExternalLink className="size-4 sm:size-5" />
+                  <ExternalLink className="size-4" />
                 </a>
               </Button>
             )}
           </div>
+
+          {secondaryCta && secondaryCta.href.includes("versenykiiras") && (
+            <Card className="border-primary/40">
+              <CardContent className="flex flex-col gap-3 p-6">
+                <div className="flex items-center gap-2">
+                  <BookOpenText className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                  <span className="font-display text-xl font-extrabold text-foreground">
+                    {RULES_CARD[locale].title}
+                  </span>
+                </div>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                  {RULES_CARD[locale].summary.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+                <Button asChild variant="secondary" size="lg" className="mt-1 self-start">
+                  <a
+                    href={secondaryCta.href}
+                    target={secondaryCta.href.startsWith("/") ? undefined : "_blank"}
+                    rel="noopener noreferrer"
+                  >
+                    {RULES_CARD[locale].cta}
+                    <ExternalLink className="size-4" />
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="relative lg:col-span-6">
