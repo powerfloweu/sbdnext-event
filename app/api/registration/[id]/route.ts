@@ -34,7 +34,7 @@ function editWindow() {
 }
 
 const SELECT_FIELDS =
-  "id, edit_token, status, last_name, first_name, birth_year, sex, division, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, face_photo_path";
+  "id, edit_token, status, last_name, first_name, birth_year, sex, division, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, face_photo_path, locale";
 
 async function loadByToken(id: string, token: string) {
   const admin = getSupabaseAdmin();
@@ -72,6 +72,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     shirtOpen,
     facePhotoEditOpen: facePhotoEditOpen(),
     hasFacePhoto: !!registration.face_photo_path,
+    locale: registration.locale === "en" ? "en" : "hu",
     data: {
       lastName: registration.last_name,
       firstName: registration.first_name,

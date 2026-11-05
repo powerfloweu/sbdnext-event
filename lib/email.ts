@@ -125,28 +125,44 @@ export function summaryFromRow(row: {
   };
 }
 
+// The DB always stores these as the original form-option enum values
+// ("Nő"/"Férfi", "Újonc"/"Versenyző", "Női"/"Férfi") regardless of the
+// registrant's locale or any later renaming, so existing rows stay intact —
+// translate them to the versenykiírás's public names for display only.
+// "Újonc"/"Versenyző" are the DB/internal names; the rules document's public
+// category names are "Tehetségkutató"/"Versenyzői" (HU) and "Rookie"/"Lifter" (EN).
+const SEX_EN: Record<string, string> = { Nő: "Female", Férfi: "Male" };
+const DIVISION_HU: Record<string, string> = { Újonc: "Tehetségkutató", Versenyző: "Versenyzői" };
+const DIVISION_EN: Record<string, string> = { Újonc: "Rookie", Versenyző: "Lifter" };
+const SHIRT_CUT_EN: Record<string, string> = { Női: "Women's", Férfi: "Men's" };
+
 function summaryTableHtml(summary: RegistrationSummary, locale: RegistrationLocale): string {
   const rows: [string, string][] =
     locale === "en"
       ? [
           ["Name", `${summary.lastName} ${summary.firstName}`],
           ["Birth year", String(summary.birthYear)],
-          ["Sex", summary.sex],
-          ["Division", summary.division],
+          ["Sex", SEX_EN[summary.sex] ?? summary.sex],
+          ["Division", DIVISION_EN[summary.division] ?? summary.division],
           ["Bodyweight", `${summary.bodyweight} kg`],
           ["Club", summary.club || "—"],
           [
             "Opening attempts",
             `squat ${summary.openerSquat} kg · bench ${summary.openerBench} kg · deadlift ${summary.openerDeadlift} kg`,
           ],
-          ["Shirt", summary.wantsShirt ? `${summary.shirtCut ?? "—"}, size ${summary.shirtSize ?? "—"}` : "not ordered"],
+          [
+            "Shirt",
+            summary.wantsShirt
+              ? `${summary.shirtCut ? SHIRT_CUT_EN[summary.shirtCut] ?? summary.shirtCut : "—"}, size ${summary.shirtSize ?? "—"}`
+              : "not ordered",
+          ],
           ["Premium media package", summary.premiumMedia ? "yes" : "no"],
         ]
       : [
           ["Név", `${summary.lastName} ${summary.firstName}`],
           ["Születési év", String(summary.birthYear)],
           ["Nem", summary.sex],
-          ["Kategória", summary.division],
+          ["Kategória", DIVISION_HU[summary.division] ?? summary.division],
           ["Testsúly", `${summary.bodyweight} kg`],
           ["Klub", summary.club || "—"],
           [

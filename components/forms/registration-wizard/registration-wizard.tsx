@@ -67,6 +67,7 @@ interface WizardStrings {
   birthYear: string;
   birthYearHint: string;
   sex: string;
+  sexLabels: Record<string, string>;
   selectPlaceholder: string;
   priorLookupSearching: string;
   priorLookupButton: string;
@@ -75,8 +76,10 @@ interface WizardStrings {
   priorLookupError: string;
   division: string;
   divisionNovice: "Újonc";
+  divisionNoviceLabel: string;
   divisionNoviceDesc: string;
   divisionCompetitor: "Versenyző";
+  divisionCompetitorLabel: string;
   divisionCompetitorDesc: string;
   divisionCompetitorLink: string;
   club: string;
@@ -98,6 +101,7 @@ interface WizardStrings {
   shirtWantHint1: string;
   shirtWantHint2: string;
   shirtCut: string;
+  shirtCutLabels: Record<string, string>;
   shirtSize: string;
   notes: string;
   notesPlaceholder: string;
@@ -149,6 +153,7 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     birthYear: "Születési év",
     birthYearHint: "pl. 1995",
     sex: "Nem",
+    sexLabels: { Nő: "Nő", Férfi: "Férfi" },
     selectPlaceholder: "Válassz",
     priorLookupSearching: "Keresés…",
     priorLookupButton: "Tavaly már versenyeztél? Töltsd ki automatikusan",
@@ -159,9 +164,12 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     priorLookupError: "A keresés nem sikerült, töltsd ki manuálisan.",
     division: "Kategória",
     divisionNovice: "Újonc" as const,
-    divisionNoviceDesc: "Nem versenyeztél még Magyar Országos Bajnokságon (open, I. osztály).",
+    divisionNoviceLabel: "Tehetségkutató",
+    divisionNoviceDesc:
+      "2025-ben és/vagy 2026-ban nem indultál a MERSZ I. osztályú magyar bajnokságon, illetve IPF nemzetközi (vagy azzal egyenértékű külföldi) versenyen.",
     divisionCompetitor: "Versenyző" as const,
-    divisionCompetitorDesc: "Az elmúlt 2 évben versenyeztél MOB-on és/vagy elérted a ",
+    divisionCompetitorLabel: "Versenyzői",
+    divisionCompetitorDesc: "Indultál a MERSZ 2025-ös vagy 2026-os Felnőtt Magyar Bajnokságán, és/vagy elérted a ",
     divisionCompetitorLink: "minősítési szintet",
     club: "Egyesület / Klub",
     clubHint: "Nem kötelező — válassz a listából, vagy írd be, ha nincs benne.",
@@ -182,6 +190,7 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     shirtWantHint1: "Ha nem kéred, a nevezési díj a póló nélküli áron marad.",
     shirtWantHint2: "A póló egyedi, névre szóló.",
     shirtCut: "Póló fazon",
+    shirtCutLabels: { Női: "Női", Férfi: "Férfi" },
     shirtSize: "Pólóméret",
     notes: "Megjegyzés, kérés a szervezőknek",
     notesPlaceholder: "Pl. külön kérés vagy egészségügyi infó.",
@@ -233,6 +242,7 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     birthYear: "Birth year",
     birthYearHint: "e.g. 1995",
     sex: "Sex",
+    sexLabels: { Nő: "Female", Férfi: "Male" },
     selectPlaceholder: "Select",
     priorLookupSearching: "Searching…",
     priorLookupButton: "Competed last year? Auto-fill your details",
@@ -241,9 +251,12 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     priorLookupError: "The lookup failed, please fill it in manually.",
     division: "Division",
     divisionNovice: "Újonc" as const,
-    divisionNoviceDesc: "You haven't yet competed at the Hungarian National Championship (open, class I).",
+    divisionNoviceLabel: "Rookie",
+    divisionNoviceDesc:
+      "You didn't compete at the MERSZ first-division Hungarian National Championship, or an equivalent IPF international/foreign competition, in 2025 and/or 2026.",
     divisionCompetitor: "Versenyző" as const,
-    divisionCompetitorDesc: "You've competed at the Hungarian National Championship in the last 2 years and/or reached the ",
+    divisionCompetitorLabel: "Lifter",
+    divisionCompetitorDesc: "You competed at the MERSZ 2025 or 2026 Adult National Championship, and/or reached the ",
     divisionCompetitorLink: "qualification level",
     club: "Club / Team",
     clubHint: "Optional — pick from the list, or type one in if it's not there.",
@@ -264,6 +277,7 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     shirtWantHint1: "If you skip it, the entry fee stays at the no-shirt price.",
     shirtWantHint2: "The shirt is unique and name-printed.",
     shirtCut: "Shirt cut",
+    shirtCutLabels: { Női: "Women's", Férfi: "Men's" },
     shirtSize: "Shirt size",
     notes: "Note or request for the organisers",
     notesPlaceholder: "E.g. a special request or health info.",
@@ -500,7 +514,7 @@ function Step1({
                 <SelectContent>
                   {EVENT.sexes.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s}
+                      {t.sexLabels[s] ?? s}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -551,8 +565,13 @@ function Step2({ control, errors, t }: { control: Ctrl; errors: Errs; t: WizardS
             </legend>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
-                { value: t.divisionNovice, desc: t.divisionNoviceDesc },
-                { value: t.divisionCompetitor, desc: t.divisionCompetitorDesc, linkLabel: t.divisionCompetitorLink },
+                { value: t.divisionNovice, label: t.divisionNoviceLabel, desc: t.divisionNoviceDesc },
+                {
+                  value: t.divisionCompetitor,
+                  label: t.divisionCompetitorLabel,
+                  desc: t.divisionCompetitorDesc,
+                  linkLabel: t.divisionCompetitorLink,
+                },
               ].map((opt) => {
                 const selected = field.value === opt.value;
                 return (
@@ -570,7 +589,7 @@ function Step2({ control, errors, t }: { control: Ctrl; errors: Errs; t: WizardS
                       onChange={() => field.onChange(opt.value)}
                       className="sr-only"
                     />
-                    <span className="text-base font-semibold text-foreground">{opt.value}</span>
+                    <span className="text-base font-semibold text-foreground">{opt.label}</span>
                     <span className="text-xs text-muted-foreground">
                       {opt.desc}
                       {"linkLabel" in opt ? (
@@ -768,7 +787,7 @@ function Step4({
                   <SelectContent>
                     {EVENT.shirt.cuts.map((c) => (
                       <SelectItem key={c} value={c}>
-                        {c}
+                        {t.shirtCutLabels[c] ?? c}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -864,10 +883,20 @@ function Summary({
   const rows: [string, string, number][] = [
     [t.summaryName, `${data.lastName} ${data.firstName}`, 1],
     [t.summaryEmail, data.email, 1],
-    [t.summaryCategory, `${data.division} · ${data.sex} · ${data.birthYear}`, 2],
+    [
+      t.summaryCategory,
+      `${data.division === t.divisionNovice ? t.divisionNoviceLabel : t.divisionCompetitorLabel} · ${t.sexLabels[data.sex] ?? data.sex} · ${data.birthYear}`,
+      2,
+    ],
     [t.summaryWeightTotal, `${data.bodyweight || "—"} ${t.kg} · ${total || "—"} ${t.kg}`, 3],
     ...(data.wantsShirt
-      ? ([[t.summaryShirt, `${data.shirtCut || "—"} · ${data.shirtSize || "—"}`, 4]] as [string, string, number][])
+      ? ([
+          [
+            t.summaryShirt,
+            `${data.shirtCut ? t.shirtCutLabels[data.shirtCut] ?? data.shirtCut : "—"} · ${data.shirtSize || "—"}`,
+            4,
+          ],
+        ] as [string, string, number][])
       : []),
   ];
 

@@ -16,20 +16,21 @@ export function RulesSection() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardContent className="flex flex-col gap-3 p-6 text-sm text-foreground">
-            <div className="font-semibold text-foreground">Versenyző kategória</div>
+            <div className="font-semibold text-foreground">Versenyzői kategória</div>
             <p className="text-muted-foreground">
               A MERSZ szabályai szerint kell versenyezni: kantáros erőemelő mez, hosszú zokni, cipő
               és póló kötelező. Ezen felül minden használható, ami az IPF RAW szabályain belül
               megengedett.
             </p>
-            <div className="font-semibold text-foreground">Újonc kategória</div>
+            <div className="font-semibold text-foreground">Tehetségkutató kategória</div>
             <p className="text-muted-foreground">
               Nem kötelező a kantáros erőemelő mez, elegendő a testhez simuló rövid- vagy
               hosszúnadrág és felső. Rövid nadrág esetén a felhúzáshoz hosszú szárú zokni szükséges.
             </p>
             <p className="text-muted-foreground">
-              Nem kell klubtagság és sportorvosi engedély. Felszerelés-ellenőrzés mindenki számára
-              kötelező.
+              Nem kell klubtagság és sportorvosi engedély. Felszerelés bemutatása nem kötelező, de a
+              szabályzatban nem engedélyezett felszerelés előbb figyelmeztetéssel, később kizárással
+              szankcionálható.
             </p>
           </CardContent>
         </Card>
