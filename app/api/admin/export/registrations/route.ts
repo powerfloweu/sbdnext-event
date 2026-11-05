@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   let query = admin
     .from("registrations")
     .select(
-      "created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, utm, paid_at"
+      "created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, currency, utm, paid_at"
     )
     .order("created_at", { ascending: false });
 
@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
       "Prémium média",
       "Nevezési díj",
       "Összeg",
+      "Pénznem",
       "UTM",
       "Fizetve",
     ],
@@ -99,6 +100,7 @@ export async function GET(request: NextRequest) {
         r.premium_media ? "igen" : "nem",
         r.entry_fee,
         r.total_fee,
+        r.currency,
         r.utm ?? "",
         r.paid_at ?? "",
       ];
