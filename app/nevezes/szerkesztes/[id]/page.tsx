@@ -17,11 +17,14 @@ import { compressImageToDataUrl } from "@/lib/client-image";
 import { EVENT } from "@/config/event";
 import { registrationEditSchema, type RegistrationEditInput } from "@/lib/validation/registration-edit";
 
+type EditLocale = "hu" | "en";
+
 type LoadState =
   | { status: "loading" }
   | { status: "not_found" }
   | {
       status: "ready";
+      locale: EditLocale;
       allFieldsOpen: boolean;
       shirtOpen: boolean;
       wantsShirt: boolean;
@@ -30,6 +33,175 @@ type LoadState =
     };
 
 const MAX_FACE_PHOTO_MB = 20;
+
+// The DB stores the original enum values ("Nő"/"Férfi", "Újonc"/"Versenyző",
+// "Női"/"Férfi") regardless of locale, and the schema still validates
+// against those — only the displayed label changes here. The HU labels
+// match the versenykiírás's public category names (Tehetségkutató /
+// Versenyzői), not the internal "Újonc"/"Versenyző" enum values.
+const SEX_LABELS: Record<EditLocale, Record<string, string>> = {
+  hu: { Nő: "Nő", Férfi: "Férfi" },
+  en: { Nő: "Female", Férfi: "Male" },
+};
+const DIVISION_LABELS: Record<EditLocale, Record<string, string>> = {
+  hu: { Újonc: "Tehetségkutató", Versenyző: "Versenyzői" },
+  en: { Újonc: "Rookie", Versenyző: "Lifter" },
+};
+const SHIRT_CUT_LABELS: Record<EditLocale, Record<string, string>> = {
+  hu: { Női: "Női", Férfi: "Férfi" },
+  en: { Női: "Women's", Férfi: "Men's" },
+};
+
+interface PageStrings {
+  loading: string;
+  notFoundTitle: string;
+  notFoundBody: string;
+  editClosedTitle: string;
+  editClosedBody: string;
+  heading: string;
+  intro: string;
+  introShirtLocked: string;
+  savedAlert: string;
+  saveErrorAlert: string;
+  lastName: string;
+  firstName: string;
+  birthYear: string;
+  sex: string;
+  selectPlaceholder: string;
+  division: string;
+  club: string;
+  clubHint: string;
+  bodyweight: string;
+  openerSquat: string;
+  openerBench: string;
+  openerDeadlift: string;
+  mcText: string;
+  notes: string;
+  optional: string;
+  shirtCut: string;
+  shirtCutLockedHint: string;
+  shirtSize: string;
+  save: string;
+  saving: string;
+  facePhotoTitle: string;
+  facePhotoHint: string;
+  facePhotoHintReplacing: string;
+  facePhotoReplace: string;
+  facePhotoSelect: string;
+  facePhotoSelectAria: string;
+  facePhotoProcessing: string;
+  facePhotoTypeError: string;
+  facePhotoSizeError: (mb: number) => string;
+  facePhotoProcessError: string;
+  facePhotoSaved: string;
+  facePhotoSaveError: string;
+  facePhotoSave: string;
+  facePhotoSaving: string;
+  facePhotoAlt: string;
+}
+
+const STRINGS: Record<EditLocale, PageStrings> = {
+  hu: {
+    loading: "Betöltés…",
+    notFoundTitle: "Ez a link már nem érvényes",
+    notFoundBody:
+      "Ellenőrizd, hogy a teljes linket másoltad-e be a visszaigazoló e-mailből. Ha mégsem működik, írj nekünk:",
+    editClosedTitle: "A szerkesztési időszak lezárult",
+    editClosedBody:
+      "A nevezési adatok önálló módosítása 2027. január 30-ig volt lehetséges. Ha mégis változtatnod kell valamin, írj nekünk:",
+    heading: "Nevezési adataid",
+    intro: "Itt javíthatod a nevezéskor megadott adataidat. A módosítás 2027. január 30-ig lehetséges",
+    introShirtLocked: " — a pólóméret/fazon már lezárult, a rendelés leadása miatt.",
+    savedAlert: "Mentve.",
+    saveErrorAlert: "A mentés nem sikerült, próbáld újra.",
+    lastName: "Vezetéknév",
+    firstName: "Keresztnév",
+    birthYear: "Születési év",
+    sex: "Nem",
+    selectPlaceholder: "Válassz",
+    division: "Kategória",
+    club: "Egyesület / Klub",
+    clubHint: "Nem kötelező",
+    bodyweight: "Tervezett testsúly (kg)",
+    openerSquat: "Guggolás (kg)",
+    openerBench: "Fekvenyomás (kg)",
+    openerDeadlift: "Felhúzás (kg)",
+    mcText: "Bemondó szöveg",
+    notes: "Megjegyzés",
+    optional: "Nem kötelező",
+    shirtCut: "Póló fazon",
+    shirtCutLockedHint: "A pólórendelés lezárult, ez már nem módosítható.",
+    shirtSize: "Pólóméret",
+    save: "Mentés",
+    saving: "Mentés…",
+    facePhotoTitle: "Arcfotó",
+    facePhotoHint:
+      "Egy tiszta, jól látható arcfotó kell ahhoz, hogy a verseny után az AI-alapú fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad készült képeket.",
+    facePhotoHintReplacing: " Már van feltöltött fotód — ez lecseréli.",
+    facePhotoReplace: "Fotó cseréje",
+    facePhotoSelect: "Fotó kiválasztása",
+    facePhotoSelectAria: "Arcfotó kiválasztása",
+    facePhotoProcessing: "Feldolgozás…",
+    facePhotoTypeError: "Csak képfájlt tudunk elfogadni (jpg, png, heic).",
+    facePhotoSizeError: (mb: number) => `A fájl túl nagy (max. ${mb} MB).`,
+    facePhotoProcessError: "A fotó feldolgozása nem sikerült, próbálj egy másik képet.",
+    facePhotoSaved: "Mentve.",
+    facePhotoSaveError: "A mentés nem sikerült, próbáld újra.",
+    facePhotoSave: "Fotó mentése",
+    facePhotoSaving: "Mentés…",
+    facePhotoAlt: "Feltöltött arcfotó előnézete",
+  },
+  en: {
+    loading: "Loading…",
+    notFoundTitle: "This link is no longer valid",
+    notFoundBody:
+      "Check that you copied the full link from your confirmation e-mail. If it still doesn't work, e-mail us:",
+    editClosedTitle: "The edit window has closed",
+    editClosedBody:
+      "Self-service edits to your registration were possible until 30 January 2027. If you still need to change something, e-mail us:",
+    heading: "Your registration details",
+    intro: "You can fix the details you submitted at registration here. Edits are possible until 30 January 2027",
+    introShirtLocked: " — the shirt size/cut has already locked, since the order has been placed.",
+    savedAlert: "Saved.",
+    saveErrorAlert: "Couldn't save, please try again.",
+    lastName: "Last name",
+    firstName: "First name",
+    birthYear: "Birth year",
+    sex: "Sex",
+    selectPlaceholder: "Select",
+    division: "Division",
+    club: "Club / Team",
+    clubHint: "Optional",
+    bodyweight: "Expected bodyweight (kg)",
+    openerSquat: "Squat (kg)",
+    openerBench: "Bench press (kg)",
+    openerDeadlift: "Deadlift (kg)",
+    mcText: "Announcer text",
+    notes: "Note",
+    optional: "Optional",
+    shirtCut: "Shirt cut",
+    shirtCutLockedHint: "The shirt order has closed, this can no longer be changed.",
+    shirtSize: "Shirt size",
+    save: "Save",
+    saving: "Saving…",
+    facePhotoTitle: "Face photo",
+    facePhotoHint:
+      "A clear, visible face photo lets our AI photo sorter (Excire Photo) automatically find and collect your competition photos afterwards.",
+    facePhotoHintReplacing: " You already have a photo uploaded — this will replace it.",
+    facePhotoReplace: "Replace photo",
+    facePhotoSelect: "Select photo",
+    facePhotoSelectAria: "Select face photo",
+    facePhotoProcessing: "Processing…",
+    facePhotoTypeError: "Only image files are accepted (jpg, png, heic).",
+    facePhotoSizeError: (mb: number) => `File is too large (max. ${mb} MB).`,
+    facePhotoProcessError: "Couldn't process that photo, try a different one.",
+    facePhotoSaved: "Saved.",
+    facePhotoSaveError: "Couldn't save, please try again.",
+    facePhotoSave: "Save photo",
+    facePhotoSaving: "Saving…",
+    facePhotoAlt: "Uploaded face photo preview",
+  },
+};
 
 // The face photo stays editable (facePhotoEditOpen) even once the rest of
 // the form has locked (allFieldsOpen=false) — it's optional at registration
@@ -40,11 +212,13 @@ function FacePhotoCard({
   id,
   token,
   hasFacePhoto,
+  t,
   onSaved,
 }: {
   id: string;
   token: string;
   hasFacePhoto: boolean;
+  t: PageStrings;
   onSaved: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -55,34 +229,37 @@ function FacePhotoCard({
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const objectUrlRef = useRef<string | null>(null);
 
-  const handleSelect = useCallback(async (file: File | null) => {
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = null;
-    }
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("Csak képfájlt tudunk elfogadni (jpg, png, heic).");
-      return;
-    }
-    if (file.size > MAX_FACE_PHOTO_MB * 1024 * 1024) {
-      setError(`A fájl túl nagy (max. ${MAX_FACE_PHOTO_MB} MB).`);
-      return;
-    }
-    setError(null);
-    setProcessing(true);
-    try {
-      const url = await compressImageToDataUrl(file);
-      setDataUrl(url);
-      const preview = URL.createObjectURL(file);
-      objectUrlRef.current = preview;
-      setPreviewUrl(preview);
-    } catch {
-      setError("A fotó feldolgozása nem sikerült, próbálj egy másik képet.");
-    } finally {
-      setProcessing(false);
-    }
-  }, []);
+  const handleSelect = useCallback(
+    async (file: File | null) => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        setError(t.facePhotoTypeError);
+        return;
+      }
+      if (file.size > MAX_FACE_PHOTO_MB * 1024 * 1024) {
+        setError(t.facePhotoSizeError(MAX_FACE_PHOTO_MB));
+        return;
+      }
+      setError(null);
+      setProcessing(true);
+      try {
+        const url = await compressImageToDataUrl(file);
+        setDataUrl(url);
+        const preview = URL.createObjectURL(file);
+        objectUrlRef.current = preview;
+        setPreviewUrl(preview);
+      } catch {
+        setError(t.facePhotoProcessError);
+      } finally {
+        setProcessing(false);
+      }
+    },
+    [t]
+  );
 
   const save = useCallback(async () => {
     if (!dataUrl) return;
@@ -104,17 +281,16 @@ function FacePhotoCard({
   return (
     <Card>
       <CardContent className="flex flex-col gap-3 p-5 sm:p-6">
-        <h2 className="text-lg font-semibold">Arcfotó</h2>
+        <h2 className="text-lg font-semibold">{t.facePhotoTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          Egy tiszta, jól látható arcfotó kell ahhoz, hogy a verseny után az AI-alapú
-          fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad készült
-          képeket. {hasFacePhoto && !previewUrl ? "Már van feltöltött fotód — ez lecseréli." : ""}
+          {t.facePhotoHint}
+          {hasFacePhoto && !previewUrl ? t.facePhotoHintReplacing : ""}
         </p>
         <div className="flex items-center gap-4">
           <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-background">
             {previewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={previewUrl} alt="Feltöltött arcfotó előnézete" className="size-full object-cover" />
+              <img src={previewUrl} alt={t.facePhotoAlt} className="size-full object-cover" />
             ) : (
               <Camera className="size-6 text-muted-foreground" aria-hidden="true" />
             )}
@@ -126,14 +302,14 @@ function FacePhotoCard({
               accept="image/*"
               onChange={(e) => handleSelect(e.target.files?.[0] ?? null)}
               className="sr-only"
-              aria-label="Arcfotó kiválasztása"
+              aria-label={t.facePhotoSelectAria}
             />
             <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
-              {hasFacePhoto || previewUrl ? "Fotó cseréje" : "Fotó kiválasztása"}
+              {hasFacePhoto || previewUrl ? t.facePhotoReplace : t.facePhotoSelect}
             </Button>
           </div>
         </div>
-        {processing && <p className="text-xs text-muted-foreground">Feldolgozás…</p>}
+        {processing && <p className="text-xs text-muted-foreground">{t.facePhotoProcessing}</p>}
         {error && (
           <p role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
             <AlertCircle className="size-3.5" aria-hidden="true" />
@@ -143,18 +319,18 @@ function FacePhotoCard({
         {saveState === "saved" && (
           <Alert className="flex items-center gap-2">
             <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
-            Mentve.
+            {t.facePhotoSaved}
           </Alert>
         )}
         {saveState === "error" && (
           <Alert className="flex items-center gap-2" variant="destructive">
             <AlertCircle className="size-4" aria-hidden="true" />
-            A mentés nem sikerült, próbáld újra.
+            {t.facePhotoSaveError}
           </Alert>
         )}
         {dataUrl && (
           <Button type="button" onClick={save} disabled={saveState === "saving"} className="self-start">
-            {saveState === "saving" ? "Mentés…" : "Fotó mentése"}
+            {saveState === "saving" ? t.facePhotoSaving : t.facePhotoSave}
           </Button>
         )}
       </CardContent>
@@ -199,6 +375,7 @@ export default function EditRegistrationPage({
         reset(json.data);
         setState({
           status: "ready",
+          locale: json.locale === "en" ? "en" : "hu",
           allFieldsOpen: json.allFieldsOpen,
           shirtOpen: json.shirtOpen,
           wantsShirt: json.data.wantsShirt,
@@ -227,32 +404,52 @@ export default function EditRegistrationPage({
 
   if (state.status === "loading") {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center text-muted-foreground">Betöltés…</div>
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center text-muted-foreground">
+        {STRINGS.hu.loading} / {STRINGS.en.loading}
+      </div>
     );
   }
 
   if (state.status === "not_found") {
+    // The locale isn't known yet (the link itself didn't resolve), so show
+    // both languages rather than guessing.
     return (
-      <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 px-4 text-center">
-        <AlertCircle className="size-10 text-destructive" aria-hidden="true" />
-        <h1 className="text-2xl">Ez a link már nem érvényes</h1>
-        <p className="text-sm text-muted-foreground">
-          Ellenőrizd, hogy a teljes linket másoltad-e be a visszaigazoló e-mailből. Ha mégsem működik,
-          írj nekünk: <a href={`mailto:${EVENT.contact.email}`} className="text-primary">{EVENT.contact.email}</a>
-        </p>
+      <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-6 px-4 text-center">
+        {(["hu", "en"] as const).map((locale) => {
+          const t = STRINGS[locale];
+          return (
+            <div key={locale} className="flex flex-col items-center gap-3">
+              <AlertCircle className="size-10 text-destructive" aria-hidden="true" />
+              <h1 className="text-2xl">{t.notFoundTitle}</h1>
+              <p className="text-sm text-muted-foreground">
+                {t.notFoundBody}{" "}
+                <a href={`mailto:${EVENT.contact.email}`} className="text-primary">
+                  {EVENT.contact.email}
+                </a>
+              </p>
+            </div>
+          );
+        })}
       </div>
     );
   }
+
+  const t = STRINGS[state.locale];
+  const sexLabels = SEX_LABELS[state.locale];
+  const divisionLabels = DIVISION_LABELS[state.locale];
+  const shirtCutLabels = SHIRT_CUT_LABELS[state.locale];
 
   if (!state.allFieldsOpen) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16">
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
           <Lock className="size-10 text-muted-foreground" aria-hidden="true" />
-          <h1 className="text-2xl">A szerkesztési időszak lezárult</h1>
+          <h1 className="text-2xl">{t.editClosedTitle}</h1>
           <p className="text-sm text-muted-foreground">
-            A nevezési adatok önálló módosítása 2027. január 30-ig volt lehetséges. Ha mégis változtatnod
-            kell valamin, írj nekünk: <a href={`mailto:${EVENT.contact.email}`} className="text-primary">{EVENT.contact.email}</a>
+            {t.editClosedBody}{" "}
+            <a href={`mailto:${EVENT.contact.email}`} className="text-primary">
+              {EVENT.contact.email}
+            </a>
           </p>
         </div>
         {state.facePhotoEditOpen && (
@@ -260,6 +457,7 @@ export default function EditRegistrationPage({
             id={id}
             token={token ?? ""}
             hasFacePhoto={state.hasFacePhoto}
+            t={t}
             onSaved={() => setState({ ...state, hasFacePhoto: true })}
           />
         )}
@@ -270,10 +468,10 @@ export default function EditRegistrationPage({
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-8">
       <div className="eyebrow mb-1">SBD Next 2</div>
-      <h1 className="mb-1 text-3xl">Nevezési adataid</h1>
+      <h1 className="mb-1 text-3xl">{t.heading}</h1>
       <p className="mb-6 text-sm text-muted-foreground">
-        Itt javíthatod a nevezéskor megadott adataidat. A módosítás 2027. január 30-ig lehetséges
-        {state.wantsShirt && !state.shirtOpen ? " — a pólóméret/fazon már lezárult, a rendelés leadása miatt." : "."}
+        {t.intro}
+        {state.wantsShirt && !state.shirtOpen ? t.introShirtLocked : "."}
       </p>
 
       {state.facePhotoEditOpen && (
@@ -282,6 +480,7 @@ export default function EditRegistrationPage({
             id={id}
             token={token ?? ""}
             hasFacePhoto={state.hasFacePhoto}
+            t={t}
             onSaved={() => setState({ ...state, hasFacePhoto: true })}
           />
         </div>
@@ -290,13 +489,13 @@ export default function EditRegistrationPage({
       {saveState === "saved" && (
         <Alert className="mb-5 flex items-center gap-2">
           <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
-          Mentve.
+          {t.savedAlert}
         </Alert>
       )}
       {saveState === "error" && (
         <Alert className="mb-5 flex items-center gap-2" variant="destructive">
           <AlertCircle className="size-4" aria-hidden="true" />
-          A mentés nem sikerült, próbáld újra.
+          {t.saveErrorAlert}
         </Alert>
       )}
 
@@ -308,7 +507,7 @@ export default function EditRegistrationPage({
                 name="lastName"
                 control={control}
                 render={({ field }) => (
-                  <Field id="lastName" label="Vezetéknév" required error={errors.lastName?.message}>
+                  <Field id="lastName" label={t.lastName} required error={errors.lastName?.message}>
                     <Input id="lastName" {...field} />
                   </Field>
                 )}
@@ -317,7 +516,7 @@ export default function EditRegistrationPage({
                 name="firstName"
                 control={control}
                 render={({ field }) => (
-                  <Field id="firstName" label="Keresztnév" required error={errors.firstName?.message}>
+                  <Field id="firstName" label={t.firstName} required error={errors.firstName?.message}>
                     <Input id="firstName" {...field} />
                   </Field>
                 )}
@@ -329,7 +528,7 @@ export default function EditRegistrationPage({
                 name="birthYear"
                 control={control}
                 render={({ field }) => (
-                  <Field id="birthYear" label="Születési év" required error={errors.birthYear?.message}>
+                  <Field id="birthYear" label={t.birthYear} required error={errors.birthYear?.message}>
                     <Input id="birthYear" inputMode="numeric" maxLength={4} {...field} />
                   </Field>
                 )}
@@ -338,15 +537,15 @@ export default function EditRegistrationPage({
                 name="sex"
                 control={control}
                 render={({ field }) => (
-                  <Field id="sex" label="Nem" required error={errors.sex?.message}>
+                  <Field id="sex" label={t.sex} required error={errors.sex?.message}>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger id="sex">
-                        <SelectValue placeholder="Válassz" />
+                        <SelectValue placeholder={t.selectPlaceholder} />
                       </SelectTrigger>
                       <SelectContent>
                         {EVENT.sexes.map((s) => (
                           <SelectItem key={s} value={s}>
-                            {s}
+                            {sexLabels[s] ?? s}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -360,15 +559,15 @@ export default function EditRegistrationPage({
               name="division"
               control={control}
               render={({ field }) => (
-                <Field id="division" label="Kategória" required error={errors.division?.message}>
+                <Field id="division" label={t.division} required error={errors.division?.message}>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger id="division">
-                      <SelectValue placeholder="Válassz" />
+                      <SelectValue placeholder={t.selectPlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
                       {EVENT.divisions.map((d) => (
                         <SelectItem key={d} value={d}>
-                          {d}
+                          {divisionLabels[d] ?? d}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -381,7 +580,7 @@ export default function EditRegistrationPage({
               name="club"
               control={control}
               render={({ field }) => (
-                <Field id="club" label="Egyesület / Klub" hint="Nem kötelező">
+                <Field id="club" label={t.club} hint={t.clubHint}>
                   <Input id="club" {...field} />
                 </Field>
               )}
@@ -391,7 +590,7 @@ export default function EditRegistrationPage({
               name="bodyweight"
               control={control}
               render={({ field }) => (
-                <Field id="bodyweight" label="Tervezett testsúly (kg)" required error={errors.bodyweight?.message}>
+                <Field id="bodyweight" label={t.bodyweight} required error={errors.bodyweight?.message}>
                   <Input id="bodyweight" inputMode="decimal" {...field} />
                 </Field>
               )}
@@ -402,7 +601,7 @@ export default function EditRegistrationPage({
                 name="openerSquat"
                 control={control}
                 render={({ field }) => (
-                  <Field id="openerSquat" label="Guggolás (kg)" error={errors.openerSquat?.message}>
+                  <Field id="openerSquat" label={t.openerSquat} error={errors.openerSquat?.message}>
                     <Input id="openerSquat" inputMode="decimal" {...field} />
                   </Field>
                 )}
@@ -411,7 +610,7 @@ export default function EditRegistrationPage({
                 name="openerBench"
                 control={control}
                 render={({ field }) => (
-                  <Field id="openerBench" label="Fekvenyomás (kg)" error={errors.openerBench?.message}>
+                  <Field id="openerBench" label={t.openerBench} error={errors.openerBench?.message}>
                     <Input id="openerBench" inputMode="decimal" {...field} />
                   </Field>
                 )}
@@ -420,7 +619,7 @@ export default function EditRegistrationPage({
                 name="openerDeadlift"
                 control={control}
                 render={({ field }) => (
-                  <Field id="openerDeadlift" label="Felhúzás (kg)" error={errors.openerDeadlift?.message}>
+                  <Field id="openerDeadlift" label={t.openerDeadlift} error={errors.openerDeadlift?.message}>
                     <Input id="openerDeadlift" inputMode="decimal" {...field} />
                   </Field>
                 )}
@@ -431,7 +630,7 @@ export default function EditRegistrationPage({
               name="mcText"
               control={control}
               render={({ field }) => (
-                <Field id="mcText" label="Bemondó szöveg" hint="Nem kötelező">
+                <Field id="mcText" label={t.mcText} hint={t.optional}>
                   <Textarea id="mcText" {...field} />
                 </Field>
               )}
@@ -441,7 +640,7 @@ export default function EditRegistrationPage({
               name="notes"
               control={control}
               render={({ field }) => (
-                <Field id="notes" label="Megjegyzés" hint="Nem kötelező">
+                <Field id="notes" label={t.notes} hint={t.optional}>
                   <Textarea id="notes" {...field} />
                 </Field>
               )}
@@ -453,19 +652,15 @@ export default function EditRegistrationPage({
                   name="shirtCut"
                   control={control}
                   render={({ field }) => (
-                    <Field
-                      id="shirtCut"
-                      label="Póló fazon"
-                      hint={!state.shirtOpen ? "A pólórendelés lezárult, ez már nem módosítható." : undefined}
-                    >
+                    <Field id="shirtCut" label={t.shirtCut} hint={!state.shirtOpen ? t.shirtCutLockedHint : undefined}>
                       <Select value={field.value} onValueChange={field.onChange} disabled={!state.shirtOpen}>
                         <SelectTrigger id="shirtCut">
-                          <SelectValue placeholder="Válassz" />
+                          <SelectValue placeholder={t.selectPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           {EVENT.shirt.cuts.map((c) => (
                             <SelectItem key={c} value={c}>
-                              {c}
+                              {shirtCutLabels[c] ?? c}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -477,10 +672,10 @@ export default function EditRegistrationPage({
                   name="shirtSize"
                   control={control}
                   render={({ field }) => (
-                    <Field id="shirtSize" label="Pólóméret">
+                    <Field id="shirtSize" label={t.shirtSize}>
                       <Select value={field.value} onValueChange={field.onChange} disabled={!state.shirtOpen}>
                         <SelectTrigger id="shirtSize">
-                          <SelectValue placeholder="Válassz" />
+                          <SelectValue placeholder={t.selectPlaceholder} />
                         </SelectTrigger>
                         <SelectContent>
                           {EVENT.shirt.sizes.map((s) => (
@@ -497,7 +692,7 @@ export default function EditRegistrationPage({
             )}
 
             <Button type="submit" disabled={saveState === "saving"} className="self-start">
-              {saveState === "saving" ? "Mentés…" : "Mentés"}
+              {saveState === "saving" ? t.saving : t.save}
             </Button>
           </form>
         </CardContent>

@@ -125,10 +125,14 @@ export function summaryFromRow(row: {
   };
 }
 
-// The DB always stores these as the Hungarian form-option labels
+// The DB always stores these as the original form-option enum values
 // ("Nő"/"Férfi", "Újonc"/"Versenyző", "Női"/"Férfi") regardless of the
-// registrant's locale — translate them for the English email only.
+// registrant's locale or any later renaming, so existing rows stay intact —
+// translate them to the versenykiírás's public names for display only.
+// "Újonc"/"Versenyző" are the DB/internal names; the rules document's public
+// category names are "Tehetségkutató"/"Versenyzői" (HU) and "Rookie"/"Lifter" (EN).
 const SEX_EN: Record<string, string> = { Nő: "Female", Férfi: "Male" };
+const DIVISION_HU: Record<string, string> = { Újonc: "Tehetségkutató", Versenyző: "Versenyzői" };
 const DIVISION_EN: Record<string, string> = { Újonc: "Rookie", Versenyző: "Lifter" };
 const SHIRT_CUT_EN: Record<string, string> = { Női: "Women's", Férfi: "Men's" };
 
@@ -158,7 +162,7 @@ function summaryTableHtml(summary: RegistrationSummary, locale: RegistrationLoca
           ["Név", `${summary.lastName} ${summary.firstName}`],
           ["Születési év", String(summary.birthYear)],
           ["Nem", summary.sex],
-          ["Kategória", summary.division],
+          ["Kategória", DIVISION_HU[summary.division] ?? summary.division],
           ["Testsúly", `${summary.bodyweight} kg`],
           ["Klub", summary.club || "—"],
           [

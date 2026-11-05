@@ -17,7 +17,7 @@ export function KeyFacts() {
         eyebrow="Kategóriák"
         value={
           <>
-            Újonc · Versenyző
+            Tehetségkutató · Versenyzői
             <br />
             Női · Férfi
           </>

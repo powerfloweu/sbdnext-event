@@ -11,8 +11,8 @@ const FAQ = [
     a: "Nem. Nem kell klubtagság és sportorvosi engedély sem, a verseny szabadidős esemény.",
   },
   {
-    q: "Újonc vagy Versenyző vagyok?",
-    a: "Újonc: nem versenyeztél még Magyar Országos Bajnokságon (open, I. osztály). Versenyző: az elmúlt 2 évben versenyeztél MOB-on és/vagy elérted a minősítési szintet.",
+    q: "Tehetségkutató vagy Versenyzői vagyok?",
+    a: "Tehetségkutató: 2025-ben és/vagy 2026-ban nem indultál a MERSZ I. osztályú magyar bajnokságon, illetve IPF nemzetközi (vagy azzal egyenértékű külföldi) versenyen — II. osztályú vagy kisebb versenyen való részvétel nem zár ki. Versenyzői: indultál a MERSZ 2025-ös vagy 2026-os Felnőtt Magyar Bajnokságán, vagy elérted az Open I. osztályú szintet (ill. ennek nemzetközi megfelelőjét).",
   },
   {
     q: "Mi van, ha betelik a létszám?",
@@ -20,7 +20,7 @@ const FAQ = [
   },
   {
     q: "Milyen felszerelés kötelező?",
-    a: "Versenyzőknek kantáros erőemelő mez, hosszú zokni, cipő és póló. Újoncoknak elegendő a testhez simuló ruházat. Részletek a Szabályok szekcióban.",
+    a: "A versenyzői kategóriában kantáros erőemelő mez, hosszú zokni, cipő és póló szükséges. A tehetségkutató kategóriában elegendő a testhez simuló ruházat. Részletek a Szabályok szekcióban.",
   },
   {
     q: "Hogyan fizethetek?",

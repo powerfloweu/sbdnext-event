@@ -214,8 +214,8 @@ export default function EnglishPage() {
                 <b>Nem *</b> – Sex (&quot;Nő&quot; = female, &quot;Férfi&quot; = male)
               </div>
               <div>
-                <b>Újonc / Versenyző *</b> – Division: <b>Újonc</b> = Rookie (no national
-                championships yet), <b>Versenyző</b> = Lifter (national-level experience)
+                <b>Tehetségkutató / Versenyzői *</b> – Division: <b>Tehetségkutató</b> = Rookie (no
+                national championships yet), <b>Versenyzői</b> = Lifter (national-level experience)
               </div>
               <div>
                 <b>Testsúly / nevezési súlyok *</b> – Planned bodyweight and opening attempts (kg)

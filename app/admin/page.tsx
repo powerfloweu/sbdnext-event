@@ -114,6 +114,15 @@ function fmtKg(value: number | null): string {
   return value === null ? "—" : formatKg(value);
 }
 
+// The DB keeps the original enum values ("Újonc"/"Versenyző") so existing
+// rows stay intact, but the versenykiírás's public category names are
+// "Tehetségkutató" and "Versenyzői" — show those here instead.
+function divisionLabel(division: string): string {
+  if (division === "Újonc") return "Tehetségkutató";
+  if (division === "Versenyző") return "Versenyzői";
+  return division;
+}
+
 function openerTotal(r: Pick<RegistrationRow, "opener_squat" | "opener_bench" | "opener_deadlift">): number | null {
   if (r.opener_squat === null || r.opener_bench === null || r.opener_deadlift === null) return null;
   return r.opener_squat + r.opener_bench + r.opener_deadlift;
@@ -421,7 +430,7 @@ export default async function AdminPage({
                         {r.last_name} {r.first_name}
                       </td>
                       <td className="p-3 text-muted-foreground">{r.email}</td>
-                      <td className="p-3">{r.division}</td>
+                      <td className="p-3">{divisionLabel(r.division)}</td>
                       <td className="p-3">{r.sex}</td>
                       <td className="p-3 text-muted-foreground">{r.club || "—"}</td>
                       <td className="p-3 whitespace-nowrap">{fmtKg(r.bodyweight)}</td>
