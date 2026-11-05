@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { ADMIN_TEST_COOKIE } from "@/lib/admin-test";
-import { sendPaymentConfirmedEmail } from "@/lib/email";
+import { sendPaymentConfirmedEmail, sendRegistrationReceivedEmail } from "@/lib/email";
 import { EVENT } from "@/config/event";
 
 const REGISTRATION_STATUSES = ["pending_payment", "waitlist", "paid", "cancelled"] as const;
@@ -47,6 +47,68 @@ export async function updateRegistrationStatus(formData: FormData): Promise<void
 
   revalidatePath("/admin");
 
+  if (typeof redirectTo === "string" && redirectTo.startsWith("/admin")) {
+    redirect(redirectTo);
+  }
+}
+
+// Manual re-send for a single registration — e.g. a registration whose
+// confirmation e-mail went out in the wrong language because of the
+// legacy Make.com webhook email (see project thread 2026-11-05), or that
+// bounced. Re-derives the e-mail entirely from the stored row (locale,
+// currency, status) so it always matches what a fresh submission would
+// get — never trusts anything from the client beyond the id.
+export async function resendRegistrationEmail(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = formData.get("id");
+  const redirectTo = formData.get("redirectTo");
+  if (typeof id !== "string" || !id) {
+    throw new Error("Érvénytelen kérés.");
+  }
+
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    throw new Error("Supabase nincs beállítva.");
+  }
+
+  const { data: registration, error } = await admin
+    .from("registrations")
+    .select("id, email, first_name, status, total_fee, currency, locale, edit_token")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !registration) {
+    throw new Error(error?.message ?? "A nevezés nem található.");
+  }
+
+  const currency: "HUF" | "EUR" = registration.currency === "EUR" ? "EUR" : "HUF";
+  const locale: "hu" | "en" = registration.locale === "en" ? "en" : "hu";
+  const editUrl = registration.edit_token
+    ? `${EVENT.siteUrl}/nevezes/szerkesztes/${id}?token=${registration.edit_token}`
+    : undefined;
+
+  if (registration.status === "paid") {
+    await sendPaymentConfirmedEmail({
+      email: registration.email,
+      firstName: registration.first_name,
+      totalFee: registration.total_fee,
+      currency,
+      locale,
+      editUrl,
+    });
+  } else {
+    await sendRegistrationReceivedEmail({
+      email: registration.email,
+      firstName: registration.first_name,
+      waitlisted: registration.status === "waitlist",
+      totalFee: registration.total_fee,
+      currency,
+      locale,
+      editUrl: editUrl ?? `${EVENT.siteUrl}/nevezes`,
+    });
+  }
+
+  revalidatePath("/admin");
   if (typeof redirectTo === "string" && redirectTo.startsWith("/admin")) {
     redirect(redirectTo);
   }

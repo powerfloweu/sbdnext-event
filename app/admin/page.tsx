@@ -13,8 +13,8 @@ import { FeedbackAnalysis } from "@/components/admin/feedback-analysis";
 import { AdminTestTab } from "@/components/admin/admin-test-tab";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
-import { formatHUF, formatKg } from "@/lib/format";
-import { updateRegistrationStatus } from "./actions";
+import { formatHUF, formatEUR, formatKg } from "@/lib/format";
+import { updateRegistrationStatus, resendRegistrationEmail } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -55,8 +55,14 @@ interface RegistrationRow {
   premium_media: boolean;
   entry_fee: number;
   total_fee: number;
+  currency: "HUF" | "EUR";
   utm: string | null;
   paid_at: string | null;
+  face_photo_path: string | null;
+}
+
+function formatAmount(amount: number, currency: "HUF" | "EUR"): string {
+  return currency === "EUR" ? `${formatEUR(amount)} €` : `${formatHUF(amount)} Ft`;
 }
 
 interface NotifySignupRow {
@@ -166,7 +172,7 @@ export default async function AdminPage({
   let regQuery = admin
     .from("registrations")
     .select(
-      "id, created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, utm, paid_at",
+      "id, created_at, status, last_name, first_name, email, birth_year, division, sex, club, bodyweight, opener_squat, opener_bench, opener_deadlift, mc_text, notes, wants_shirt, shirt_cut, shirt_size, premium_media, entry_fee, total_fee, currency, utm, paid_at, face_photo_path",
       { count: "exact" }
     )
     // Admin-test walkthroughs (see components/admin/admin-test-tab.tsx) live
@@ -208,9 +214,9 @@ export default async function AdminPage({
     notifyQuery.range(notifyFrom, notifyTo).returns<NotifySignupRow[]>(),
     admin
       .from("registrations")
-      .select("status, total_fee")
+      .select("status, total_fee, currency")
       .eq("is_preview_test", false)
-      .returns<{ status: string; total_fee: number }[]>(),
+      .returns<{ status: string; total_fee: number; currency: "HUF" | "EUR" }[]>(),
     admin.from("notify_signups").select("id", { count: "exact", head: true }),
     // Independent of the notify-signups table's own pagination/search above —
     // the feedback list below always shows every submitted answer.
@@ -289,7 +295,9 @@ export default async function AdminPage({
   const allStats = statsRows ?? [];
   const totalRegistrations = allStats.length;
   const totalPaid = allStats.filter((r) => r.status === "paid").length;
-  const paidTotal = allStats.filter((r) => r.status === "paid").reduce((sum, r) => sum + r.total_fee, 0);
+  const paidRows = allStats.filter((r) => r.status === "paid");
+  const paidTotalHuf = paidRows.filter((r) => r.currency !== "EUR").reduce((sum, r) => sum + r.total_fee, 0);
+  const paidTotalEur = paidRows.filter((r) => r.currency === "EUR").reduce((sum, r) => sum + r.total_fee, 0);
 
   const regTotalPages = Math.max(1, Math.ceil((regCount ?? 0) / PAGE_SIZE));
   const notifyTotalPages = Math.max(1, Math.ceil((notifyCount ?? 0) / PAGE_SIZE));
@@ -303,7 +311,10 @@ export default async function AdminPage({
         {[
           { label: "Nevezések", value: totalRegistrations },
           { label: "Fizetve", value: totalPaid },
-          { label: "Bevétel (fizetett)", value: `${formatHUF(paidTotal)} Ft` },
+          {
+            label: "Bevétel (fizetett)",
+            value: paidTotalEur > 0 ? `${formatHUF(paidTotalHuf)} Ft + ${formatEUR(paidTotalEur)} €` : `${formatHUF(paidTotalHuf)} Ft`,
+          },
           { label: "Notify feliratkozók", value: totalNotifyCount ?? 0 },
         ].map((s) => (
           <Card key={s.label}>
@@ -326,12 +337,20 @@ export default async function AdminPage({
           <h2 className="text-lg font-semibold">
             Nevezések ({regCount ?? 0})
           </h2>
-          <a
-            href={`/api/admin/export/registrations${buildQuery(regFilterQs)}`}
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-          >
-            CSV export
-          </a>
+          <div className="flex flex-wrap gap-4">
+            <a
+              href={`/api/admin/export/registrations${buildQuery(regFilterQs)}`}
+              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              CSV export
+            </a>
+            <a
+              href="/api/admin/export/face-photos"
+              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Arcfotók ZIP export (Excire Photo)
+            </a>
+          </div>
         </div>
 
         <form className="mb-3 flex flex-wrap gap-2" action="/admin">
@@ -381,13 +400,14 @@ export default async function AdminPage({
                 <th className="p-3">Nyitó total</th>
                 <th className="p-3">Státusz</th>
                 <th className="p-3">Összeg</th>
+                <th className="p-3">Fotó</th>
                 <th className="p-3">Művelet</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className="p-4 text-center text-muted-foreground">
+                  <td colSpan={15} className="p-4 text-center text-muted-foreground">
                     Nincs a szűrésnek megfelelő nevezés.
                   </td>
                 </tr>
@@ -410,7 +430,21 @@ export default async function AdminPage({
                       <td className="p-3 whitespace-nowrap">{fmtKg(r.opener_deadlift)}</td>
                       <td className="p-3 whitespace-nowrap font-medium">{fmtKg(openerTotal(r))}</td>
                       <td className="p-3">{STATUS_LABELS[r.status] ?? r.status}</td>
-                      <td className="p-3 whitespace-nowrap">{formatHUF(r.total_fee)} Ft</td>
+                      <td className="p-3 whitespace-nowrap">{formatAmount(r.total_fee, r.currency)}</td>
+                      <td className="p-3 whitespace-nowrap">
+                        {r.face_photo_path ? (
+                          <a
+                            href={`/api/admin/face-photo/${r.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-primary underline-offset-4 hover:underline"
+                          >
+                            Megnézem
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1.5">
                           {r.status !== "paid" && (
@@ -433,6 +467,13 @@ export default async function AdminPage({
                               </Button>
                             </form>
                           )}
+                          <form action={resendRegistrationEmail}>
+                            <input type="hidden" name="id" value={r.id} />
+                            <input type="hidden" name="redirectTo" value={redirectTo} />
+                            <Button type="submit" variant="ghost" size="sm" title="Visszaigazoló email újraküldése a jelenlegi státusz/nyelv/pénznem alapján">
+                              Email újraküldése
+                            </Button>
+                          </form>
                         </div>
                       </td>
                     </tr>
