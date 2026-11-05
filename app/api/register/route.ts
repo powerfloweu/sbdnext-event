@@ -319,6 +319,22 @@ export async function POST(req: NextRequest) {
       currency,
       locale,
       editUrl: `${EVENT.siteUrl}/nevezes/szerkesztes/${registrationId}?token=${editToken}`,
+      summary: {
+        lastName: data.lastName.trim(),
+        firstName: data.firstName.trim(),
+        division: data.division,
+        sex: data.sex,
+        birthYear: Number(data.birthYear),
+        club: data.club || null,
+        bodyweight: Number(data.bodyweight.replace(",", ".")),
+        openerSquat: Number(data.openerSquat.replace(",", ".")),
+        openerBench: Number(data.openerBench.replace(",", ".")),
+        openerDeadlift: Number(data.openerDeadlift.replace(",", ".")),
+        wantsShirt: data.wantsShirt,
+        shirtCut: data.shirtCut ?? null,
+        shirtSize: data.shirtSize ?? null,
+        premiumMedia: data.premiumMedia,
+      },
     });
   } catch (err) {
     console.error("registration confirmation email failed:", err);
