@@ -36,7 +36,7 @@ export default async function HomePage() {
     content.showInfoSection && { href: "#info", label: "Infók" },
     content.showLists && { href: "#lists", label: "Nevezési lista" },
     content.showSchedule && { href: "#schedule", label: "Időrend" },
-    { href: "#fees", label: "Díjak" },
+    { href: "#fees", label: "Nevezés", emphasized: true },
     content.showFaq && { href: "#faq", label: "GYIK" },
     { href: "/eredmenyek", label: "SBD Next I Eredmények", wordmarkRoman: "I" },
   ].filter((l): l is { href: string; label: string } => Boolean(l));
@@ -46,7 +46,7 @@ export default async function HomePage() {
       {phase === "announced" && <FogGlow />}
 
       <Header
-        ctaLabel={content.primaryCta.label}
+        ctaLabel={content.headerCtaLabel ?? content.primaryCta.label}
         ctaHref={content.primaryCta.href}
         showVolunteerLink={volunteersOpen() || phase === "closed"}
         navLinks={navLinks}
@@ -59,7 +59,7 @@ export default async function HomePage() {
           badgeLabel={content.badgeLabel}
           badgeTone={content.badgeTone}
           description={content.description}
-          primaryCta={content.primaryCta}
+          primaryCta={phase === "announced" ? null : content.primaryCta}
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}
           capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}

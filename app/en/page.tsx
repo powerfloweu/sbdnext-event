@@ -68,10 +68,13 @@ export default function EnglishPage() {
         <FogGlow />
 
         <Header
-          ctaLabel="Notify me"
+          ctaLabel="Notify"
           ctaHref="#register"
           showVolunteerLink={false}
-          navLinks={[{ href: "/en/results", label: "SBD Next I Results", wordmarkRoman: "I" }]}
+          navLinks={[
+            { href: "#fees", label: "Registration", emphasized: true },
+            { href: "/en/results", label: "SBD Next I Results", wordmarkRoman: "I" },
+          ]}
           locale="en"
         />
 
@@ -82,7 +85,7 @@ export default function EnglishPage() {
             badgeLabel="Registration and details coming soon"
             badgeTone="neutral"
             description="The next level. An open powerlifting competition for novice and competitive lifters, under IPF rules."
-            primaryCta={{ label: "Notify me", href: "#register" }}
+            primaryCta={null}
             secondaryCta={{ label: "Competition Rules", href: "/en/versenykiiras" }}
             countdown={null}
             capacity={null}

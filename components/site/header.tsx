@@ -16,8 +16,9 @@ const STRINGS = {
     mobileNavAria: "Mobil navigáció",
     volunteer: "Önkéntes",
     langToggleHref: "/en",
+    langToggleFlag: "🇬🇧",
     langToggleLabel: "EN",
-    langToggleLabelMobile: "English guide",
+    langToggleLabelMobile: "English",
     menuTitle: "Menü",
     openMenu: "Menü megnyitása",
     closeMenu: "Menü bezárása",
@@ -29,8 +30,9 @@ const STRINGS = {
     mobileNavAria: "Mobile navigation",
     volunteer: "Volunteer",
     langToggleHref: "/",
+    langToggleFlag: "🇭🇺",
     langToggleLabel: "HU",
-    langToggleLabelMobile: "Magyar oldal",
+    langToggleLabelMobile: "Magyar",
     menuTitle: "Menu",
     openMenu: "Open menu",
     closeMenu: "Close menu",
@@ -44,6 +46,10 @@ interface NavLink {
   // (bold condensed uppercase, this substring of `label` in red) instead of
   // the plain muted nav text — e.g. for the "SBD Next I Eredmények" link.
   wordmarkRoman?: string;
+  // Same bold/uppercase treatment as wordmarkRoman, without the red
+  // substring — for links that should read as clear menu items (e.g.
+  // "Nevezés") but have no roman numeral to highlight.
+  emphasized?: boolean;
 }
 
 interface HeaderProps {
@@ -115,7 +121,7 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale 
                 key={l.href}
                 href={l.href}
                 className={
-                  l.wordmarkRoman
+                  l.wordmarkRoman || l.emphasized
                     ? "font-display text-sm font-extrabold uppercase tracking-wide text-foreground/90 transition-colors hover:text-foreground"
                     : "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 }
@@ -128,8 +134,11 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale 
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href={t.langToggleHref}
-              className="hidden rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+              className="inline-flex items-center gap-1.5 rounded-full border-2 border-border bg-card px-2.5 py-1.5 text-xs font-bold text-foreground transition-colors hover:border-primary hover:text-primary sm:px-3.5 sm:py-2 sm:text-sm"
             >
+              <span aria-hidden="true" className="text-base leading-none sm:text-lg">
+                {t.langToggleFlag}
+              </span>
               {t.langToggleLabel}
             </Link>
             <Button asChild size="sm" className="hidden lg:inline-flex">
@@ -175,7 +184,7 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale 
                 href={l.href}
                 onClick={() => setOpen(false)}
                 className={
-                  l.wordmarkRoman
+                  l.wordmarkRoman || l.emphasized
                     ? "rounded-lg px-3 py-3.5 font-display text-lg font-extrabold uppercase tracking-wide text-foreground hover:bg-accent"
                     : "rounded-lg px-3 py-3.5 text-lg font-semibold text-foreground hover:bg-accent"
                 }
@@ -186,8 +195,11 @@ export function Header({ ctaLabel, ctaHref, showVolunteerLink, navLinks, locale 
             <Link
               href={t.langToggleHref}
               onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-3.5 text-lg font-semibold text-muted-foreground hover:bg-accent"
+              className="mt-2 inline-flex w-fit items-center gap-2 self-start rounded-full border-2 border-border bg-card px-4 py-2.5 text-base font-bold text-foreground hover:border-primary hover:text-primary"
             >
+              <span aria-hidden="true" className="text-lg leading-none">
+                {t.langToggleFlag}
+              </span>
               {t.langToggleLabelMobile}
             </Link>
           </nav>
