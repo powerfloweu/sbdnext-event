@@ -18,6 +18,7 @@ interface AdminTabsProps {
   weightClassStats: ReactNode;
   results: ReactNode;
   testRegistration: ReactNode;
+  privacyNotice: ReactNode;
 }
 
 export function AdminTabs({
@@ -28,6 +29,7 @@ export function AdminTabs({
   weightClassStats,
   results,
   testRegistration,
+  privacyNotice,
 }: AdminTabsProps) {
   return (
     <Tabs defaultValue="overview">
@@ -39,6 +41,7 @@ export function AdminTabs({
         <TabsTrigger value="weight-classes">Súlycsoport-statisztika</TabsTrigger>
         <TabsTrigger value="results">Eredmények</TabsTrigger>
         <TabsTrigger value="test">Teszt nevezés</TabsTrigger>
+        <TabsTrigger value="privacy">Adatkezelés</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview">{overview}</TabsContent>
@@ -48,6 +51,7 @@ export function AdminTabs({
       <TabsContent value="weight-classes">{weightClassStats}</TabsContent>
       <TabsContent value="results">{results}</TabsContent>
       <TabsContent value="test">{testRegistration}</TabsContent>
+      <TabsContent value="privacy">{privacyNotice}</TabsContent>
     </Tabs>
   );
 }

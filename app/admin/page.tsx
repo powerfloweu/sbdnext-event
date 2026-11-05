@@ -11,6 +11,8 @@ import { ResultsAdmin } from "@/components/admin/results-admin";
 import { AdminTabs } from "@/components/admin/admin-tabs";
 import { FeedbackAnalysis } from "@/components/admin/feedback-analysis";
 import { AdminTestTab } from "@/components/admin/admin-test-tab";
+import { PrivacyNoticeAdmin, type PrivacyNoticeRow } from "@/components/admin/privacy-notice-admin";
+import { DEFAULT_PRIVACY_NOTICE, type PrivacyLocale } from "@/lib/privacy-notice";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { formatHUF, formatEUR, formatKg } from "@/lib/format";
@@ -218,6 +220,7 @@ export default async function AdminPage({
     { data: sbdNext1FeedbackRows },
     { data: testRegistrations },
     { data: priorYearSample },
+    { data: privacyNoticeRows },
   ] = await Promise.all([
     regQuery.range(regFrom, regTo).returns<RegistrationRow[]>(),
     notifyQuery.range(notifyFrom, notifyTo).returns<NotifySignupRow[]>(),
@@ -267,6 +270,10 @@ export default async function AdminPage({
       .limit(1)
       .maybeSingle()
       .returns<{ email: string; last_name: string; first_name: string } | null>(),
+    // Falls back to an empty list below if the migration (0011) hasn't run
+    // yet on this environment — same degrade-gracefully pattern as the rest
+    // of this page when a table isn't there.
+    admin.from("privacy_notice").select("*").returns<PrivacyNoticeRow[]>(),
   ]);
 
   const rows = registrations ?? [];
@@ -610,6 +617,22 @@ export default async function AdminPage({
     <AdminTestTab registrations={testRegistrations ?? []} priorYearSample={priorYearSample ?? null} />
   );
 
+  const privacyRowsByLocale = new Map((privacyNoticeRows ?? []).map((r) => [r.locale, r]));
+  const privacyRows: PrivacyNoticeRow[] = (["hu", "en"] as PrivacyLocale[]).map(
+    (locale) =>
+      privacyRowsByLocale.get(locale) ?? {
+        locale,
+        draft_text: DEFAULT_PRIVACY_NOTICE[locale],
+        note: null,
+        updated_by: null,
+        updated_at: new Date().toISOString(),
+        published_text: null,
+        published_by: null,
+        published_at: null,
+      }
+  );
+  const privacyTab = <PrivacyNoticeAdmin rows={privacyRows} />;
+
   const feedbackTab = (
     <section>
       <FeedbackAnalysis sbdNext1Rows={sbdNext1Feedback} newsletterCount={(feedbackSignups ?? []).length} />
@@ -676,6 +699,7 @@ export default async function AdminPage({
         weightClassStats={<WeightClassStats rows={priorYearRows ?? []} />}
         results={<ResultsAdmin />}
         testRegistration={testTab}
+        privacyNotice={privacyTab}
       />
     </div>
   );

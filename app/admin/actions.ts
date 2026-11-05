@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { requireAdmin } from "@/lib/admin-auth";
 import { ADMIN_TEST_COOKIE } from "@/lib/admin-test";
 import { sendPaymentConfirmedEmail, sendRegistrationReceivedEmail, summaryFromRow } from "@/lib/email";
 import { EVENT } from "@/config/event";
+import { DEFAULT_PRIVACY_NOTICE, type PrivacyLocale } from "@/lib/privacy-notice";
 
 const REGISTRATION_STATUSES = ["pending_payment", "waitlist", "paid", "cancelled"] as const;
 type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
@@ -215,4 +217,113 @@ export async function simulateTestPayment(formData: FormData): Promise<void> {
   if (typeof redirectTo === "string" && redirectTo.startsWith("/admin")) {
     redirect(redirectTo);
   }
+}
+
+function isPrivacyLocale(value: unknown): value is PrivacyLocale {
+  return value === "hu" || value === "en";
+}
+
+// Who to credit on a draft save/publish — the allowlisted admin's own
+// Supabase-auth e-mail (D or Miki, see config/admin.ts), not something the
+// client could spoof via the form.
+async function currentAdminEmail(): Promise<string | null> {
+  const auth = await getSupabaseServerAuth();
+  const {
+    data: { user },
+  } = await auth.auth.getUser();
+  return user?.email ?? null;
+}
+
+// Saves a working edit to the privacy notice draft (and the shared note
+// D/Miki use to flag something for each other) from the /admin "Adatkezelés"
+// tab. Never touches published_text — the public pages only change once
+// publishPrivacyNotice runs.
+export async function savePrivacyNoticeDraft(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const locale = formData.get("locale");
+  const draftText = formData.get("draftText");
+  const note = formData.get("note");
+  if (!isPrivacyLocale(locale) || typeof draftText !== "string" || !draftText.trim()) {
+    throw new Error("Érvénytelen kérés.");
+  }
+
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    throw new Error("Supabase nincs beállítva.");
+  }
+
+  const email = await currentAdminEmail();
+  // Upsert, not update: the table may hold no row yet for this locale (e.g.
+  // the migration's seed INSERT wasn't run, only the CREATE TABLE), in
+  // which case an update() would silently affect zero rows and the save
+  // would look like it worked while doing nothing.
+  const { error } = await admin.from("privacy_notice").upsert(
+    {
+      locale,
+      draft_text: draftText,
+      note: typeof note === "string" ? note : null,
+      updated_by: email,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "locale" }
+  );
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/admin");
+}
+
+// Copies the current draft onto published_text, which is the only thing
+// app/adatkezeles and app/en/adatkezeles ever render — so the public page
+// only changes when D or Miki explicitly click "Közzététel", never on every
+// draft save.
+export async function publishPrivacyNotice(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const locale = formData.get("locale");
+  if (!isPrivacyLocale(locale)) {
+    throw new Error("Érvénytelen kérés.");
+  }
+
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    throw new Error("Supabase nincs beállítva.");
+  }
+
+  const { data: row, error: fetchError } = await admin
+    .from("privacy_notice")
+    .select("draft_text")
+    .eq("locale", locale)
+    .maybeSingle();
+  if (fetchError) {
+    throw new Error(fetchError.message);
+  }
+  // No row yet (e.g. publishing before ever saving a draft on this
+  // environment) — fall back to the same code-level default the public
+  // page would otherwise be showing, so "Közzététel" always has something
+  // to publish instead of erroring.
+  const draftText = row?.draft_text ?? DEFAULT_PRIVACY_NOTICE[locale];
+
+  const email = await currentAdminEmail();
+  const { error } = await admin
+    .from("privacy_notice")
+    .upsert(
+      {
+        locale,
+        draft_text: draftText,
+        published_text: draftText,
+        published_by: email,
+        published_at: new Date().toISOString(),
+      },
+      { onConflict: "locale" }
+    );
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/adatkezeles");
+  revalidatePath("/en/adatkezeles");
 }
