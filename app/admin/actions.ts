@@ -10,7 +10,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { ADMIN_TEST_COOKIE } from "@/lib/admin-test";
 import { sendPaymentConfirmedEmail, sendRegistrationReceivedEmail, summaryFromRow } from "@/lib/email";
 import { EVENT } from "@/config/event";
-import type { PrivacyLocale } from "@/lib/privacy-notice";
+import { DEFAULT_PRIVACY_NOTICE, type PrivacyLocale } from "@/lib/privacy-notice";
 
 const REGISTRATION_STATUSES = ["pending_payment", "waitlist", "paid", "cancelled"] as const;
 type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
@@ -254,15 +254,20 @@ export async function savePrivacyNoticeDraft(formData: FormData): Promise<void> 
   }
 
   const email = await currentAdminEmail();
-  const { error } = await admin
-    .from("privacy_notice")
-    .update({
+  // Upsert, not update: the table may hold no row yet for this locale (e.g.
+  // the migration's seed INSERT wasn't run, only the CREATE TABLE), in
+  // which case an update() would silently affect zero rows and the save
+  // would look like it worked while doing nothing.
+  const { error } = await admin.from("privacy_notice").upsert(
+    {
+      locale,
       draft_text: draftText,
       note: typeof note === "string" ? note : null,
       updated_by: email,
       updated_at: new Date().toISOString(),
-    })
-    .eq("locale", locale);
+    },
+    { onConflict: "locale" }
+  );
   if (error) {
     throw new Error(error.message);
   }
@@ -292,19 +297,28 @@ export async function publishPrivacyNotice(formData: FormData): Promise<void> {
     .select("draft_text")
     .eq("locale", locale)
     .maybeSingle();
-  if (fetchError || !row) {
-    throw new Error(fetchError?.message ?? "A tájékoztató nem található.");
+  if (fetchError) {
+    throw new Error(fetchError.message);
   }
+  // No row yet (e.g. publishing before ever saving a draft on this
+  // environment) — fall back to the same code-level default the public
+  // page would otherwise be showing, so "Közzététel" always has something
+  // to publish instead of erroring.
+  const draftText = row?.draft_text ?? DEFAULT_PRIVACY_NOTICE[locale];
 
   const email = await currentAdminEmail();
   const { error } = await admin
     .from("privacy_notice")
-    .update({
-      published_text: row.draft_text,
-      published_by: email,
-      published_at: new Date().toISOString(),
-    })
-    .eq("locale", locale);
+    .upsert(
+      {
+        locale,
+        draft_text: draftText,
+        published_text: draftText,
+        published_by: email,
+        published_at: new Date().toISOString(),
+      },
+      { onConflict: "locale" }
+    );
   if (error) {
     throw new Error(error.message);
   }
