@@ -125,21 +125,33 @@ export function summaryFromRow(row: {
   };
 }
 
+// The DB always stores these as the Hungarian form-option labels
+// ("Nő"/"Férfi", "Újonc"/"Versenyző", "Női"/"Férfi") regardless of the
+// registrant's locale — translate them for the English email only.
+const SEX_EN: Record<string, string> = { Nő: "Female", Férfi: "Male" };
+const DIVISION_EN: Record<string, string> = { Újonc: "Novice", Versenyző: "Competitive" };
+const SHIRT_CUT_EN: Record<string, string> = { Női: "Women's", Férfi: "Men's" };
+
 function summaryTableHtml(summary: RegistrationSummary, locale: RegistrationLocale): string {
   const rows: [string, string][] =
     locale === "en"
       ? [
           ["Name", `${summary.lastName} ${summary.firstName}`],
           ["Birth year", String(summary.birthYear)],
-          ["Sex", summary.sex],
-          ["Division", summary.division],
+          ["Sex", SEX_EN[summary.sex] ?? summary.sex],
+          ["Division", DIVISION_EN[summary.division] ?? summary.division],
           ["Bodyweight", `${summary.bodyweight} kg`],
           ["Club", summary.club || "—"],
           [
             "Opening attempts",
             `squat ${summary.openerSquat} kg · bench ${summary.openerBench} kg · deadlift ${summary.openerDeadlift} kg`,
           ],
-          ["Shirt", summary.wantsShirt ? `${summary.shirtCut ?? "—"}, size ${summary.shirtSize ?? "—"}` : "not ordered"],
+          [
+            "Shirt",
+            summary.wantsShirt
+              ? `${summary.shirtCut ? SHIRT_CUT_EN[summary.shirtCut] ?? summary.shirtCut : "—"}, size ${summary.shirtSize ?? "—"}`
+              : "not ordered",
+          ],
           ["Premium media package", summary.premiumMedia ? "yes" : "no"],
         ]
       : [
