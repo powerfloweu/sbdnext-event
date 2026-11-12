@@ -36,10 +36,6 @@ export function InfoSection() {
               Hírlevél-feliratkozóknak már {formatTime(EVENT.registration.earlyAccessOpensAt)}-kor
             </div>
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Nevezés határideje</div>
-            <div className="font-semibold">{formatDate(EVENT.registration.closesAt)}</div>
-          </div>
         </CardContent>
       </Card>
     </Section>

@@ -115,12 +115,16 @@ export function getHomeContent(phase: Phase): HomeContent {
       return {
         dateLabel,
         timeLabel,
-        badgeLabel: `Nevezés nyitva · ${formatDate(EVENT.registration.closesAt)}-ig`,
+        // No public deadline for now (organiser, 2026-11-12): don't show a
+        // date or a countdown toward EVENT.registration.closesAt here — see
+        // that field's comment in config/event.ts. A deadline can be
+        // announced later by giving this phase a badge/countdown again.
+        badgeLabel: "Nevezés nyitva",
         badgeTone: "open",
         description: "A következő szint. Nyílt erőemelő verseny újoncoknak és versenyzőknek, IPF szabályok szerint.",
         primaryCta: { label: "Nevezek", href: "/nevezes" },
         secondaryCta: { label: "Versenykiírás (PDF)", href: EVENT.docs.invitation },
-        countdown: { target: EVENT.registration.closesAt, label: "Nevezési határidő" },
+        countdown: null,
         showCapacity: true,
         showRegistrationTeaser: true,
         registrationCtaLabel: "Nevezés indítása",
