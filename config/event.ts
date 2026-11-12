@@ -37,15 +37,12 @@ export const EVENT = {
   },
 
   registration: {
-    // Postponed indefinitely by the organiser (2026-11-04, via the project
-    // thread): the English registration flow isn't ready yet. No new date
-    // has been decided — these are a placeholder far enough out that the
-    // site stays in the "announced"/closed state until the organiser picks
-    // a real date and this gets updated again. Newsletter subscribers
+    // Confirmed by the organiser 2026-11-12: opens Monday 2026-11-16 (moved
+    // up from the earlier 2026-11-25 placeholder). Newsletter subscribers
     // (notify_signups) get a 1h early-access window before opensAt — see
     // earlyAccessOpensAt and app/api/notify/check.
-    earlyAccessOpensAt: "2026-11-25T18:00:00+01:00",
-    opensAt: "2026-11-25T19:00:00+01:00",
+    earlyAccessOpensAt: "2026-11-16T18:00:00+01:00",
+    opensAt: "2026-11-16T19:00:00+01:00",
     // No fixed deadline yet — the organiser (2026-11-12) wants to see how
     // registration is going before announcing one, and specifically does
     // not want registration to close automatically on its own. Set to the
