@@ -46,7 +46,14 @@ export const EVENT = {
     // earlyAccessOpensAt and app/api/notify/check.
     earlyAccessOpensAt: "2026-11-25T18:00:00+01:00",
     opensAt: "2026-11-25T19:00:00+01:00",
-    closesAt: "2026-12-31T23:59:00+01:00",
+    // No fixed deadline yet — the organiser (2026-11-12) wants to see how
+    // registration is going before announcing one, and specifically does
+    // not want registration to close automatically on its own. Set to the
+    // night before the event as a backstop so getPhase() never silently
+    // moves to "closed" on some arbitrary earlier date; nothing in the UI
+    // displays this value publicly (see lib/home-content.ts and
+    // components/event/info-section.tsx) until a real deadline is set.
+    closesAt: "2027-02-12T23:59:00+01:00",
     capacity: 220,
     waitlist: true,
     minBirthYear: 1927,
