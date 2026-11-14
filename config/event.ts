@@ -145,7 +145,7 @@ export const EVENT = {
   docs: {
     invitation: "/versenykiiras",
     rules: "/docs/IPF_MERSZ_szabalyzat_2025.pdf",
-    qualification: "/docs/MERSZ_Open_Minositesi_Szintek_2025.pdf",
+    qualification: "/docs/MERSZ_Open_Minositesi_Szintek_2026.pdf",
   },
 
   // Google Sheets "publish to web" CSV feeds. Kept from the live site as the
