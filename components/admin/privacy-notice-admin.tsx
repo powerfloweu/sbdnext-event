@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PrivacyNoticeContent } from "@/components/privacy-notice-content";
 import { savePrivacyNoticeDraft, publishPrivacyNotice } from "@/app/admin/actions";
 import type { PrivacyLocale } from "@/lib/privacy-notice";
+import { formatAdminDateTime } from "@/lib/format";
 
 export interface PrivacyNoticeRow {
   locale: PrivacyLocale;
@@ -19,7 +20,7 @@ export interface PrivacyNoticeRow {
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
-  return new Intl.DateTimeFormat("hu-HU", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
+  return formatAdminDateTime(iso);
 }
 
 const LOCALE_LABELS: Record<PrivacyLocale, string> = { hu: "Magyar (/adatkezeles)", en: "English (/en/adatkezeles)" };
