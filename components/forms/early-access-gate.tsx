@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
+import { RegistrationWizard } from "@/components/forms/registration-wizard/registration-wizard";
 
 const COOKIE_NAME = "sbdnext2_early_access";
 
@@ -32,12 +33,6 @@ function grantAccessCookie(maxAgeSeconds: number) {
 interface EarlyAccessGateProps {
   /** ISO timestamp — when registration opens to everyone. */
   opensAt: string;
-  // A function so the wizard can be pre-filled with the e-mail the person
-  // just typed to unlock — otherwise they'd have to type it a second time
-  // into the form itself (D, 2026-11-16, reported from the live opening).
-  // Empty on a returning visit unlocked via the remembered cookie, same as
-  // before this was added.
-  children: (email: string) => ReactNode;
 }
 
 // Gate shown during the registration.earlyAccessOpensAt–opensAt window.
@@ -46,7 +41,17 @@ interface EarlyAccessGateProps {
 // early; everyone else sees a countdown to the public opening. Access is
 // remembered for this window only via a short-lived cookie — good enough
 // since the thing being protected is an hour of head start, not a secret.
-export function EarlyAccessGate({ opensAt, children }: EarlyAccessGateProps) {
+//
+// Renders RegistrationWizard itself (rather than taking it as children)
+// so the e-mail just typed to unlock can be passed straight to the
+// wizard's initialEmail — otherwise they'd have to type it a second time
+// into the form itself (D, 2026-11-16, reported from the live opening).
+// A child-render-prop here doesn't work anyway: this component is rendered
+// from a Server Component (app/nevezes/page.tsx), and a function can't be
+// passed across that boundary as a prop (this broke production for ~20
+// minutes on 2026-11-16 before being caught). Empty initialEmail on a
+// returning visit unlocked via the remembered cookie, same as before.
+export function EarlyAccessGate({ opensAt }: EarlyAccessGateProps) {
   const router = useRouter();
   const [unlocked, setUnlocked] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -106,7 +111,7 @@ export function EarlyAccessGate({ opensAt, children }: EarlyAccessGateProps) {
   });
 
   if (!mounted) return null;
-  if (unlocked) return <>{children(unlockedEmail)}</>;
+  if (unlocked) return <RegistrationWizard initialEmail={unlockedEmail || undefined} />;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
