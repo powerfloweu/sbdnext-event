@@ -438,29 +438,28 @@ export default async function AdminPage({
             scrollbar sits right under the visible rows instead of after
             the full (up to 25-row) page, and the sticky header keeps the
             column labels in view while scrolling down. Columns are grouped
-            (name+email+club, category+sex, the four lifts+total, status+fee)
-            so most screens — including a half-width browser window — show
-            every column without needing to scroll sideways at all (D,
-            2026-11-16: had to scroll to the bottom of the page just to drag
-            the table sideways). */}
+            (name+email+club+category+sex, the four lifts+total, status+fee,
+            actions+photo) and long values are truncated with a title
+            tooltip, so most screens — including a half-width browser
+            window — show every column without needing to scroll sideways
+            at all (D, 2026-11-16: had to scroll to the bottom of the page
+            just to drag the table sideways). */}
         <Card className="overflow-hidden p-0">
           <div className="max-h-[70vh] overflow-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
+            <table className="w-full min-w-[600px] text-left text-sm">
               <thead className="sticky top-0 z-10 border-b border-border bg-card text-xs uppercase text-muted-foreground">
                 <tr>
-                  <th className="p-3">Beérkezett</th>
-                  <th className="p-3">Versenyző</th>
-                  <th className="p-3">Kategória</th>
-                  <th className="p-3">Testsúly / nyitók (kg)</th>
-                  <th className="p-3">Fizetés</th>
-                  <th className="p-3">Fotó</th>
-                  <th className="p-3">Műveletek</th>
+                  <th className="p-2.5">Beérkezett</th>
+                  <th className="p-2.5">Versenyző</th>
+                  <th className="p-2.5">Nyitók (kg)</th>
+                  <th className="p-2.5">Fizetés</th>
+                  <th className="p-2.5">Műveletek</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-4 text-center text-muted-foreground">
+                    <td colSpan={5} className="p-4 text-center text-muted-foreground">
                       Nincs a szűrésnek megfelelő nevezés.
                     </td>
                   </tr>
@@ -469,48 +468,34 @@ export default async function AdminPage({
                     const redirectTo = `/admin${buildQuery({ ...regFilterQs, page: page !== 1 ? String(page) : undefined })}`;
                     return (
                       <tr key={r.id}>
-                        <td className="p-3 align-top whitespace-nowrap text-muted-foreground">
+                        <td className="p-2.5 align-top whitespace-nowrap text-muted-foreground">
                           {fmtDateShort(r.created_at)}
                         </td>
-                        <td className="p-3 align-top">
+                        <td className="p-2.5 align-top">
                           <div className="font-medium">
                             {r.last_name} {r.first_name}
                           </div>
-                          <div className="text-muted-foreground">{r.email}</div>
-                          <div className="text-xs text-muted-foreground">{r.club || "—"}</div>
+                          <div className="max-w-[170px] truncate text-muted-foreground" title={r.email}>
+                            {r.email}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {divisionLabel(r.division)} · {r.sex} · {r.club || "—"}
+                          </div>
                         </td>
-                        <td className="p-3 align-top whitespace-nowrap">
-                          <div>{divisionLabel(r.division)}</div>
-                          <div className="text-muted-foreground">{r.sex}</div>
-                        </td>
-                        <td className="p-3 align-top whitespace-nowrap">
-                          <div className="text-muted-foreground">Ts: {fmtKg(r.bodyweight)}</div>
+                        <td className="p-2.5 align-top whitespace-nowrap">
+                          <div className="text-muted-foreground">Ts {fmtKg(r.bodyweight)}</div>
                           <div>
                             {fmtKg(r.opener_squat)} / {fmtKg(r.opener_bench)} / {fmtKg(r.opener_deadlift)}
                           </div>
                           <div className="font-medium">Σ {fmtKg(openerTotal(r))}</div>
                         </td>
-                        <td className="p-3 align-top whitespace-nowrap">
+                        <td className="p-2.5 align-top whitespace-nowrap">
                           <Badge variant={STATUS_BADGE_VARIANT[r.status] ?? "neutral"}>
                             {STATUS_LABELS[r.status] ?? r.status}
                           </Badge>
                           <div className="mt-1 text-muted-foreground">{formatAmount(r.total_fee, r.currency)}</div>
                         </td>
-                        <td className="p-3 align-top whitespace-nowrap">
-                          {r.face_photo_path ? (
-                            <a
-                              href={`/api/admin/face-photo/${r.id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-medium text-primary underline-offset-4 hover:underline"
-                            >
-                              Megnézem
-                            </a>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="p-3 align-top">
+                        <td className="p-2.5 align-top">
                           <div className="flex flex-col items-start gap-1">
                             {r.status !== "paid" && (
                               <form action={updateRegistrationStatus}>
@@ -545,6 +530,16 @@ export default async function AdminPage({
                                 Email újraküldése
                               </Button>
                             </form>
+                            {r.face_photo_path && (
+                              <a
+                                href={`/api/admin/face-photo/${r.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs font-medium text-primary underline-offset-4 hover:underline"
+                              >
+                                Fotó megnézése
+                              </a>
+                            )}
                           </div>
                         </td>
                       </tr>
