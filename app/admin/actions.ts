@@ -9,6 +9,7 @@ import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { requireAdmin } from "@/lib/admin-auth";
 import { ADMIN_TEST_COOKIE } from "@/lib/admin-test";
 import { sendPaymentConfirmedEmail, sendRegistrationReceivedEmail, summaryFromRow } from "@/lib/email";
+import { dispatchEarlyAccessBatch, dispatchRegistrationOpenBatch } from "@/lib/notify-dispatch";
 import { EVENT } from "@/config/event";
 import { DEFAULT_PRIVACY_NOTICE, type PrivacyLocale } from "@/lib/privacy-notice";
 
@@ -118,6 +119,61 @@ export async function resendRegistrationEmail(formData: FormData): Promise<void>
   if (typeof redirectTo === "string" && redirectTo.startsWith("/admin")) {
     redirect(redirectTo);
   }
+}
+
+// Manually kicks off the "your early access opens soon" batch (see
+// lib/notify-dispatch.ts) instead of waiting for someone to trigger it —
+// it isn't on a cron schedule since it's tied to a single moment
+// (registration.earlyAccessOpensAt) rather than a phase that holds for
+// weeks. Loops until every eligible, not-yet-notified signup has been
+// sent, then reports the totals back via the redirect so the admin sees
+// what actually happened.
+export async function sendEarlyAccessNotificationsNow(): Promise<void> {
+  await requireAdmin();
+
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    throw new Error("Supabase nincs beállítva.");
+  }
+
+  let sent = 0;
+  let failed = 0;
+  let remaining = true;
+  while (remaining) {
+    const result = await dispatchEarlyAccessBatch(admin);
+    sent += result.sent;
+    failed += result.failed;
+    remaining = result.remaining;
+  }
+
+  revalidatePath("/admin");
+  redirect(`/admin?notifyResult=early:${sent}:${failed}`);
+}
+
+// Same idea for the general "registration is open" notification — normally
+// handled by the daily Vercel Cron (app/api/notify/dispatch), but that
+// means a same-day opening wouldn't actually notify anyone until the next
+// morning. Use this instead of waiting for tomorrow's cron run.
+export async function sendRegistrationOpenNotificationsNow(): Promise<void> {
+  await requireAdmin();
+
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    throw new Error("Supabase nincs beállítva.");
+  }
+
+  let sent = 0;
+  let failed = 0;
+  let remaining = true;
+  while (remaining) {
+    const result = await dispatchRegistrationOpenBatch(admin);
+    sent += result.sent;
+    failed += result.failed;
+    remaining = result.remaining;
+  }
+
+  revalidatePath("/admin");
+  redirect(`/admin?notifyResult=open:${sent}:${failed}`);
 }
 
 // Admin-test mode: lets an allowlisted admin walk through the real
