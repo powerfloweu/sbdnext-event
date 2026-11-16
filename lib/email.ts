@@ -342,6 +342,35 @@ export async function sendRegistrationOpenNotification(email: string, locale: Lo
   return true;
 }
 
+export async function sendEarlyAccessOpenNotification(email: string, locale: Locale = "hu"): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+
+  const subject =
+    locale === "en"
+      ? "SBD Next 2 — your early access opens in 10 minutes"
+      : "SBD Next 2 — 10 perc múlva megnyílik a korai hozzáférésed";
+  const html =
+    locale === "en"
+      ? `<p>Hi!</p>
+       <p>Because you're on this list, you get a <b>1-hour head start</b>: your early access to
+       SBD Next 2 registration opens at <b>${EVENT.registration.earlyAccessOpensAt.slice(11, 16)}</b> —
+       a full hour before it opens to everyone else.</p>
+       ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Go to registration")}
+       <p class="text-xs">The registration form itself is in Hungarian — see the
+       <a href="${EVENT.siteUrl}/en">English guide</a> for help filling it out.</p>
+       <p>Questions? Write to us: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`
+      : `<p>Szia!</p>
+       <p>Mivel feliratkoztál erre a listára, <b>1 óra előnyt</b> kapsz: a SBD Next 2 nevezés
+       számodra már <b>${EVENT.registration.earlyAccessOpensAt.slice(11, 16)}</b>-kor megnyílik —
+       egy teljes órával korábban, mint mindenki másnak.</p>
+       ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Ugrás a nevezéshez")}
+       <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`;
+
+  await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
+  return true;
+}
+
 interface FacePhotoReminderData {
   email: string;
   firstName: string;
