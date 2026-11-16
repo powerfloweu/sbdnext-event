@@ -140,7 +140,10 @@ export function getHomeContent(phase: Phase): HomeContent {
         showKeyFacts: true,
         showInfoSection: true,
         showLists: false,
-        showSchedule: true,
+        // Also off for now, same reason: the "Csoportbeosztás" (group/flight
+        // assignment) section reads from the same stale last-year Sheet via
+        // getSchedule() — nonsensical before anyone's even registered yet.
+        showSchedule: false,
         showRules: true,
         showFaq: true,
       };
@@ -168,7 +171,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         showKeyFacts: true,
         showInfoSection: true,
         showLists: false,
-        showSchedule: true,
+        showSchedule: false,
         showRules: true,
         showFaq: true,
       };
