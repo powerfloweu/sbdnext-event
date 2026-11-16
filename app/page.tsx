@@ -17,31 +17,37 @@ import { MoodVideoRow } from "@/components/event/mood-video";
 import { FaqSection } from "@/components/event/faq-section";
 import { VolunteerCta } from "@/components/event/volunteer-cta";
 
+import { EVENT } from "@/config/event";
 import { getPhase, volunteersOpen } from "@/lib/phase";
 import { getHomeContent } from "@/lib/home-content";
 import { getSchedule } from "@/lib/sheets";
+import { getPublicEntrantsLists, getRegisteredCount } from "@/lib/registrations";
 
-export const revalidate = 60;
-
-// Both content.showCapacity and content.showLists are off for now (see
-// lib/home-content.ts) — the real capacity number and entry list aren't
-// wired up yet, so there's nothing here that needs real registration data.
-const EMPTY_LEADERBOARDS = { ujoncNoi: [], ujoncFerfi: [], versenyzoNoi: [], versenyzoFerfi: [] };
+// D (2026-11-16): the entrant counter/list must reflect a new registration
+// within a few seconds, not sit behind the previous 60s ISR window — short
+// enough to feel live during the registration rush, still cached briefly
+// so a page load doesn't hit Supabase on every single request.
+export const revalidate = 5;
 
 export default async function HomePage() {
   const phase = getPhase();
   const content = getHomeContent(phase);
 
-  const [leaderboards, schedule] = await Promise.all([Promise.resolve(EMPTY_LEADERBOARDS), getSchedule()]);
+  const [entrants, totalRegistered, schedule] = await Promise.all([
+    getPublicEntrantsLists(),
+    getRegisteredCount(),
+    getSchedule(),
+  ]);
 
+  // D (2026-11-16): nav should read Nevezés, Nevezési lista, GYIK, Eredmények
+  // — all in the same bold display font as the logo wordmark, nothing else
+  // (dropped "Infók"/"Időrend": both already off, and D said nothing else fits).
   const navLinks = [
-    content.showInfoSection && { href: "#info", label: "Infók" },
-    content.showLists && { href: "#lists", label: "Nevezési lista" },
-    content.showSchedule && { href: "#schedule", label: "Időrend" },
     { href: "#fees", label: "Nevezés", emphasized: true },
-    content.showFaq && { href: "#faq", label: "GYIK" },
+    content.showLists && { href: "#lists", label: "Nevezési lista", emphasized: true },
+    content.showFaq && { href: "#faq", label: "GYIK", emphasized: true },
     { href: "/eredmenyek", label: "SBD Next I Eredmények", wordmarkRoman: "I" },
-  ].filter((l): l is { href: string; label: string } => Boolean(l));
+  ].filter(Boolean) as { href: string; label: string; emphasized?: boolean; wordmarkRoman?: string }[];
 
   return (
     <div className="relative min-h-screen">
@@ -64,7 +70,7 @@ export default async function HomePage() {
           primaryCta={phase === "announced" ? null : content.primaryCta}
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}
-          capacity={null}
+          capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}
         />
 
         {content.showKeyFacts && <KeyFacts />}
@@ -80,7 +86,7 @@ export default async function HomePage() {
             />
           )}
 
-          {content.showLists && <ListsSection data={leaderboards} updatedLabel="Percenként frissül" />}
+          {content.showLists && <ListsSection data={entrants} updatedLabel="Percenként frissül" />}
 
           {content.showInfoSection && <InfoSection />}
 
@@ -113,7 +119,11 @@ export default async function HomePage() {
       {phase === "registration" && (
         <>
           <div className="h-20 lg:hidden" aria-hidden="true" />
-          <StickyMobileCta label="Nevezés nyitva" sublabel="Ne várj sokat!" href="/nevezes" />
+          <StickyMobileCta
+            label="Nevezés nyitva"
+            sublabel={`${Math.max(EVENT.registration.capacity - totalRegistered, 0)} szabad hely`}
+            href="/nevezes"
+          />
         </>
       )}
     </div>

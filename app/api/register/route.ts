@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { EVENT } from "@/config/event";
-import { getAllLeaderboards } from "@/lib/sheets";
+import { getRegisteredCount } from "@/lib/registrations";
 import { buildRegistrationSchema, type RegistrationLocale } from "@/lib/validation/registration";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getPhase } from "@/lib/phase";
@@ -51,22 +51,6 @@ function isRateLimited(ip: string): boolean {
   }
   entry.count += 1;
   return entry.count > RATE_LIMIT_MAX;
-}
-
-async function getRegisteredCount(): Promise<number> {
-  const admin = getSupabaseAdmin();
-  if (admin) {
-    const { count, error } = await admin
-      .from("registrations")
-      .select("id", { count: "exact", head: true })
-      .neq("status", "cancelled")
-      .eq("is_preview_test", false);
-    if (!error && typeof count === "number") return count;
-    console.error("Supabase count failed, falling back to Sheets:", error);
-  }
-  // Fallback while Supabase isn't configured yet.
-  const leaderboards = await getAllLeaderboards();
-  return Object.values(leaderboards).reduce((sum, rows) => sum + rows.length, 0);
 }
 
 interface CheckoutSessionParams {

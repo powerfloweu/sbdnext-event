@@ -125,21 +125,17 @@ export function getHomeContent(phase: Phase): HomeContent {
         primaryCta: { label: "Nevezek", href: "/nevezes" },
         secondaryCta: { label: "Versenykiírás (PDF)", href: EVENT.docs.invitation },
         countdown: null,
-        // Temporarily off (2026-11-16, opening day): both were still wired
-        // to last year's SBD Next 1 Google Sheets CSV feed, so they were
-        // showing last year's entrants and a capacity number with no
-        // relation to the real cap right as registration opened. Turn back
-        // on once they read from the real Supabase registrations instead —
-        // see lib/public-entries.ts (built, not wired in yet on purpose:
-        // minimal change while registration itself is live).
-        showCapacity: false,
+        // Back on (2026-11-16): were briefly off right as registration opened
+        // because both still read last year's stale Google Sheets CSV feed.
+        // Now wired to the real Supabase registrations via lib/registrations.ts.
+        showCapacity: true,
         showRegistrationTeaser: true,
         registrationCtaLabel: "Nevezés indítása",
         registrationCtaHref: "/nevezes",
         showVolunteerCta: false,
         showKeyFacts: true,
         showInfoSection: false,
-        showLists: false,
+        showLists: true,
         // Also off for now, same reason: the "Csoportbeosztás" (group/flight
         // assignment) section reads from the same stale last-year Sheet via
         // getSchedule() — nonsensical before anyone's even registered yet.
