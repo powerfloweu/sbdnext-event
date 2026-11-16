@@ -63,7 +63,7 @@ export default async function RegisterPage() {
   if (phase === "early-access") {
     return (
       <EarlyAccessGate opensAt={EVENT.registration.opensAt}>
-        <RegistrationWizard />
+        {(email) => <RegistrationWizard initialEmail={email} />}
       </EarlyAccessGate>
     );
   }
