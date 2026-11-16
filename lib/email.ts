@@ -254,12 +254,13 @@ export async function sendRegistrationReceivedEmail(data: RegistrationEmailData)
 
   const summaryHtml = data.summary ? summaryTableHtml(data.summary, locale) : "";
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: FROM,
     to: data.email,
     subject,
     html: `${HEADER_HTML}${body}${summaryHtml}${buttonHtml(data.editUrl, editLabel)}<p class="text-xs">${locale === "en" ? editHintEn : editHintHu}</p><p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
+  if (error) throw new Error(`resend: ${error.message}`);
   return true;
 }
 
@@ -292,7 +293,7 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
 
   const summaryHtml = data.summary ? summaryTableHtml(data.summary, locale) : "";
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: FROM,
     to: data.email,
     subject:
@@ -310,6 +311,7 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
        <b>véglegesítve</b> van. Találkozunk a versenyen!</p>
        ${summaryHtml}${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
+  if (error) throw new Error(`resend: ${error.message}`);
   return true;
 }
 
@@ -332,7 +334,8 @@ export async function sendNotifySignupConfirmedEmail(email: string, locale: Loca
        megnyílik a nevezés, ezen a címen kapsz egy e-mailt a linkkel.</p>
        <p>Addig is kövess minket: <a href="${EVENT.social.igSbd}">Instagram</a></p>`;
 
-  await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
+  const { error } = await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
+  if (error) throw new Error(`resend: ${error.message}`);
   return true;
 }
 
@@ -356,7 +359,8 @@ export async function sendRegistrationOpenNotification(email: string, locale: Lo
        ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Nevezek most")}
        <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`;
 
-  await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
+  const { error } = await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
+  if (error) throw new Error(`resend: ${error.message}`);
   return true;
 }
 
@@ -385,7 +389,8 @@ export async function sendEarlyAccessOpenNotification(email: string, locale: Loc
        ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Ugrás a nevezéshez")}
        <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`;
 
-  await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
+  const { error } = await resend.emails.send({ from: FROM, to: email, subject, html: `${html}${SIGNATURE_HTML}` });
+  if (error) throw new Error(`resend: ${error.message}`);
   return true;
 }
 
@@ -402,7 +407,7 @@ export async function sendFacePhotoReminderEmail(data: FacePhotoReminderData): P
 
   const locale = data.locale ?? "hu";
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: FROM,
     to: data.email,
     subject: locale === "en" ? "SBD Next II — don't miss adding your face photo" : "SBD Next II — ne maradj le az arcfotódról",
@@ -420,5 +425,6 @@ export async function sendFacePhotoReminderEmail(data: FacePhotoReminderData): P
        ${buttonHtml(data.editUrl, "Arcfotó feltöltése")}
        <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
+  if (error) throw new Error(`resend: ${error.message}`);
   return true;
 }
