@@ -11,7 +11,24 @@ export type EntrantRow = {
   name: string;
   club: string;
   total: number;
+  points: number;
 };
+
+// IPF GL (Goodlift) coefficients, classic/raw full power — see
+// https://www.powerlifting.sport, "IPF GL Points". Computed here, from
+// bodyweight, so bodyweight itself never has to reach the client: the
+// public list shows name, club, total and points only, never bodyweight.
+const GL_COEFFICIENTS = {
+  Nő: { A: 610.32796, B: 1045.59282, C: 0.03048 },
+  Férfi: { A: 1199.72839, B: 1025.18162, C: 0.00921 },
+} as const;
+
+function glPoints(sex: string, total: number, bodyweight: number): number {
+  const coeff = GL_COEFFICIENTS[sex as keyof typeof GL_COEFFICIENTS];
+  if (!coeff || total <= 0 || bodyweight <= 0) return 0;
+  const points = (total * 100) / (coeff.A - coeff.B * Math.exp(-coeff.C * bodyweight));
+  return Math.round(points * 100) / 100;
+}
 
 const EMPTY_LISTS: Record<EntrantCategory, EntrantRow[]> = {
   ujoncNoi: [],
@@ -56,7 +73,7 @@ export async function getPublicEntrantsLists(): Promise<Record<EntrantCategory, 
 
   const { data, error } = await admin
     .from("registrations")
-    .select("first_name, last_name, club, sex, division, opener_squat, opener_bench, opener_deadlift")
+    .select("first_name, last_name, club, sex, division, bodyweight, opener_squat, opener_bench, opener_deadlift")
     .eq("status", "paid")
     .eq("is_preview_test", false);
 
@@ -80,7 +97,8 @@ export async function getPublicEntrantsLists(): Promise<Record<EntrantCategory, 
     const name = `${row.last_name ?? ""} ${row.first_name ?? ""}`.trim();
     if (!name) continue;
 
-    result[key].push({ name, club: (row.club ?? "").trim(), total });
+    const points = glPoints(row.sex, total, row.bodyweight ?? 0);
+    result[key].push({ name, club: (row.club ?? "").trim(), total, points });
   }
 
   for (const key of Object.keys(result) as EntrantCategory[]) {

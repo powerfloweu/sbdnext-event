@@ -35,14 +35,15 @@ export default async function HomePage() {
     getSchedule(),
   ]);
 
+  // D (2026-11-16): nav should read Nevezés, Nevezési lista, GYIK, Eredmények
+  // — all in the same bold display font as the logo wordmark, nothing else
+  // (dropped "Infók"/"Időrend": both already off, and D said nothing else fits).
   const navLinks = [
-    content.showInfoSection && { href: "#info", label: "Infók" },
-    content.showLists && { href: "#lists", label: "Nevezési lista" },
-    content.showSchedule && { href: "#schedule", label: "Időrend" },
     { href: "#fees", label: "Nevezés", emphasized: true },
-    content.showFaq && { href: "#faq", label: "GYIK" },
+    content.showLists && { href: "#lists", label: "Nevezési lista", emphasized: true },
+    content.showFaq && { href: "#faq", label: "GYIK", emphasized: true },
     { href: "/eredmenyek", label: "SBD Next I Eredmények", wordmarkRoman: "I" },
-  ].filter((l): l is { href: string; label: string } => Boolean(l));
+  ].filter((l): l is { href: string; label: string; emphasized?: boolean; wordmarkRoman?: string } => Boolean(l));
 
   return (
     <div className="relative min-h-screen">
