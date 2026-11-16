@@ -166,7 +166,7 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     divisionNovice: "Újonc" as const,
     divisionNoviceLabel: "Tehetségkutató",
     divisionNoviceDesc:
-      "2025-ben és/vagy 2026-ban nem indultál a MERSZ I. osztályú magyar bajnokságon, illetve IPF nemzetközi (vagy azzal egyenértékű külföldi) versenyen.",
+      "2025-ben és/vagy 2026-ban nem indultál a MERSZ I. osztályú magyar bajnokságon, illetve külföldi (pl. Románia, Szlovákia) országos bajnokságon.",
     divisionCompetitor: "Versenyző" as const,
     divisionCompetitorLabel: "Versenyzői",
     divisionCompetitorDesc: "Indultál a MERSZ 2025-ös vagy 2026-os Felnőtt Magyar Bajnokságán, és/vagy elérted a ",
@@ -253,7 +253,7 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     divisionNovice: "Újonc" as const,
     divisionNoviceLabel: "Rookie",
     divisionNoviceDesc:
-      "You didn't compete at the MERSZ first-division Hungarian National Championship, or an equivalent IPF international/foreign competition, in 2025 and/or 2026.",
+      "You didn't compete at the MERSZ first-division Hungarian National Championship, or a foreign (e.g. Romania, Slovakia) national championship, in 2025 and/or 2026.",
     divisionCompetitor: "Versenyző" as const,
     divisionCompetitorLabel: "Lifter",
     divisionCompetitorDesc: "You competed at the MERSZ 2025 or 2026 Adult National Championship, and/or reached the ",
