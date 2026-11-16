@@ -4,6 +4,7 @@ import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert } from "@/components/ui/alert";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { RegistrationFlowchart } from "@/components/admin/registration-flowchart";
 import { WeightClassStats } from "@/components/admin/weight-class-stats";
@@ -16,7 +17,12 @@ import { DEFAULT_PRIVACY_NOTICE, type PrivacyLocale } from "@/lib/privacy-notice
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { formatHUF, formatEUR, formatKg } from "@/lib/format";
-import { updateRegistrationStatus, resendRegistrationEmail } from "./actions";
+import {
+  updateRegistrationStatus,
+  resendRegistrationEmail,
+  sendEarlyAccessNotificationsNow,
+  sendRegistrationOpenNotificationsNow,
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -174,6 +180,19 @@ export default async function AdminPage({
   const nq = firstValue(sp.nq)?.trim() || "";
   const nsource = firstValue(sp.nsource) || "all";
   const npage = Math.max(1, Number.parseInt(firstValue(sp.npage) ?? "1", 10) || 1);
+
+  // Result banner for the "send now" buttons below — see
+  // sendEarlyAccessNotificationsNow/sendRegistrationOpenNotificationsNow in
+  // ./actions, which redirect here with ?notifyResult=<kind>:<sent>:<failed>.
+  const notifyResultRaw = firstValue(sp.notifyResult);
+  const notifyResultMatch = notifyResultRaw?.match(/^(early|open):(\d+):(\d+)$/);
+  const notifyResult = notifyResultMatch
+    ? {
+        kind: notifyResultMatch[1] as "early" | "open",
+        sent: Number(notifyResultMatch[2]),
+        failed: Number(notifyResultMatch[3]),
+      }
+    : null;
 
   const regFrom = (page - 1) * PAGE_SIZE;
   const regTo = regFrom + PAGE_SIZE - 1;
@@ -522,6 +541,14 @@ export default async function AdminPage({
   const notifyTab = (
     <>
       <section className="mb-10">
+        {notifyResult && (
+          <Alert variant={notifyResult.failed > 0 ? "destructive" : "success"} className="mb-3">
+            {notifyResult.kind === "early"
+              ? "Korai hozzáférés e-mail kiküldve"
+              : "Nyilvános nyitás e-mail kiküldve"}
+            : {notifyResult.sent} sikeres{notifyResult.failed > 0 ? `, ${notifyResult.failed} sikertelen` : ""}.
+          </Alert>
+        )}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Notify feliratkozók ({notifyCount ?? 0})</h2>
           <a
@@ -530,6 +557,19 @@ export default async function AdminPage({
           >
             CSV export
           </a>
+        </div>
+
+        <div className="mb-3 flex flex-wrap gap-2">
+          <form action={sendEarlyAccessNotificationsNow}>
+            <Button type="submit" variant="secondary" size="sm">
+              Korai hozzáférés e-mail kiküldése most
+            </Button>
+          </form>
+          <form action={sendRegistrationOpenNotificationsNow}>
+            <Button type="submit" variant="secondary" size="sm">
+              Nyilvános nyitás e-mail kiküldése most
+            </Button>
+          </form>
         </div>
 
         <form className="mb-3 flex flex-wrap gap-2" action="/admin">
