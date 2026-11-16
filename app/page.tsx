@@ -23,7 +23,11 @@ import { getHomeContent } from "@/lib/home-content";
 import { getSchedule } from "@/lib/sheets";
 import { getPublicEntrantsLists, getRegisteredCount } from "@/lib/registrations";
 
-export const revalidate = 60;
+// D (2026-11-16): the entrant counter/list must reflect a new registration
+// within a few seconds, not sit behind the previous 60s ISR window — short
+// enough to feel live during the registration rush, still cached briefly
+// so a page load doesn't hit Supabase on every single request.
+export const revalidate = 5;
 
 export default async function HomePage() {
   const phase = getPhase();
