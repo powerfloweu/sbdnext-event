@@ -1,12 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/notify/dispatch",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/registration/face-photo-reminder",
-      "schedule": "0 8 * * *"
-    }
-  ]
-}
+ewogICJjcm9ucyI6IFsKICAgIHsKICAgICAgInBhdGgiOiAiL2FwaS9ub3RpZnkvZGlzcGF0Y2gtZWFybHktYWNjZXNzIiwKICAgICAgInNjaGVkdWxlIjogIjUwIDE2ICogKiAqIgogICAgfSwKICAgIHsKICAgICAgInBhdGgiOiAiL2FwaS9ub3RpZnkvZGlzcGF0Y2giLAogICAgICAic2NoZWR1bGUiOiAiMCA4ICogKiAqIgogICAgfSwKICAgIHsKICAgICAgInBhdGgiOiAiL2FwaS9ub3RpZnkvZGlzcGF0Y2giLAogICAgICAic2NoZWR1bGUiOiAiNSAxOCAqICogKiIKICAgIH0sCiAgICB7CiAgICAgICJwYXRoIjogIi9hcGkvcmVnaXN0cmF0aW9uL2ZhY2UtcGhvdG8tcmVtaW5kZXIiLAogICAgICAic2NoZWR1bGUiOiAiMCA4ICogKiAqIgogICAgfQogIF0KfQo=
