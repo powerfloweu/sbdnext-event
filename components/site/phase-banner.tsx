@@ -20,7 +20,12 @@ export function PhaseBanner({ label, tone = "neutral", className }: PhaseBannerP
         className
       )}
     >
-      <span className={cn("size-2 rounded-full", dotClass[tone])} aria-hidden="true" />
+      <span className="relative flex size-2" aria-hidden="true">
+        {tone === "open" && (
+          <span className={cn("absolute inline-flex size-full animate-ping rounded-full opacity-75", dotClass[tone])} />
+        )}
+        <span className={cn("relative inline-flex size-2 rounded-full", dotClass[tone])} />
+      </span>
       {label}
     </div>
   );
