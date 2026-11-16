@@ -43,7 +43,7 @@ export default async function HomePage() {
     content.showLists && { href: "#lists", label: "Nevezési lista", emphasized: true },
     content.showFaq && { href: "#faq", label: "GYIK", emphasized: true },
     { href: "/eredmenyek", label: "SBD Next I Eredmények", wordmarkRoman: "I" },
-  ].filter((l): l is { href: string; label: string; emphasized?: boolean; wordmarkRoman?: string } => Boolean(l));
+  ].filter(Boolean) as { href: string; label: string; emphasized?: boolean; wordmarkRoman?: string }[];
 
   return (
     <div className="relative min-h-screen">
