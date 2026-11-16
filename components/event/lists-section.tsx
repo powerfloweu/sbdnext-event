@@ -7,16 +7,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Section } from "@/components/site/section";
 import { formatKg } from "@/lib/format";
-import type { LeaderboardCategory, LeaderboardRow } from "@/lib/sheets";
+import type { EntrantCategory, EntrantRow } from "@/lib/registrations";
 
-const TAB_LABELS: Record<LeaderboardCategory, string> = {
+const TAB_LABELS: Record<EntrantCategory, string> = {
   ujoncNoi: "Tehetségkutató – Nők",
   ujoncFerfi: "Tehetségkutató – Férfiak",
   versenyzoNoi: "Versenyzői – Nők",
   versenyzoFerfi: "Versenyzői – Férfiak",
 };
 
-const TAB_ORDER: LeaderboardCategory[] = [
+const TAB_ORDER: EntrantCategory[] = [
   "ujoncNoi",
   "ujoncFerfi",
   "versenyzoNoi",
@@ -24,11 +24,11 @@ const TAB_ORDER: LeaderboardCategory[] = [
 ];
 
 interface ListsSectionProps {
-  data: Record<LeaderboardCategory, LeaderboardRow[]>;
+  data: Record<EntrantCategory, EntrantRow[]>;
   updatedLabel: string;
 }
 
-function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
+function LeaderboardTable({ rows }: { rows: EntrantRow[] }) {
   if (rows.length === 0) {
     return (
       <Card>
@@ -53,7 +53,6 @@ function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
             </div>
             <span className="text-sm font-semibold text-foreground">{row.name}</span>
             <span className="text-xs text-muted-foreground">{row.club || "—"}</span>
-            {row.group && <span className="text-xs font-semibold text-primary">{row.group}</span>}
           </div>
         ))}
       </div>
@@ -65,7 +64,6 @@ function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
             <th className="w-14 px-4 py-3">#</th>
             <th className="px-4 py-3">Név</th>
             <th className="px-4 py-3">Egyesület</th>
-            <th className="px-4 py-3">Csoport</th>
             <th className="px-4 py-3 text-right">Nevezési total</th>
           </tr>
         </thead>
@@ -75,9 +73,8 @@ function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
               <td className="px-4 py-3 text-muted-foreground">{idx + 1}</td>
               <td className="px-4 py-3 font-medium text-foreground">{row.name}</td>
               <td className="px-4 py-3 text-muted-foreground">{row.club || "—"}</td>
-              <td className="px-4 py-3 font-semibold text-primary">{row.group || "—"}</td>
               <td className="px-4 py-3 text-right font-display text-lg font-bold tabular-nums">
-                {row.total || "—"}
+                {row.total ? formatKg(row.total) : "—"}
               </td>
             </tr>
           ))}
@@ -88,7 +85,7 @@ function LeaderboardTable({ rows }: { rows: LeaderboardRow[] }) {
 }
 
 export function ListsSection({ data, updatedLabel }: ListsSectionProps) {
-  const [active, setActive] = useState<LeaderboardCategory>("ujoncNoi");
+  const [active, setActive] = useState<EntrantCategory>("ujoncNoi");
 
   return (
     <Section
@@ -98,7 +95,7 @@ export function ListsSection({ data, updatedLabel }: ListsSectionProps) {
       title="Ki nevezett eddig?"
       description={`${updatedLabel} · sorrend a nevezési total szerint. Az eredményhirdetés IPF pontszám alapján történik, súlycsoportok nélkül.`}
     >
-      <Tabs value={active} onValueChange={(v) => setActive(v as LeaderboardCategory)}>
+      <Tabs value={active} onValueChange={(v) => setActive(v as EntrantCategory)}>
         <TabsList className="mb-4">
           {TAB_ORDER.map((cat) => (
             <TabsTrigger key={cat} value={cat}>

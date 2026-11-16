@@ -20,7 +20,8 @@ import { VolunteerCta } from "@/components/event/volunteer-cta";
 import { EVENT } from "@/config/event";
 import { getPhase, volunteersOpen } from "@/lib/phase";
 import { getHomeContent } from "@/lib/home-content";
-import { getAllLeaderboards, getSchedule } from "@/lib/sheets";
+import { getSchedule } from "@/lib/sheets";
+import { getPublicEntrantsLists, getRegisteredCount } from "@/lib/registrations";
 
 export const revalidate = 60;
 
@@ -28,9 +29,11 @@ export default async function HomePage() {
   const phase = getPhase();
   const content = getHomeContent(phase);
 
-  const [leaderboards, schedule] = await Promise.all([getAllLeaderboards(), getSchedule()]);
-
-  const totalRegistered = Object.values(leaderboards).reduce((sum, rows) => sum + rows.length, 0);
+  const [entrants, totalRegistered, schedule] = await Promise.all([
+    getPublicEntrantsLists(),
+    getRegisteredCount(),
+    getSchedule(),
+  ]);
 
   const navLinks = [
     content.showInfoSection && { href: "#info", label: "Infók" },
@@ -78,7 +81,7 @@ export default async function HomePage() {
             />
           )}
 
-          {content.showLists && <ListsSection data={leaderboards} updatedLabel="Percenként frissül" />}
+          {content.showLists && <ListsSection data={entrants} updatedLabel="Percenként frissül" />}
 
           {content.showInfoSection && <InfoSection />}
 
