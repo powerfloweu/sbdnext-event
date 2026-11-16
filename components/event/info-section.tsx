@@ -4,16 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Section } from "@/components/site/section";
 import { EVENT } from "@/config/event";
 
-function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat("hu-HU", { year: "numeric", month: "long", day: "numeric" }).format(
-    new Date(iso)
-  );
-}
-
-function formatTime(iso: string): string {
-  return new Intl.DateTimeFormat("hu-HU", { hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
-}
-
 export function InfoSection() {
   return (
     <Section id="info" icon={Info} eyebrow="Versenyinformációk" title="Amit érdemes tudni">
@@ -26,15 +16,6 @@ export function InfoSection() {
           <div>
             <span className="font-medium">Felszerelés:</span> Versenyzői kategóriában a MERSZ
             szabályai szerint, Tehetségkutató kategóriában elegendő a testhez simuló ruházat.
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Jelentkezés kezdete</div>
-            <div className="font-semibold">
-              {formatDate(EVENT.registration.opensAt)}, {formatTime(EVENT.registration.opensAt)}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Hírlevél-feliratkozóknak már {formatTime(EVENT.registration.earlyAccessOpensAt)}-kor
-            </div>
           </div>
         </CardContent>
       </Card>
