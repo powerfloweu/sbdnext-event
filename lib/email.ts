@@ -24,21 +24,38 @@ function getResend(): Resend | null {
 
 const FROM = process.env.RESEND_FROM_EMAIL ?? "SBD Next <nevezes@sbdnext.hu>";
 
+// Prepended to every outgoing email. Gmail (and several other clients)
+// strips a plain CSS `background` declaration from pasted/rendered HTML, so
+// every colour block here is also set via the legacy `bgcolor` attribute —
+// that's what actually survives in Gmail, including dark mode. Table-based
+// layout (not divs) for the same reason.
+const HEADER_HTML = `
+<table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:24px;max-width:600px;">
+  <tr>
+    <td align="center" bgcolor="#000000" style="background:#000000;padding:20px 24px;">
+      <img src="https://www.sbdnext.hu/small_sbd_next_logo_v4.0.png" alt="SBD Next II" width="160" style="display:block;width:160px;max-width:160px;height:auto;">
+    </td>
+  </tr>
+  <tr>
+    <td bgcolor="#e52428" style="background:#e52428;height:5px;line-height:5px;font-size:0;">&nbsp;</td>
+  </tr>
+</table>`;
+
 // Appended to every outgoing email. Keep in sync with the organiser's own
 // copy of this signature if they update it elsewhere (it's not generated
 // from config/event.ts — the venue line below is static text). No date here
 // on purpose — last year's dates don't apply to this edition.
 const SIGNATURE_HTML = `
 <div style="margin-top:24px" data-spark-custom-html="true">
-    <table cellpadding="0" cellspacing="0" style="background:#000000;border-left:4px solid #e52428;border-radius:8px;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+    <table cellpadding="0" cellspacing="0" bgcolor="#000000" style="background:#000000;border-left:4px solid #e52428;border-radius:8px;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
         <tbody>
             <tr>
-                <td style="padding:12px 16px 12px 16px;vertical-align:middle;">
-                    <img src="https://www.sbdnext.hu/small_sbd_next_logo_v4.0.png" alt="SBD Next" style="display:block;width:130px;max-width:130px;height:auto;">
+                <td bgcolor="#000000" style="background:#000000;padding:12px 16px 12px 16px;vertical-align:middle;">
+                    <img src="https://www.sbdnext.hu/small_sbd_next_logo_v4.0.png" alt="SBD Next II" style="display:block;width:130px;max-width:130px;height:auto;">
                 </td>
-                <td style="padding:12px 20px 12px 8px;vertical-align:middle;font-size:13px;line-height:1.5;">
+                <td bgcolor="#000000" style="background:#000000;padding:12px 20px 12px 8px;vertical-align:middle;font-size:13px;line-height:1.5;">
                     <div style="font-weight:700;color:#ff3b3b;margin-bottom:4px;">
-                        SBD Next – Nyílt erőemelő verseny
+                        SBD Next II – Nyílt erőemelő verseny
                     </div>
                     <div>
                         Budapest • Thor Gym (Újbuda)
@@ -60,11 +77,12 @@ const SIGNATURE_HTML = `
     </table>
 </div>`;
 
-// A branded call-to-action button for email HTML. display:inline-block (not
-// a bare <a>) so it renders as a real tappable button in mobile clients,
-// not just bold text.
+// A branded call-to-action button for email HTML. A table cell with
+// `bgcolor` (not an inline `background` on the `<a>`) so the red fill
+// survives Gmail's style stripping; display:inline-block on the link keeps
+// it tappable as a real button in mobile clients, not just bold text.
 function buttonHtml(href: string, label: string): string {
-  return `<p style="margin:20px 0;"><a href="${href}" style="display:inline-block;background:#e52428;color:#ffffff;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">${label}</a></p>`;
+  return `<table cellpadding="0" cellspacing="0" style="margin:20px 0;"><tr><td align="center" bgcolor="#e52428" style="background:#e52428;border-radius:8px;"><a href="${href}" style="display:inline-block;color:#ffffff;font-weight:700;padding:14px 28px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">${label}</a></td></tr></table>`;
 }
 
 // What the athlete actually submitted — shown back to them in the
@@ -204,11 +222,11 @@ export async function sendRegistrationReceivedEmail(data: RegistrationEmailData)
   const subject =
     locale === "en"
       ? data.waitlisted
-        ? "SBD Next 2 — you're on the waitlist"
-        : "SBD Next 2 — we've received your registration"
+        ? "SBD Next II — you're on the waitlist"
+        : "SBD Next II — we've received your registration"
       : data.waitlisted
-        ? "SBD Next 2 — jelentkezésed várólistára került"
-        : "SBD Next 2 — jelentkezésed megérkezett";
+        ? "SBD Next II — jelentkezésed várólistára került"
+        : "SBD Next II — jelentkezésed megérkezett";
 
   const editLabel = locale === "en" ? "View / edit your registration details" : "Nevezési adatok megtekintése / szerkesztése";
   const contactLabel = locale === "en" ? "Questions? E-mail us:" : "Kérdés esetén írj nekünk:";
@@ -220,17 +238,17 @@ export async function sendRegistrationReceivedEmail(data: RegistrationEmailData)
     locale === "en"
       ? data.waitlisted
         ? `<p>Hi ${data.firstName}!</p>
-           <p>We've received your registration for SBD Next 2. Entry capacity is currently full, so
+           <p>We've received your registration for SBD Next II. Entry capacity is currently full, so
            you've been placed on the <b>waitlist</b>. We'll e-mail you as soon as a spot opens up.</p>`
         : `<p>Hi ${data.firstName}!</p>
-           <p>We've received your registration for SBD Next 2. The amount due is
+           <p>We've received your registration for SBD Next II. The amount due is
            <b>${amount}</b>. If your payment went through, you'll get a separate confirmation shortly.</p>`
       : data.waitlisted
         ? `<p>Szia ${data.firstName}!</p>
-           <p>Megkaptuk a jelentkezésed a SBD Next 2 versenyre. Jelenleg a nevezői létszám betelt, ezért
+           <p>Megkaptuk a jelentkezésed a SBD Next II versenyre. Jelenleg a nevezői létszám betelt, ezért
            <b>várólistára</b> kerültél. Amint hely szabadul fel, e-mailben jelentkezünk.</p>`
         : `<p>Szia ${data.firstName}!</p>
-           <p>Megkaptuk a jelentkezésed a SBD Next 2 versenyre. A fizetendő összeg
+           <p>Megkaptuk a jelentkezésed a SBD Next II versenyre. A fizetendő összeg
            <b>${amount}</b>. Ha a fizetés sikeres volt, hamarosan külön
            visszaigazolást kapsz.</p>`;
 
@@ -240,7 +258,7 @@ export async function sendRegistrationReceivedEmail(data: RegistrationEmailData)
     from: FROM,
     to: data.email,
     subject,
-    html: `${body}${summaryHtml}${buttonHtml(data.editUrl, editLabel)}<p class="text-xs">${locale === "en" ? editHintEn : editHintHu}</p><p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+    html: `${HEADER_HTML}${body}${summaryHtml}${buttonHtml(data.editUrl, editLabel)}<p class="text-xs">${locale === "en" ? editHintEn : editHintHu}</p><p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
   });
   return true;
 }
@@ -279,15 +297,15 @@ export async function sendPaymentConfirmedEmail(data: PaymentEmailData): Promise
     to: data.email,
     subject:
       locale === "en"
-        ? "SBD Next 2 — payment received, your registration is confirmed"
-        : "SBD Next 2 — a fizetésed megérkezett, nevezésed véglegesítve",
+        ? "SBD Next II — payment received, your registration is confirmed"
+        : "SBD Next II — a fizetésed megérkezett, nevezésed véglegesítve",
     html:
       locale === "en"
-        ? `<p>Hi ${data.firstName}!</p>
+        ? `${HEADER_HTML}<p>Hi ${data.firstName}!</p>
        <p>Your payment of <b>${amount}</b> has been received, your registration is
        <b>confirmed</b>. See you at the competition!</p>
        ${summaryHtml}${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`
-        : `<p>Szia ${data.firstName}!</p>
+        : `${HEADER_HTML}<p>Szia ${data.firstName}!</p>
        <p>A(z) <b>${amount}</b> befizetésed megérkezett, a nevezésed
        <b>véglegesítve</b> van. Találkozunk a versenyen!</p>
        ${summaryHtml}${editSection}<p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
@@ -302,15 +320,15 @@ export async function sendNotifySignupConfirmedEmail(email: string, locale: Loca
   if (!resend) return false;
 
   const subject =
-    locale === "en" ? "SBD Next 2 — we'll let you know when registration opens" : "SBD Next 2 — szólunk, amint nyílik a nevezés";
+    locale === "en" ? "SBD Next II — we'll let you know when registration opens" : "SBD Next II — szólunk, amint nyílik a nevezés";
   const html =
     locale === "en"
-      ? `<p>Hi!</p>
-       <p>You signed up to be the first to know when SBD Next 2 registration opens. The moment it
+      ? `${HEADER_HTML}<p>Hi!</p>
+       <p>You signed up to be the first to know when SBD Next II registration opens. The moment it
        does, you'll get an e-mail at this address with the link.</p>
        <p>In the meantime, follow us: <a href="${EVENT.social.igSbd}">Instagram</a></p>`
-      : `<p>Szia!</p>
-       <p>Feliratkoztál, hogy elsőként értesülj a SBD Next 2 nevezés indulásáról. Amint
+      : `${HEADER_HTML}<p>Szia!</p>
+       <p>Feliratkoztál, hogy elsőként értesülj a SBD Next II nevezés indulásáról. Amint
        megnyílik a nevezés, ezen a címen kapsz egy e-mailt a linkkel.</p>
        <p>Addig is kövess minket: <a href="${EVENT.social.igSbd}">Instagram</a></p>`;
 
@@ -322,18 +340,18 @@ export async function sendRegistrationOpenNotification(email: string, locale: Lo
   const resend = getResend();
   if (!resend) return false;
 
-  const subject = locale === "en" ? "SBD Next 2 — registration is open!" : "SBD Next 2 — megnyílt a nevezés!";
+  const subject = locale === "en" ? "SBD Next II — registration is open!" : "SBD Next II — megnyílt a nevezés!";
   const html =
     locale === "en"
-      ? `<p>Hi!</p>
-       <p>Registration for SBD Next 2 is now open! If you want to compete, don't wait too long —
+      ? `${HEADER_HTML}<p>Hi!</p>
+       <p>Registration for SBD Next II is now open! If you want to compete, don't wait too long —
        spots are expected to fill up fast.</p>
        ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Register now")}
        <p class="text-xs">The registration form itself is in Hungarian — see the
        <a href="${EVENT.siteUrl}/en">English guide</a> for help filling it out.</p>
        <p>Questions? Write to us: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`
-      : `<p>Szia!</p>
-       <p>Megnyílt a nevezés a SBD Next 2 versenyre! Ha szeretnél indulni, ne várj sokat —
+      : `${HEADER_HTML}<p>Szia!</p>
+       <p>Megnyílt a nevezés a SBD Next II versenyre! Ha szeretnél indulni, ne várj sokat —
        a helyek várhatóan gyorsan betelnek.</p>
        ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Nevezek most")}
        <p>Kérdés esetén írj nekünk: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`;
@@ -348,20 +366,20 @@ export async function sendEarlyAccessOpenNotification(email: string, locale: Loc
 
   const subject =
     locale === "en"
-      ? "SBD Next 2 — your early access opens in 10 minutes"
-      : "SBD Next 2 — 10 perc múlva megnyílik a korai hozzáférésed";
+      ? "SBD Next II — your early access opens in 10 minutes"
+      : "SBD Next II — 10 perc múlva megnyílik a korai hozzáférésed";
   const html =
     locale === "en"
-      ? `<p>Hi!</p>
+      ? `${HEADER_HTML}<p>Hi!</p>
        <p>Because you're on this list, you get a <b>1-hour head start</b>: your early access to
-       SBD Next 2 registration opens at <b>${EVENT.registration.earlyAccessOpensAt.slice(11, 16)}</b> —
+       SBD Next II registration opens at <b>${EVENT.registration.earlyAccessOpensAt.slice(11, 16)}</b> —
        a full hour before it opens to everyone else.</p>
        ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Go to registration")}
        <p class="text-xs">The registration form itself is in Hungarian — see the
        <a href="${EVENT.siteUrl}/en">English guide</a> for help filling it out.</p>
        <p>Questions? Write to us: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>`
-      : `<p>Szia!</p>
-       <p>Mivel feliratkoztál erre a listára, <b>1 óra előnyt</b> kapsz: a SBD Next 2 nevezés
+      : `${HEADER_HTML}<p>Szia!</p>
+       <p>Mivel feliratkoztál erre a listára, <b>1 óra előnyt</b> kapsz: a SBD Next II nevezés
        számodra már <b>${EVENT.registration.earlyAccessOpensAt.slice(11, 16)}</b>-kor megnyílik —
        egy teljes órával korábban, mint mindenki másnak.</p>
        ${buttonHtml(`${EVENT.siteUrl}/nevezes`, "Ugrás a nevezéshez")}
@@ -387,15 +405,15 @@ export async function sendFacePhotoReminderEmail(data: FacePhotoReminderData): P
   await resend.emails.send({
     from: FROM,
     to: data.email,
-    subject: locale === "en" ? "SBD Next 2 — don't miss adding your face photo" : "SBD Next 2 — ne maradj le az arcfotódról",
+    subject: locale === "en" ? "SBD Next II — don't miss adding your face photo" : "SBD Next II — ne maradj le az arcfotódról",
     html:
       locale === "en"
-        ? `<p>Hi ${data.firstName}!</p>
+        ? `${HEADER_HTML}<p>Hi ${data.firstName}!</p>
        <p>Your registration is still missing a face photo — this is what lets our AI-based photo
        sorter (Excire Photo) automatically find and collect the shots of you after the competition.</p>
        ${buttonHtml(data.editUrl, "Upload face photo")}
        <p>Questions? Write to us: <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`
-        : `<p>Szia ${data.firstName}!</p>
+        : `${HEADER_HTML}<p>Szia ${data.firstName}!</p>
        <p>A nevezésedből még hiányzik az arcfotó — ez kell ahhoz, hogy a verseny után az
        AI-alapú fotóválogatónk (Excire Photo) automatikusan megtalálja és összegyűjtse a rólad
        készült képeket.</p>
