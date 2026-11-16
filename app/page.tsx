@@ -17,28 +17,22 @@ import { MoodVideoRow } from "@/components/event/mood-video";
 import { FaqSection } from "@/components/event/faq-section";
 import { VolunteerCta } from "@/components/event/volunteer-cta";
 
-import { EVENT } from "@/config/event";
 import { getPhase, volunteersOpen } from "@/lib/phase";
 import { getHomeContent } from "@/lib/home-content";
 import { getSchedule } from "@/lib/sheets";
-import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { getPublicEntryLists, totalEntryCount } from "@/lib/public-entries";
 
 export const revalidate = 60;
+
+// Both content.showCapacity and content.showLists are off for now (see
+// lib/home-content.ts) — the real capacity number and entry list aren't
+// wired up yet, so there's nothing here that needs real registration data.
+const EMPTY_LEADERBOARDS = { ujoncNoi: [], ujoncFerfi: [], versenyzoNoi: [], versenyzoFerfi: [] };
 
 export default async function HomePage() {
   const phase = getPhase();
   const content = getHomeContent(phase);
 
-  const admin = getSupabaseAdmin();
-  const [leaderboards, schedule] = await Promise.all([
-    admin
-      ? getPublicEntryLists(admin)
-      : Promise.resolve({ ujoncNoi: [], ujoncFerfi: [], versenyzoNoi: [], versenyzoFerfi: [] }),
-    getSchedule(),
-  ]);
-
-  const totalRegistered = totalEntryCount(leaderboards);
+  const [leaderboards, schedule] = await Promise.all([Promise.resolve(EMPTY_LEADERBOARDS), getSchedule()]);
 
   const navLinks = [
     content.showInfoSection && { href: "#info", label: "Infók" },
@@ -70,7 +64,7 @@ export default async function HomePage() {
           primaryCta={phase === "announced" ? null : content.primaryCta}
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}
-          capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}
+          capacity={null}
         />
 
         {content.showKeyFacts && <KeyFacts />}
@@ -119,11 +113,7 @@ export default async function HomePage() {
       {phase === "registration" && (
         <>
           <div className="h-20 lg:hidden" aria-hidden="true" />
-          <StickyMobileCta
-            label="Nevezés nyitva"
-            sublabel={`${Math.max(EVENT.registration.capacity - totalRegistered, 0)} szabad hely`}
-            href="/nevezes"
-          />
+          <StickyMobileCta label="Nevezés nyitva" sublabel="Ne várj sokat!" href="/nevezes" />
         </>
       )}
     </div>

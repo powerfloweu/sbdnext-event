@@ -125,14 +125,21 @@ export function getHomeContent(phase: Phase): HomeContent {
         primaryCta: { label: "Nevezek", href: "/nevezes" },
         secondaryCta: { label: "Versenykiírás (PDF)", href: EVENT.docs.invitation },
         countdown: null,
-        showCapacity: true,
+        // Temporarily off (2026-11-16, opening day): both were still wired
+        // to last year's SBD Next 1 Google Sheets CSV feed, so they were
+        // showing last year's entrants and a capacity number with no
+        // relation to the real cap right as registration opened. Turn back
+        // on once they read from the real Supabase registrations instead —
+        // see lib/public-entries.ts (built, not wired in yet on purpose:
+        // minimal change while registration itself is live).
+        showCapacity: false,
         showRegistrationTeaser: true,
         registrationCtaLabel: "Nevezés indítása",
         registrationCtaHref: "/nevezes",
         showVolunteerCta: false,
         showKeyFacts: true,
         showInfoSection: true,
-        showLists: true,
+        showLists: false,
         showSchedule: true,
         showRules: true,
         showFaq: true,
@@ -149,7 +156,10 @@ export function getHomeContent(phase: Phase): HomeContent {
           ? { label: "Önkéntesnek jelentkezem", href: "/volunteers" }
           : { label: "Versenykiírás (PDF)", href: EVENT.docs.invitation },
         countdown: { target: `${firstDay.date}T${firstDay.start}:00+01:00`, label: "Verseny kezdetéig" },
-        showCapacity: true,
+        // Off for the same reason as "registration" above — see that case's
+        // comment. Flip back on together with it once lib/public-entries.ts
+        // is wired in.
+        showCapacity: false,
         showRegistrationTeaser: true,
         registrationNote: "A nevezés lezárult. A végleges lista és a csoportbeosztás hamarosan elérhető.",
         registrationCtaLabel: "Nevezési lista megnézése",
@@ -157,7 +167,7 @@ export function getHomeContent(phase: Phase): HomeContent {
         showVolunteerCta: volunteersLive,
         showKeyFacts: true,
         showInfoSection: true,
-        showLists: true,
+        showLists: false,
         showSchedule: true,
         showRules: true,
         showFaq: true,
