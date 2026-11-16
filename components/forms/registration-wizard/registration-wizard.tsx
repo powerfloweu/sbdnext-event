@@ -987,7 +987,8 @@ export function RegistrationWizard({
   isAdminTest = false,
   locale = "hu",
   inviteCode,
-}: { isAdminTest?: boolean; locale?: RegistrationLocale; inviteCode?: string } = {}) {
+  initialEmail,
+}: { isAdminTest?: boolean; locale?: RegistrationLocale; inviteCode?: string; initialEmail?: string } = {}) {
   const router = useRouter();
   const t = STRINGS[locale];
   const fees = locale === "en" ? EVENT.feesEur : EVENT.fees;
@@ -1067,7 +1068,7 @@ export function RegistrationWizard({
     formState: { errors, isSubmitted },
   } = useForm<RegistrationInput>({
     resolver: zodResolver(schema),
-    defaultValues: REGISTRATION_DEFAULTS,
+    defaultValues: { ...REGISTRATION_DEFAULTS, email: initialEmail || REGISTRATION_DEFAULTS.email },
     mode: "onBlur",
   });
 
@@ -1088,7 +1089,11 @@ export function RegistrationWizard({
       const raw = window.localStorage.getItem(DRAFT_KEY);
       if (raw) {
         const draft = JSON.parse(raw) as Partial<RegistrationInput>;
-        reset({ ...REGISTRATION_DEFAULTS, ...draft });
+        reset({
+          ...REGISTRATION_DEFAULTS,
+          ...draft,
+          email: draft.email || initialEmail || REGISTRATION_DEFAULTS.email,
+        });
         setRestoredDraft(true);
       }
     } catch {

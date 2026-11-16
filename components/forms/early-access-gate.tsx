@@ -32,7 +32,12 @@ function grantAccessCookie(maxAgeSeconds: number) {
 interface EarlyAccessGateProps {
   /** ISO timestamp — when registration opens to everyone. */
   opensAt: string;
-  children: ReactNode;
+  // A function so the wizard can be pre-filled with the e-mail the person
+  // just typed to unlock — otherwise they'd have to type it a second time
+  // into the form itself (D, 2026-11-16, reported from the live opening).
+  // Empty on a returning visit unlocked via the remembered cookie, same as
+  // before this was added.
+  children: (email: string) => ReactNode;
 }
 
 // Gate shown during the registration.earlyAccessOpensAt–opensAt window.
@@ -46,6 +51,7 @@ export function EarlyAccessGate({ opensAt, children }: EarlyAccessGateProps) {
   const [unlocked, setUnlocked] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [notSubscribed, setNotSubscribed] = useState(false);
+  const [unlockedEmail, setUnlockedEmail] = useState("");
 
   const {
     control,
@@ -89,6 +95,7 @@ export function EarlyAccessGate({ opensAt, children }: EarlyAccessGateProps) {
       const json = await res.json().catch(() => null);
       if (json?.subscribed) {
         grantAccessCookie(2 * 60 * 60);
+        setUnlockedEmail(data.email);
         setUnlocked(true);
       } else {
         setNotSubscribed(true);
@@ -99,7 +106,7 @@ export function EarlyAccessGate({ opensAt, children }: EarlyAccessGateProps) {
   });
 
   if (!mounted) return null;
-  if (unlocked) return <>{children}</>;
+  if (unlocked) return <>{children(unlockedEmail)}</>;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-6 px-4 py-16 text-center">
