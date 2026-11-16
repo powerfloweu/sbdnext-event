@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PhaseBanner } from "@/components/site/phase-banner";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
-import { Progress } from "@/components/ui/progress";
 import { HeroPhoto } from "@/components/event/hero-photo";
 import { FogCard } from "@/components/site/fog-card";
 import { EVENT } from "@/config/event";
@@ -50,7 +49,7 @@ interface HeroProps {
   primaryCta: { label: string; href: string } | null;
   secondaryCta: { label: string; href: string } | null;
   countdown: { target: string; label: string } | null;
-  capacity: { used: number; limit: number } | null;
+  capacity: { used: number } | null;
   capacityUnitLabel?: string;
   locale?: "hu" | "en";
 }
@@ -65,7 +64,7 @@ export function Hero({
   secondaryCta,
   countdown,
   capacity,
-  capacityUnitLabel = "hely foglalt",
+  capacityUnitLabel = "nevező",
   locale = "hu",
 }: HeroProps) {
   return (
@@ -173,11 +172,10 @@ export function Hero({
                   </div>
                 )}
                 {capacity && (
-                  <div className="flex w-full flex-col gap-1.5 sm:w-48">
-                    <span className="text-right text-xs text-muted-foreground">
-                      <b className="text-foreground">{capacity.used}</b> / {capacity.limit} {capacityUnitLabel}
+                  <div className="flex w-full flex-col sm:w-auto sm:items-end">
+                    <span className="text-right text-lg font-bold text-primary sm:text-xl">
+                      {capacity.used} {capacityUnitLabel}
                     </span>
-                    <Progress value={capacity.used} max={capacity.limit} />
                   </div>
                 )}
               </div>

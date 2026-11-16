@@ -70,7 +70,7 @@ export default async function HomePage() {
           primaryCta={phase === "announced" ? null : content.primaryCta}
           secondaryCta={content.secondaryCta}
           countdown={content.countdown}
-          capacity={content.showCapacity ? { used: totalRegistered, limit: EVENT.registration.capacity } : null}
+          capacity={content.showCapacity ? { used: totalRegistered } : null}
         />
 
         {content.showKeyFacts && <KeyFacts />}
