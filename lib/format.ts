@@ -28,6 +28,32 @@ export function pad2(n: number): string {
   return n.toString().padStart(2, "0");
 }
 
+// The admin UI always shows timestamps in the event's own timezone, not the
+// server's (Vercel/Supabase run in UTC, which read an hour behind Budapest
+// in winter — D, 2026-11-16: the admin log looked an hour off from the
+// clock on the wall).
+const ADMIN_TIME_ZONE = "Europe/Budapest";
+
+export function formatAdminDateTime(iso: string): string {
+  return new Intl.DateTimeFormat("hu-HU", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: ADMIN_TIME_ZONE,
+  }).format(new Date(iso));
+}
+
+// Shorter form for the registrations table, where every extra character
+// widens a column that's already fighting for space on a narrow screen.
+export function formatAdminDateTimeShort(iso: string): string {
+  return new Intl.DateTimeFormat("hu-HU", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: ADMIN_TIME_ZONE,
+  }).format(new Date(iso));
+}
+
 export function formatDate(iso: string, locale: "hu" | "en" = "hu"): string {
   return new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "hu-HU", {
     year: "numeric",

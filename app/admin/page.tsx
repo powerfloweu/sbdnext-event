@@ -17,7 +17,7 @@ import { PrivacyNoticeAdmin, type PrivacyNoticeRow } from "@/components/admin/pr
 import { DEFAULT_PRIVACY_NOTICE, type PrivacyLocale } from "@/lib/privacy-notice";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
-import { formatHUF, formatEUR, formatKg } from "@/lib/format";
+import { formatHUF, formatEUR, formatKg, formatAdminDateTime, formatAdminDateTimeShort } from "@/lib/format";
 import {
   updateRegistrationStatus,
   resendRegistrationEmail,
@@ -123,15 +123,13 @@ const FEEDBACK_SOURCE_LABELS: Record<string, string> = {
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
-  return new Intl.DateTimeFormat("hu-HU", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
+  return formatAdminDateTime(iso);
 }
 
 // Shorter form for the registrations table, where every extra character
 // widens a column that's already fighting for space on a narrow screen.
 function fmtDateShort(iso: string): string {
-  return new Intl.DateTimeFormat("hu-HU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(
-    new Date(iso)
-  );
+  return formatAdminDateTimeShort(iso);
 }
 
 function fmtKg(value: number | null): string {

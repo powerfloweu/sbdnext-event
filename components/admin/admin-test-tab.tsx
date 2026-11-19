@@ -2,7 +2,7 @@ import { AlertTriangle } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { SubmitButton } from "@/components/admin/submit-button";
-import { formatHUF } from "@/lib/format";
+import { formatHUF, formatAdminDateTime } from "@/lib/format";
 import { startAdminTest, stopAdminTest, simulateTestPayment, updateRegistrationStatus } from "@/app/admin/actions";
 
 interface TestRegistrationRow {
@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function fmtDate(iso: string): string {
-  return new Intl.DateTimeFormat("hu-HU", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
+  return formatAdminDateTime(iso);
 }
 
 interface AdminTestTabProps {
