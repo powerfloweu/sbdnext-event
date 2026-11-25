@@ -6,7 +6,7 @@ import { buildRegistrationSchema, type RegistrationLocale } from "@/lib/validati
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getPhase } from "@/lib/phase";
 import { isEarlySubscriber } from "@/lib/early-access";
-import { getStripe } from "@/lib/stripe";
+import { createCheckoutSession } from "@/lib/stripe-checkout";
 import { sendRegistrationReceivedEmail } from "@/lib/email";
 import { generateEditToken } from "@/lib/edit-token";
 import { isAdminTestActive } from "@/lib/admin-test";
@@ -51,76 +51,6 @@ function isRateLimited(ip: string): boolean {
   }
   entry.count += 1;
   return entry.count > RATE_LIMIT_MAX;
-}
-
-interface CheckoutSessionParams {
-  registrationId: string;
-  email: string;
-  entryFee: number;
-  wantsShirt: boolean;
-  premiumMedia: boolean;
-  premiumMediaFee: number;
-  currency: "HUF" | "EUR";
-  locale: RegistrationLocale;
-  inviteCode: string | null;
-}
-
-async function createCheckoutSession(params: CheckoutSessionParams): Promise<string | null> {
-  const stripe = getStripe();
-  if (!stripe) return null;
-
-  const currency = params.currency.toLowerCase();
-  const entryName =
-    params.locale === "en"
-      ? params.wantsShirt
-        ? "SBD Next 2 — entry + shirt"
-        : "SBD Next 2 — entry"
-      : params.wantsShirt
-        ? "SBD Next 2 — nevezés + póló"
-        : "SBD Next 2 — nevezés";
-
-  const lineItems = [
-    {
-      quantity: 1,
-      price_data: {
-        currency,
-        unit_amount: params.entryFee * 100, // both HUF and EUR are charged as a two-decimal amount on this account
-        product_data: { name: entryName },
-      },
-    },
-  ];
-  if (params.premiumMedia) {
-    lineItems.push({
-      quantity: 1,
-      price_data: {
-        currency,
-        unit_amount: params.premiumMediaFee * 100,
-        product_data: {
-          name: params.locale === "en" ? "SBD Next 2 — Premium media package" : "SBD Next 2 — Prémium média csomag",
-        },
-      },
-    });
-  }
-
-  const koszonjukPath = params.locale === "en" ? "/en/nevezes/koszonjuk" : "/nevezes/koszonjuk";
-  const megszakitvaPath = params.locale === "en" ? "/en/nevezes/megszakitva" : "/nevezes/megszakitva";
-  // The invite code only lives in the URL, not in any cookie/session, so it
-  // has to be carried through the cancel redirect too — otherwise "try
-  // payment again" on the EN cancelled page would bounce an invited athlete
-  // back into the "registration hasn't started yet" notice.
-  const codeQuery = params.inviteCode ? `&code=${encodeURIComponent(params.inviteCode)}` : "";
-
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: lineItems,
-    customer_email: params.email,
-    client_reference_id: params.registrationId,
-    metadata: { registrationId: params.registrationId },
-    success_url: `${EVENT.siteUrl}${koszonjukPath}?rid=${params.registrationId}`,
-    cancel_url: `${EVENT.siteUrl}${megszakitvaPath}?rid=${params.registrationId}${codeQuery}`,
-  });
-
-  return session.url;
 }
 
 export async function POST(req: NextRequest) {

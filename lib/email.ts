@@ -394,6 +394,54 @@ export async function sendEarlyAccessOpenNotification(email: string, locale: Loc
   return true;
 }
 
+interface PaymentReminderData {
+  email: string;
+  firstName: string;
+  totalFee: number;
+  currency: "HUF" | "EUR";
+  payUrl: string;
+  locale?: RegistrationLocale;
+}
+
+// Manual reminder for a registration that's sat in pending_payment for a
+// while (D, 2026-11-25) — payUrl is /api/registration/[id]/pay, which
+// issues a fresh Stripe Checkout session and redirects straight to it, so
+// the athlete can pay from the e-mail without redoing the wizard.
+export async function sendPaymentReminderEmail(data: PaymentReminderData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+
+  const locale = data.locale ?? "hu";
+  const amount = formatAmount(data.totalFee, data.currency);
+  const payLabel = locale === "en" ? "Finish registration" : "Nevezés befejezése";
+  const contactLabel = locale === "en" ? "Questions? E-mail us:" : "Kérdés esetén írj nekünk:";
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: data.email,
+    subject: locale === "en" ? "SBD Next II — your entry fee hasn't arrived yet" : "SBD Next II — még nem érkezett meg a nevezési díjad",
+    html:
+      locale === "en"
+        ? `${HEADER_HTML}<p>Hi ${data.firstName}!</p>
+       <p>We have your registration for <b>SBD Next II</b>, but the entry fee hasn't arrived yet. Registration
+       only becomes final once it's paid, so please finish it as soon as you can — spots are limited.</p>
+       <p>Amount due: <b>${amount}</b></p>
+       ${buttonHtml(data.payUrl, payLabel)}
+       <p class="text-xs">Already tried paying and it didn't go through? Feel free to use this link again — it won't cause a duplicate on our side.</p>
+       <p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`
+        : `${HEADER_HTML}<p>Szia ${data.firstName}!</p>
+       <p>Nálunk megvan a jelentkezésed a <b>SBD Next II</b> versenyre, de a nevezési díj kifizetése még nem érkezett
+       meg hozzánk. A nevezés csak a fizetéssel válik véglegessé, ezért kérlek, fejezd be minél előbb — a helyek
+       korlátozottak.</p>
+       <p>Fizetendő összeg: <b>${amount}</b></p>
+       ${buttonHtml(data.payUrl, payLabel)}
+       <p class="text-xs">Ha korábban már elindítottad a fizetést, de nem jutott el a végéig, nyugodtan csináld végig újra ezen a linken — ez nem okoz gondot nálunk.</p>
+       <p>${contactLabel} <a href="mailto:${EVENT.contact.email}">${EVENT.contact.email}</a></p>${SIGNATURE_HTML}`,
+  });
+  if (error) throw new Error(`resend: ${error.message}`);
+  return true;
+}
+
 interface FacePhotoReminderData {
   email: string;
   firstName: string;

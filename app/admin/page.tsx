@@ -21,6 +21,7 @@ import { formatHUF, formatEUR, formatKg } from "@/lib/format";
 import {
   updateRegistrationStatus,
   resendRegistrationEmail,
+  sendPaymentReminderEmailAction,
   sendEarlyAccessNotificationsNow,
   sendRegistrationOpenNotificationsNow,
 } from "./actions";
@@ -530,6 +531,21 @@ export default async function AdminPage({
                                 Email újraküldése
                               </Button>
                             </form>
+                            {r.status === "pending_payment" && (
+                              <form action={sendPaymentReminderEmailAction}>
+                                <input type="hidden" name="id" value={r.id} />
+                                <input type="hidden" name="redirectTo" value={redirectTo} />
+                                <Button
+                                  type="submit"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2.5 text-xs"
+                                  title="Fizetési emlékeztető küldése, benne egy linkkel, ami egyenesen egy friss Stripe fizetési oldalra visz"
+                                >
+                                  Fizetési emlékeztető
+                                </Button>
+                              </form>
+                            )}
                             {r.face_photo_path && (
                               <a
                                 href={`/api/admin/face-photo/${r.id}`}

@@ -8,7 +8,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseServerAuth } from "@/lib/supabase/server-auth";
 import { requireAdmin } from "@/lib/admin-auth";
 import { ADMIN_TEST_COOKIE } from "@/lib/admin-test";
-import { sendPaymentConfirmedEmail, sendRegistrationReceivedEmail, summaryFromRow } from "@/lib/email";
+import { sendPaymentConfirmedEmail, sendPaymentReminderEmail, sendRegistrationReceivedEmail, summaryFromRow } from "@/lib/email";
 import { dispatchEarlyAccessBatch, dispatchRegistrationOpenBatch } from "@/lib/notify-dispatch";
 import { EVENT } from "@/config/event";
 import { DEFAULT_PRIVACY_NOTICE, type PrivacyLocale } from "@/lib/privacy-notice";
@@ -114,6 +114,60 @@ export async function resendRegistrationEmail(formData: FormData): Promise<void>
       summary: summaryFromRow(registration),
     });
   }
+
+  revalidatePath("/admin");
+  if (typeof redirectTo === "string" && redirectTo.startsWith("/admin")) {
+    redirect(redirectTo);
+  }
+}
+
+// Manual nudge for a registration that's sat in pending_payment for a
+// while (D, 2026-11-25): sends a branded reminder with a link straight to a
+// fresh Stripe Checkout session for this row (see
+// app/api/registration/[id]/pay), so the athlete doesn't have to redo the
+// wizard. Only meaningful for pending_payment — paid/cancelled/waitlist
+// rows don't get a pay link from the wizard either (see createCheckoutSession
+// callers), so this throws rather than silently mailing a dead link.
+export async function sendPaymentReminderEmailAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = formData.get("id");
+  const redirectTo = formData.get("redirectTo");
+  if (typeof id !== "string" || !id) {
+    throw new Error("Érvénytelen kérés.");
+  }
+
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    throw new Error("Supabase nincs beállítva.");
+  }
+
+  const { data: registration, error } = await admin
+    .from("registrations")
+    .select("id, email, first_name, status, total_fee, currency, locale, edit_token")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !registration) {
+    throw new Error(error?.message ?? "A nevezés nem található.");
+  }
+  if (registration.status !== "pending_payment") {
+    throw new Error("Csak fizetésre váró nevezéshez küldhető fizetési emlékeztető.");
+  }
+  if (!registration.edit_token) {
+    throw new Error("A nevezéshez nincs edit token.");
+  }
+
+  const currency: "HUF" | "EUR" = registration.currency === "EUR" ? "EUR" : "HUF";
+  const locale: "hu" | "en" = registration.locale === "en" ? "en" : "hu";
+
+  await sendPaymentReminderEmail({
+    email: registration.email,
+    firstName: registration.first_name,
+    totalFee: registration.total_fee,
+    currency,
+    locale,
+    payUrl: `${EVENT.siteUrl}/api/registration/${id}/pay?token=${registration.edit_token}`,
+  });
 
   revalidatePath("/admin");
   if (typeof redirectTo === "string" && redirectTo.startsWith("/admin")) {
