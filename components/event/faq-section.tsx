@@ -31,6 +31,10 @@ const FAQ = [
     a: "Media csomag (profi fotók rólad). A póló csak a Nevezés + póló csomagban jár, külön felár ellenében. A póló egyedi, névre szóló. Prémium média csomag is külön vásárolható.",
   },
   {
+    q: "Visszatérítést kérhetek, ha mégsem tudok elindulni?",
+    a: "Nevezés kifizetése után a verseny színvonalának fenntartása érdekében visszatérítésre nincs lehetőségünk. Amennyiben névre szóló pólót is rendeltél, azt meg fogod kapni.",
+  },
+  {
     q: "Lesz élő közvetítés?",
     a: "Igen, a stream linkek a verseny napján lesznek élesben elérhetők ezen az oldalon.",
   },

@@ -204,6 +204,10 @@ export function CompetitionRulesDocumentEn() {
           Note: entry is limited and on a first-come, first-served basis. The system closes registration
           automatically once the maximum number of entry slots is filled.
         </p>
+        <p>
+          Once your entry fee is paid, we&apos;re unable to offer a refund, in order to maintain the
+          standard of the competition. If you ordered a name-printed shirt, you&apos;ll still receive it.
+        </p>
         <p className="mt-2 font-semibold text-foreground">Prizes</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Medals for 1st–3rd place in each category. A certificate for every participant.</li>

@@ -209,6 +209,10 @@ export function CompetitionRulesDocument() {
           Figyelem: a versenyre csak korlátozott nevezés elérhető, az „aki hamarabb jön&rdquo; elv alapján. A rendszer
           a maximum nevezési helyek betöltődése után automatikusan lezárja a nevezést.
         </p>
+        <p>
+          Nevezés kifizetése után a verseny színvonalának fenntartása érdekében visszatérítésre nincs
+          lehetőségünk. Amennyiben névre szóló pólót is rendeltél, azt meg fogod kapni.
+        </p>
         <p className="mt-2 font-semibold text-foreground">Díjazás</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Érmek a kategóriák I–III. helyezettjeinek. Oklevél minden résztvevőnek.</li>
