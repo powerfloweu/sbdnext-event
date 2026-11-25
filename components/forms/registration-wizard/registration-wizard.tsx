@@ -121,6 +121,7 @@ interface WizardStrings {
   consentMiddle: string;
   consentInvitation: string;
   consentSuffix: string;
+  refundNotice: string;
   draftRestored: string;
   stepTitles: readonly string[];
   next: string;
@@ -210,6 +211,8 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     consentMiddle: " és a ",
     consentInvitation: "versenykiírást",
     consentSuffix: ". Tudomásul veszem, hogy a nevezés a fizetéssel válik véglegessé.",
+    refundNotice:
+      "Nevezés kifizetése után a verseny színvonalának fenntartása érdekében visszatérítésre nincs lehetőségünk. Amennyiben névre szóló pólót is rendeltél, azt meg fogod kapni.",
     draftRestored: "Folytatod a korábban megkezdett nevezésedet. A korábbi adataid betöltöttük.",
     stepTitles: ["Alapadatok", "Kategória", "Nevezési adatok", "Póló és extrák", "Ellenőrizd az adataid"],
     next: "Tovább",
@@ -297,6 +300,8 @@ const STRINGS: Record<RegistrationLocale, WizardStrings> = {
     consentMiddle: " and the ",
     consentInvitation: "competition invitation",
     consentSuffix: ". I understand that registration is only final once paid.",
+    refundNotice:
+      "Once your entry fee is paid, we're unable to offer a refund, in order to maintain the standard of the competition. If you ordered a name-printed shirt, you'll still receive it.",
     draftRestored: "Picking up your earlier registration — we loaded your previous answers.",
     stepTitles: ["Basic details", "Division", "Registration details", "Shirt & extras", "Review your details"],
     next: "Next",
@@ -941,6 +946,8 @@ function Summary({
           </div>
         </CardContent>
       </Card>
+
+      <p className="text-xs text-muted-foreground">{t.refundNotice}</p>
 
       <Controller
         name="consent"
